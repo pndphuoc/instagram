@@ -144,7 +144,7 @@ class AuthenticationService implements IAuthenticationService {
         followerListRef.set({"followerIds": []});
 
         DocumentReference followingListRef = _followingListCollection.doc();
-        followerListRef.set({"followingIds": []});
+        followingListRef.set({"followingIds": []});
 
         DocumentReference blockedListRef = _blockedListCollection.doc();
         blockedListRef.set({"blockedIds": []});

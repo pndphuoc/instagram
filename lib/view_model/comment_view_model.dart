@@ -16,4 +16,5 @@ class CommentViewModel extends ChangeNotifier {
   Future<List<Comment>> getComments({required String commentListId, int page = 0, int pageSize = 10}) async {
     return await _commentServices.getComments(commentListId: commentListId, page: page, pageSize: pageSize);
   }
+
 }

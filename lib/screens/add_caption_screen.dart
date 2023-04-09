@@ -115,7 +115,7 @@ class _AddCaptionScreenState extends State<AddCaptionScreen> {
         createAt: DateTime.now(),
         mediaUrls: [],
         uid: '',
-        commentedListId: '',
+        commentListId: '',
         isDeleted: false,
         likedListId: '',
         updateAt: DateTime.now(),

@@ -26,12 +26,12 @@ String getElapsedTime(DateTime startTime) {
   if (timePassed.inDays > 30) {
     return '${timePassed.inDays}';
   } else if (timePassed.inDays > 0) {
-    return '${timePassed.inDays} days ago';
+    return '${timePassed.inDays}d';
   } else if (timePassed.inHours > 0) {
-    return '${timePassed.inHours} hours ago';
+    return '${timePassed.inHours}h';
   } else if (timePassed.inMinutes > 0) {
-    return '${timePassed.inMinutes} minutes ago';
+    return '${timePassed.inMinutes}m';
   } else {
-    return '${timePassed.inSeconds} seconds ago';
+    return '${timePassed.inSeconds}s';
   }
 }

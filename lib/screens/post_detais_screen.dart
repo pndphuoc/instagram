@@ -39,71 +39,106 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: _appBar(context),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: avatarSize,
-                    backgroundImage: CachedNetworkImageProvider(
-                      widget.post.avatarUrl.toString(),),
-                  ),
-                  const SizedBox(width: 15,),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(widget.post.username, style: Theme
-                          .of(context)
-                          .textTheme
-                          .titleSmall,),
-                      Text(widget.post.caption, style: Theme
-                          .of(context)
-                          .textTheme
-                          .bodyMedium,)
-                    ],
-                  )
-                ],
-              ),
-            ),
-            const Divider(color: Colors.white38,),
-          ],
-        ),
+      body: Column(
+        children: [
+          _postContent(context),
+          const Divider(
+            color: Colors.white38,
+          ),
+          FutureBuilder(
+            future: _commentViewModel.getComments(
+                commentListId: widget.post.commentListId),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              } else if (snapshot.hasError) {
+                return Center(
+                  child: Text(snapshot.error.toString()),
+                );
+              } else {
+                List<Comment> comments = snapshot.data!;
+                return ListView.separated(
+                  separatorBuilder: (context, index) => const SizedBox(height: 15,),
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: comments.length,
+                  itemBuilder: (context, index) {
+                    return CommentCard(cmt: comments[index]);
+                  },
+                );
+              }
+            },
+          )
+        ],
       ),
       bottomNavigationBar: _writeCommentBlock(context),
+    );
+  }
+
+  Widget _postContent(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: avatarSize,
+            backgroundImage: CachedNetworkImageProvider(
+              widget.post.avatarUrl.toString(),
+            ),
+          ),
+          const SizedBox(
+            width: 15,
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.post.username,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              Text(
+                widget.post.caption,
+                style: Theme.of(context).textTheme.bodyMedium,
+              )
+            ],
+          )
+        ],
+      ),
     );
   }
 
   AppBar _appBar(BuildContext context) {
     return AppBar(
       backgroundColor: mobileBackgroundColor,
-      title: Text("Comment", style: Theme
-          .of(context)
-          .textTheme
-          .titleLarge,),
+      title: Text(
+        "Comment",
+        style: Theme.of(context).textTheme.titleLarge,
+      ),
     );
   }
 
   _onPostButtonPressed() {
-    Comment comment = Comment(uid: '',
+    Comment comment = Comment(
+        uid: '',
         authorId: _currentUserViewModel.user!.uid,
         username: _currentUserViewModel.user!.username,
         avatarUrl: _currentUserViewModel.user!.avatarUrl,
         content: _commentController.text,
         likedListId: '',
+        likeCount: 0,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now());
 
-    _commentViewModel.addComment(widget.post.uid, widget.post.commentedListId, comment);
+    _commentViewModel.addComment(
+        widget.post.uid, widget.post.commentListId, comment);
+    _commentController.clear();
   }
 
   Widget _writeCommentBlock(BuildContext context) {
     return Padding(
-      padding: MediaQuery
-          .of(context)
-          .viewInsets,
+      padding: MediaQuery.of(context).viewInsets,
       child: Container(
         color: secondaryColor,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -113,34 +148,37 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
             CircleAvatar(
               radius: 20,
               backgroundImage: _currentUserViewModel.user!.avatarUrl.isNotEmpty
-                  ?
-              CachedNetworkImageProvider(_currentUserViewModel.user!.avatarUrl)
-                  :
-              const AssetImage('assets/default_avatar.png') as ImageProvider<
-                  Object>?,
+                  ? CachedNetworkImageProvider(
+                      _currentUserViewModel.user!.avatarUrl)
+                  : const AssetImage('assets/default_avatar.png')
+                      as ImageProvider<Object>?,
             ),
-            const SizedBox(width: 20,),
-            Expanded(child: TextField(
-              controller: _commentController,
-              maxLines: null,
-              decoration: InputDecoration(
-                  border: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  hintText: "Comment for ${widget.post.username}",
-                  hintStyle: Theme
-                      .of(context)
-                      .textTheme
-                      .bodyMedium
+            const SizedBox(
+              width: 20,
+            ),
+            Expanded(
+              child: TextField(
+                controller: _commentController,
+                maxLines: null,
+                decoration: InputDecoration(
+                    border: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    hintText: "Comment for ${widget.post.username}",
+                    hintStyle: Theme.of(context).textTheme.bodyMedium),
               ),
-            ),),
-            const SizedBox(width: 20,),
+            ),
+            const SizedBox(
+              width: 20,
+            ),
             GestureDetector(
               onTap: _onPostButtonPressed,
               child: SizedBox(
                   height: 30,
                   child: Text(
-                    "Post", style: GoogleFonts.readexPro(color: Colors.blue),)),
+                    "Post",
+                    style: GoogleFonts.readexPro(color: Colors.blue),
+                  )),
             )
           ],
         ),

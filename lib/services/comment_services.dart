@@ -21,10 +21,11 @@ class CommentServices implements ICommentService {
 
       DocumentReference cmtRef = cmtListRef.collection('comments').doc();
       uid = cmtRef.id;
-      
+
       comment.uid = uid!;
 
-      DocumentReference likeRef = FirebaseFirestore.instance.collection('likes').doc();
+      DocumentReference likeRef =
+          FirebaseFirestore.instance.collection('likes').doc();
       likeRef.set({"likedBy": [], "id": likeRef.id});
 
       comment.likedListId = likeRef.id;
@@ -48,10 +49,23 @@ class CommentServices implements ICommentService {
   }
 
   @override
-  Future<List<Comment>> getComments(
-      {required String commentListId, int page = 0, int pageSize = 10}) {
-    // TODO: implement getComments
-    throw UnimplementedError();
+  Future<List<Comment>> getComments({
+    required String commentListId,
+    int page = 0,
+    int pageSize = 10,
+  }) async {
+    final int startIndex = page * pageSize;
+
+    QuerySnapshot snapshot = await _commentsCollection
+        .doc(commentListId)
+        .collection("comments")
+        .orderBy("commentCount", descending: true)
+        .orderBy("likeCount", descending: true)
+        .limit(pageSize)
+        .startAt([startIndex]).get();
+    return snapshot.docs
+        .map((doc) => Comment.fromJson(doc.data() as Map<String, dynamic>))
+        .toList();
   }
 
   @override

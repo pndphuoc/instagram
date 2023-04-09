@@ -7,18 +7,22 @@ import 'package:instagram/models/comment.dart';
 import '../models/post.dart';
 
 class PostService implements IPostServices {
-  final FirebaseStorage _firebaseStorage = FirebaseStorage.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final CollectionReference _postsCollection =
       FirebaseFirestore.instance.collection('posts');
+
   final CollectionReference _likesCollection =
       FirebaseFirestore.instance.collection('likes');
-  final CollectionReference _commentListCollection = FirebaseFirestore.instance.collection("commentList");
+
+  final CollectionReference _commentListCollection =
+      FirebaseFirestore.instance.collection("commentList");
+
+  final CollectionReference _viewedListCollection =
+  FirebaseFirestore.instance.collection("viewedList");
 
   @override
   Future<List<Post>> getPosts() async {
     QuerySnapshot snapshot = await _postsCollection.get();
-    print("aaa ${snapshot.docs.length}");
     return snapshot.docs
         .map((doc) => Post.fromJson(doc.data() as Map<String, dynamic>))
         .toList();
@@ -36,7 +40,12 @@ class PostService implements IPostServices {
 
     DocumentReference commentListRef = _commentListCollection.doc();
     commentListRef.set({"uid": commentListRef.id});
-    
+    post.commentListId = commentListRef.id;
+
+    DocumentReference viewedListRef = _viewedListCollection.doc();
+    viewedListRef.set({"uid": viewedListRef.id});
+    post.viewedListId = viewedListRef.id;
+
     await docRef.set(post.toJson());
     return uid;
   }
