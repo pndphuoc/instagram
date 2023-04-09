@@ -293,7 +293,6 @@ class _AddPostScreenState extends State<AddPostScreen> {
   Future _showBottomModalOfPaths(BuildContext context, AssetViewModel value) {
     return showModalBottomSheet(
       elevation: 0,
-      useSafeArea: true,
       isDismissible: true,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(

@@ -13,6 +13,7 @@ class PostService implements IPostServices {
       FirebaseFirestore.instance.collection('posts');
   final CollectionReference _likesCollection =
       FirebaseFirestore.instance.collection('likes');
+  final CollectionReference _commentListCollection = FirebaseFirestore.instance.collection("commentList");
 
   @override
   Future<List<Post>> getPosts() async {
@@ -33,6 +34,9 @@ class PostService implements IPostServices {
     likeRef.set({"likedBy": [], "id": likeRef.id});
     post.likedListId = likeRef.id;
 
+    DocumentReference commentListRef = _commentListCollection.doc();
+    commentListRef.set({"uid": commentListRef.id});
+    
     await docRef.set(post.toJson());
     return uid;
   }
@@ -52,14 +56,14 @@ class PostService implements IPostServices {
   }
 
   @override
-  Future<void> likePost(String postId, String userId) async {
+  Future<void> likePost(String postId) async {
     await _postsCollection.doc(postId).update({
       'likeCount': FieldValue.increment(1),
     });
   }
 
   @override
-  Future<void> unlikePost(String postId, String userId) async {
+  Future<void> unlikePost(String postId) async {
     await _postsCollection.doc(postId).update({
       'likeCount': FieldValue.increment(-1),
     });
@@ -77,11 +81,8 @@ class PostService implements IPostServices {
   }
 
   @override
-  Future<String> addComment(String postId, Comment cmt) async {
+  Future<void> addComment(String postId) async {
     DocumentReference postRef = _firestore.collection('posts').doc(postId);
-    DocumentReference commentRef = postRef.collection('comments').doc();
-
-    String uid = commentRef.id;
 
     await _firestore.runTransaction((transaction) async {
       DocumentSnapshot postSnapshot = await transaction.get(postRef);
@@ -90,30 +91,26 @@ class PostService implements IPostServices {
         throw Exception("Post does not exist!");
       }
 
-      transaction.set(commentRef, cmt.toSnap());
-
       transaction.update(postRef, {
         'commentCount': FieldValue.increment(1),
       });
     });
-    return uid;
   }
 
   @override
-  Future<void> getComments({int page = 0, int size = 20}) {
-    // TODO: implement getComments
-    throw UnimplementedError();
-  }
+  Future<void> deleteComment(String postId) async {
+    DocumentReference postRef = _firestore.collection('posts').doc(postId);
 
-  @override
-  Future<bool> deleteComment(String postId, String commentId) {
-    // TODO: implement deleteComment
-    throw UnimplementedError();
-  }
+    await _firestore.runTransaction((transaction) async {
+      DocumentSnapshot postSnapshot = await transaction.get(postRef);
 
-  @override
-  Future<bool> updateComment(String postId, Comment cmt) {
-    // TODO: implement updateComment
-    throw UnimplementedError();
+      if (!postSnapshot.exists) {
+        throw Exception("Post does not exist!");
+      }
+
+      transaction.update(postRef, {
+        'commentCount': FieldValue.increment(-1),
+      });
+    });
   }
 }

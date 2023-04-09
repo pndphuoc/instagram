@@ -1,57 +1,47 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class Comment {
-  final String id;
-  final String postId;
+  String uid;
   final String authorId;
-  final String username;
-  final String avatarUrl;
-  final String content;
+  String username;
+  String avatarUrl;
+  String content;
+  String likedListId;
   final DateTime createdAt;
-  final DateTime updatedAt;
-  final List<String> likedBy;
-  final int likeCount;
+  DateTime updatedAt;
 
   Comment({
-    required this.id,
-    required this.postId,
+    required this.uid,
     required this.authorId,
     required this.username,
     required this.avatarUrl,
     required this.content,
+    required this.likedListId,
     required this.createdAt,
     required this.updatedAt,
-    required this.likedBy,
-    required this.likeCount,
   });
 
-  factory Comment.fromSnap(DocumentSnapshot doc) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+  factory Comment.fromJson(Map<String, dynamic> data) {
     return Comment(
-      id: doc.id,
-      postId: data['postId'],
+      uid: data['uid'],
       authorId: data['authorId'],
       username: data['username'],
       avatarUrl: data['avatarUrl'],
       content: data['content'],
+      likedListId: data['likedListId'],
       createdAt: data['createdAt'].toDate(),
       updatedAt: data['updatedAt'].toDate(),
-      likedBy: List<String>.from(data['likedBy'] ?? []),
-      likeCount: data['likeCount'] ?? 0,
     );
   }
 
-  Map<String, dynamic> toSnap() {
+  Map<String, dynamic> toJson() {
     return {
-      'postId': postId,
+      'uid': uid,
       'authorId': authorId,
       'username': username,
       'avatarUrl': avatarUrl,
       'content': content,
+      'likedListId': likedListId,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
-      'likedBy': likedBy,
-      'likeCount': likeCount,
     };
   }
 }

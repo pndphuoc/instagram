@@ -5,12 +5,5 @@ import 'package:instagram/screens/personal_profile_screen.dart';
 
 import '../screens/add_post_screen.dart';
 
-const homeScreenItems = [
-  NewsFeedScreen(),
-  SearchScreen(),
-  AddPostScreen(),
-  Center(child: Text("notifications", style: TextStyle(color: Colors.white),)),
-  PersonalProfileScreen()
-];
 
 const String profilePicturesPath = 'profilePics';

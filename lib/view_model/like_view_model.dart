@@ -35,7 +35,7 @@ class LikeViewModel extends ChangeNotifier {
 
   Future<void> like(String postId, String likesListId, String userId) async {
     _likeService.like(likesListId, userId);
-    _postService.likePost(postId, userId);
+    _postService.likePost(postId);
     _isLiked = true;
     _isLikeAnimating = !_isLikeAnimating;
     notifyListeners();
@@ -43,7 +43,7 @@ class LikeViewModel extends ChangeNotifier {
 
   Future<void> unlike(String postId, String likesListId, String userId) async {
     _likeService.unlike(likesListId, userId);
-    _postService.unlikePost(postId, userId);
+    _postService.unlikePost(postId);
     _isLiked = false;
     _isLikeAnimating = !_isLikeAnimating;
     notifyListeners();

@@ -15,15 +15,12 @@ abstract class IPostServices {
 
   Future<void> deletePost(String postId);
 
-  Future<void> likePost(String postId, String userId);
+  Future<void> likePost(String postId);
 
-  Future<void> unlikePost(String postId, String userId);
+  Future<void> unlikePost(String postId);
 
-  Future<String> addComment(String postId, Comment cmt);
+  Future<void> addComment(String postId);
 
-  Future<bool> deleteComment(String postId, String commentId);
+  Future<void> deleteComment(String postId);
 
-  Future<bool> updateComment(String postId, Comment cmt);
-
-  Future<void> getComments({int page = 0, int size = 20});
 }

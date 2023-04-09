@@ -10,7 +10,6 @@ class HomeScreenProvider with ChangeNotifier {
   final List<Widget> screens = [
     const NewsFeedScreen(),
     const DiscoverScreen(),
-    const AddPostScreen(),
     const Center(child: Text("notifications", style: TextStyle(color: Colors.white),)),
     const PersonalProfileScreen()
   ];

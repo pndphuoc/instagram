@@ -59,6 +59,7 @@ class AssetViewModel extends ChangeNotifier {
   Future<void> loadAssetPathList() async {
     try {
       _paths = await _assetService.loadAssetPathList();
+
       notifyListeners();
     } catch (e) {
       print(e.toString());
@@ -90,8 +91,9 @@ class AssetViewModel extends ChangeNotifier {
     try {
       await loadAssetPathList();
       _selectedPath = _paths.first;
-
+      print("test assets");
       await loadAssetsOfPath();
+
       _selectedEntity = _entities.first;
       print(_entities.length);
       notifyListeners();
