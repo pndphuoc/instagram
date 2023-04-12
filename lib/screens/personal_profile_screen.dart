@@ -1,11 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/authentication_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:provider/provider.dart';
-
-import '../view_model/elastic_view_model.dart';
+import '../models/user.dart' as model;
 import '../widgets/sticky_tab_bar_delegate.dart';
 
 class PersonalProfileScreen extends StatefulWidget {
@@ -54,124 +54,65 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
               child: NestedScrollView(
                 headerSliverBuilder: (context, innerBoxIsScrolled) => [
                   SliverToBoxAdapter(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        value.user!.avatarUrl!.isNotEmpty
-                            ? CircleAvatar(
+                    child: StreamBuilder(
+                      stream: value.getUserData(FirebaseAuth.instance.currentUser!.uid),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(child: CircularProgressIndicator(),);
+                        } else if (snapshot.hasError) {
+                          return Center(child: Text(snapshot.error.toString()),);
+                        } else {
+                          model.User user = model.User.fromJson(snapshot.data!.data() as Map<String, dynamic>);
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const SizedBox(
+                                height: 20,
+                              ),
+                              user.avatarUrl.isNotEmpty
+                                  ? CircleAvatar(
                                 radius: avatarSize,
                                 backgroundImage: CachedNetworkImageProvider(
-                                    value.user!.avatarUrl!),
+                                    user.avatarUrl),
                               )
-                            : CircleAvatar(
-                                radius: avatarSize,
-                                backgroundImage: const AssetImage(
-                                    "assets/default_avatar.png")),
-                        const SizedBox(
-                          height: 15,
-                        ),
-                        Text(
-                          value.user!.username,
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        if (value.user!.displayName.isNotEmpty)
-                          Text(
-                            value.user!.displayName,
-                            style: Theme.of(context).textTheme.labelSmall,
-                          ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        Text(
-                          value.user!.bio,
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        Row(
-                          children: [
-                            const SizedBox(
-                              width: 20,
-                            ),
-                            _statsBlock(
-                                name: 'Posts',
-                                count: value.user!.postIds.length),
-                            _statsBlock(
-                                name: 'Followers',
-                                count: value.user!.followerCount),
-                            _statsBlock(
-                                name: 'Following',
-                                count: value.user!.followerCount),
-                            const SizedBox(
-                              width: 20,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        Row(
-                          children: [
-                            const SizedBox(
-                              width: 20,
-                            ),
-                            Expanded(
-                              child: ElevatedButton(
-                                  onPressed: () {
-                                    final ElasticViewModel elastic =
-                                        ElasticViewModel();
-                                    elastic.searchData(
-                                        'users', {"username": "hiii_chin"});
-                                    //print(elastic.searchResults.first);
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10)),
-                                      backgroundColor: secondaryColor),
-                                  child: Text(
-                                    "Edit profile",
-                                    style:
-                                        Theme.of(context).textTheme.titleMedium,
-                                  )),
-                            ),
-                            const SizedBox(
-                              width: 10,
-                            ),
-                            Expanded(
-                              child: ElevatedButton(
-                                  onPressed: () {
-                                    context
-                                        .read<CurrentUserViewModel>()
-                                        .removeData();
-                                    context
-                                        .read<AuthenticationViewModel>()
-                                        .logout();
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10)),
-                                      backgroundColor: secondaryColor),
-                                  child: Text(
-                                    "Log out",
-                                    style:
-                                        Theme.of(context).textTheme.titleMedium,
-                                  )),
-                            ),
-                            const SizedBox(
-                              width: 20,
-                            ),
-                          ],
-                        ),
-                      ],
+                                  : CircleAvatar(
+                                  radius: avatarSize,
+                                  backgroundImage: const AssetImage(
+                                      "assets/default_avatar.png")),
+                              const SizedBox(
+                                height: 15,
+                              ),
+                              Text(
+                                value.user!.username,
+                                style: Theme.of(context).textTheme.titleLarge,
+                              ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              if (value.user!.displayName.isNotEmpty)
+                                Text(
+                                  user.displayName,
+                                  style: Theme.of(context).textTheme.labelSmall,
+                                ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              Text(
+                                user.bio,
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                              const SizedBox(
+                                height: 20,
+                              ),
+                              _statsRow(context, user),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              _buttonsRow(context),
+                            ],
+                          );
+                        }
+                      },
                     ),
                   ),
                   SliverPersistentHeader(
@@ -195,6 +136,79 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
               )),
         );
       },
+    );
+  }
+
+  Widget _buttonsRow(BuildContext context) {
+    return Row(
+      children: [
+        const SizedBox(
+          width: 20,
+        ),
+        Expanded(
+          child: ElevatedButton(
+              onPressed: () {},
+              style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                      borderRadius:
+                      BorderRadius.circular(10)),
+                  backgroundColor: secondaryColor),
+              child: Text(
+                "Edit profile",
+                style:
+                Theme.of(context).textTheme.titleMedium,
+              )),
+        ),
+        const SizedBox(
+          width: 10,
+        ),
+        Expanded(
+          child: ElevatedButton(
+              onPressed: () {
+                context
+                    .read<CurrentUserViewModel>()
+                    .removeData();
+                context
+                    .read<AuthenticationViewModel>()
+                    .logout();
+              },
+              style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                      borderRadius:
+                      BorderRadius.circular(10)),
+                  backgroundColor: secondaryColor),
+              child: Text(
+                "Log out",
+                style:
+                Theme.of(context).textTheme.titleMedium,
+              )),
+        ),
+        const SizedBox(
+          width: 20,
+        ),
+      ],
+    );
+  }
+
+  Widget _statsRow(BuildContext context, model.User user) {
+    return Row(
+      children: [
+        const SizedBox(
+          width: 20,
+        ),
+        _statsBlock(
+            name: 'Posts',
+            count: user.postIds.length),
+        _statsBlock(
+            name: 'Followers',
+            count: user.followerCount),
+        _statsBlock(
+            name: 'Following',
+            count: user.followingCount),
+        const SizedBox(
+          width: 20,
+        ),
+      ],
     );
   }
 

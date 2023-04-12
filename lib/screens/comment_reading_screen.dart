@@ -13,16 +13,16 @@ import 'package:provider/provider.dart';
 
 import '../models/post.dart';
 
-class PostDetailsScreen extends StatefulWidget {
+class CommentReadingScreen extends StatefulWidget {
   final Post post;
 
-  const PostDetailsScreen({Key? key, required this.post}) : super(key: key);
+  const CommentReadingScreen({Key? key, required this.post}) : super(key: key);
 
   @override
-  State<PostDetailsScreen> createState() => _PostDetailsScreenState();
+  State<CommentReadingScreen> createState() => _CommentReadingScreenState();
 }
 
-class _PostDetailsScreenState extends State<PostDetailsScreen> {
+class _CommentReadingScreenState extends State<CommentReadingScreen> {
   late CurrentUserViewModel _currentUserViewModel;
 
   final TextEditingController _commentController = TextEditingController();

@@ -56,24 +56,28 @@ class UserViewModel extends ChangeNotifier {
     return _user;
   }
 
+  Future<void> getPostThumbnail() async {
+
+  }
+
   Future<void> getPosts() async {
-    if (_isLoading || _user == null || _currentPage > _totalPage) {
+    if (_isLoading || _currentPage > _totalPage) {
       return;
     }
 
     _isLoading = true;
 
-    _totalPage = _user!.postIds.length ~/ _pageSize + 1;
+    _totalPage = _user.postIds.length ~/ _pageSize + 1;
     int firstIndex = (_currentPage - 1) * _pageSize;
     int lastIndex = firstIndex + _pageSize;
-    int postsLength = _user!.postIds.length;
+    int postsLength = _user.postIds.length;
 
     if (postsLength < lastIndex) {
       lastIndex = postsLength;
       _hasMorePosts = false;
     }
 
-    List<Post> newPosts = await Future.wait(_user!.postIds
+    List<Post> newPosts = await Future.wait(_user.postIds
         .sublist(firstIndex, lastIndex)
         .map((postId) => _postService.getPost(postId)));
 

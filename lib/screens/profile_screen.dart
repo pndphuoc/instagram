@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/screens/personal_profile_screen.dart';
+import 'package:instagram/screens/post_details_screen.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/user_view_model.dart';
 import 'package:instagram/widgets/bottom_navigator_bar.dart';
@@ -206,9 +207,15 @@ class _ProfileScreenState extends State<ProfileScreen>
                   child: CircularProgressIndicator(),
                 );
               }
-              return CachedNetworkImage(
-                imageUrl: posts[index].mediaUrls.first,
-                fit: BoxFit.cover,
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => PostDetailsScreen(posts: posts, index: index),));
+                },
+                child: CachedNetworkImage(
+                  imageUrl: posts[index].mediaUrls.first,
+                  fit: BoxFit.cover,
+                  fadeInDuration: const Duration(milliseconds: 200),
+                ),
               );
             },
           );
@@ -264,7 +271,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         Expanded(
             child: StreamBuilder<bool>(
               stream: _userViewModel.followStateStream,
-              initialData: false,
+              initialData: _userViewModel.isFollowing,
               builder: (context, snapshot) {
                 if (snapshot.data!) {
                   return ElevatedButton(

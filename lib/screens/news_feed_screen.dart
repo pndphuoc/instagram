@@ -51,7 +51,7 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
                             post: value.posts.first,
                             asset: assetProvider.firstAsset!);
                       }
-                      return PostCard(postId: value.posts[index].uid);
+                      return PostCard(post: value.posts[index]);
                     },
                   );
                 } else {

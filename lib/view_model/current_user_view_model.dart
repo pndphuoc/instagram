@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -12,6 +13,7 @@ import '../services/user_services.dart';
 class CurrentUserViewModel extends ChangeNotifier {
   final UserService _userServices = UserService();
   final PostService _postService = PostService();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   model.User? _user;
   List<Post> _ownPosts = [];
@@ -24,6 +26,10 @@ class CurrentUserViewModel extends ChangeNotifier {
   bool get hasMorePosts => _hasMorePosts;
 
   List<Post> get ownPosts => _ownPosts;
+
+  Stream<DocumentSnapshot> getUserData(String userId) {
+    return _firestore.collection('users').doc(userId).snapshots();
+}
 
   Future<void> getCurrentUserDetails() async {
     try {
