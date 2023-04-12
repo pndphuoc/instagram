@@ -20,6 +20,12 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
   final AuthenticationViewModel _authService = AuthenticationViewModel();
+  late CurrentUserViewModel _currentUserViewModel;
+  @override
+  void initState() {
+    super.initState();
+    _currentUserViewModel = context.read<CurrentUserViewModel>();
+  }
 
   @override
   void dispose() {
@@ -140,7 +146,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 GestureDetector(
                   onTap: () async {
-                      await _authService.signInWithGoogle();
+                    await _authService.signInWithGoogle();
+                    await _currentUserViewModel.getCurrentUserDetails();
                   },
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,

@@ -15,10 +15,6 @@ abstract class IPostServices {
 
   Future<void> deletePost(String postId);
 
-  Future<void> likePost(String postId);
-
-  Future<void> unlikePost(String postId);
-
   Future<void> addComment(String postId);
 
   Future<void> deleteComment(String postId);

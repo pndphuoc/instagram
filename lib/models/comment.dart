@@ -8,7 +8,7 @@ class Comment {
   final DateTime createdAt;
   DateTime updatedAt;
   int likeCount;
-
+  bool isLiked = false;
   Comment({
     required this.uid,
     required this.authorId,

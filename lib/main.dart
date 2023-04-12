@@ -16,6 +16,7 @@ import 'package:instagram/view_model/authentication_view_model.dart';
 import 'package:instagram/view_model/elastic_view_model.dart';
 import 'package:instagram/view_model/post_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
+import 'package:instagram/view_model/user_view_model.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
@@ -49,7 +50,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => HomeScreenProvider()),
         ChangeNotifierProvider(create: (context) => PostViewModel()),
         ChangeNotifierProvider(create: (context) => AuthenticationViewModel()),
-        ChangeNotifierProvider(create: (context) => ElasticViewModel())
+        ChangeNotifierProvider(create: (context) => ElasticViewModel()),
+        ChangeNotifierProvider(create: (context) => UserViewModel())
       ],
       child: MaterialApp(
           routes: routes,
@@ -98,8 +100,6 @@ class MyApp extends StatelessWidget {
                     );
                   } else if (!snapshot.hasData) {
                     return const LoginScreen();
-                  } else if (value.isNewUser) {
-                    return const InformationInputScreen();
                   } else {
                     return FutureBuilder(
                       future: value.getCurrentUserDetails(),

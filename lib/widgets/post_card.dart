@@ -5,11 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:instagram/screens/post_detais_screen.dart';
+import 'package:instagram/screens/profile_screen.dart';
 import 'package:instagram/ultis/colors.dart';
+import 'package:instagram/ultis/global_variables.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/like_view_model.dart';
 import 'package:instagram/view_model/post_view_model.dart';
 import 'package:instagram/widgets/like_animation.dart';
+import 'package:instagram/widgets/post_shimmer.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -26,31 +29,35 @@ class PostCard extends StatefulWidget {
 }
 
 class _PostCardState extends State<PostCard> {
-  final double avatarHeight = 20;
-  final double avatarWidth = 20;
   late double imageWidth;
   final LikeViewModel _likeViewModel = LikeViewModel();
   final PostViewModel _postViewModel = PostViewModel();
   late CurrentUserViewModel _currentUserViewModel;
   late Future _getPost;
+  bool isEnableShimmer = true;
 
   @override
   void initState() {
     super.initState();
     _currentUserViewModel = context.read<CurrentUserViewModel>();
-    _getPost = _postViewModel
-        .getPost(widget.postId, _likeViewModel, _currentUserViewModel.user!.uid);
+    _postViewModel.addListener(() {
+      isEnableShimmer = _postViewModel.isEnableShimmer;
+    });
+    _getPost = _postViewModel.getPost(
+        widget.postId, _likeViewModel, _currentUserViewModel.user!.uid);
   }
 
   void _toggleLikePost(snapshot) {
     final currentUserViewModel = context.read<CurrentUserViewModel>();
     if (!_likeViewModel.isLiked) {
-      _likeViewModel.like(widget.postId, snapshot.data!.likedListId,
-          currentUserViewModel.user!.uid);
+      _likeViewModel.like(
+          snapshot.data!.likedListId, currentUserViewModel.user!.uid);
       snapshot.data!.likeCount++;
     } else {
-      _likeViewModel.unlike(widget.postId, snapshot.data!.likedListId,
-          currentUserViewModel.user!.uid);
+      _likeViewModel.unlike(
+        snapshot.data!.likedListId,
+        currentUserViewModel.user!.uid,
+      );
       snapshot.data!.likeCount--;
     }
     setState(() {});
@@ -61,7 +68,7 @@ class _PostCardState extends State<PostCard> {
     imageWidth = MediaQuery.of(context).size.width - 20;
     return Container(
       margin: const EdgeInsets.only(left: 10, right: 10),
-      padding: const EdgeInsets.only(top: 10, bottom: 20),
+      padding: const EdgeInsets.only(top: 10),
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(30),
           color: postCardBackgroundColor),
@@ -73,51 +80,73 @@ class _PostCardState extends State<PostCard> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    snapshot.data!.avatarUrl.isNotEmpty
-                        ? CircleAvatar(
-                            radius: avatarHeight,
-                            backgroundImage: CachedNetworkImageProvider(
-                              snapshot.data!.avatarUrl,
-                            ),
-                          )
-                        : CircleAvatar(
-                            radius: avatarHeight,
-                            backgroundImage:
-                                const AssetImage("assets/default_avatar.png")),
-                    const SizedBox(
-                      width: 15,
-                    ),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            snapshot.data!.username,
-                            style: Theme.of(context).textTheme.titleSmall,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            getElapsedTime(snapshot.data!.createAt),
-                            style: Theme.of(context).textTheme.bodySmall,
-                          )
-                        ],
+                GestureDetector(
+                  onTap: (){
+                    Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                        pageBuilder:
+                            (context, animation, secondaryAnimation) =>
+                            ProfileScreen(userId: snapshot.data!.userId),
+                        transitionsBuilder: (context, animation,
+                            secondaryAnimation, child) {
+                          return _buildSlideTransition(animation, child);
+                        },
+                        transitionDuration:
+                        const Duration(milliseconds: 150),
+                        reverseTransitionDuration:  const Duration(milliseconds: 150),
                       ),
+                    );
+                  },
+                  child: Container(
+                    color: Colors.transparent,
+                    child: Row(
+                      children: [
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        snapshot.data!.avatarUrl.isNotEmpty
+                            ? CircleAvatar(
+                                radius: avatarInPostCardSize,
+                                backgroundImage: CachedNetworkImageProvider(
+                                  snapshot.data!.avatarUrl,
+                                ),
+                              )
+                            : const CircleAvatar(
+                                radius: avatarInPostCardSize,
+                                backgroundImage:
+                                    AssetImage("assets/default_avatar.png")),
+                        const SizedBox(
+                          width: 15,
+                        ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                snapshot.data!.username,
+                                style: Theme.of(context).textTheme.titleSmall,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                getElapsedTime(snapshot.data!.createAt),
+                                style: Theme.of(context).textTheme.bodySmall,
+                              )
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () {},
+                          padding: EdgeInsets.zero,
+                          icon: const Icon(Icons.more_horiz),
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                      ],
                     ),
-                    IconButton(
-                      onPressed: () {},
-                      padding: EdgeInsets.zero,
-                      icon: const Icon(Icons.more_horiz),
-                    ),
-                    const SizedBox(
-                      width: 10,
-                    ),
-                  ],
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Padding(
@@ -193,11 +222,20 @@ class _PostCardState extends State<PostCard> {
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  PostDetailsScreen(post: snapshot.data!),
-                            ));
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) =>
+                                    PostDetailsScreen(post: snapshot.data),
+                            transitionsBuilder: (context, animation,
+                                secondaryAnimation, child) {
+                              return _buildSlideTransition(animation, child);
+                            },
+                            transitionDuration:
+                                const Duration(milliseconds: 150),
+                            reverseTransitionDuration:  const Duration(milliseconds: 150),
+                          ),
+                        );
                       },
                       child: SvgPicture.asset(
                         "assets/ic_comment.svg",
@@ -234,45 +272,72 @@ class _PostCardState extends State<PostCard> {
                 const SizedBox(
                   height: 10,
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 15, right: 15),
-                  child: ExpandableText(
-                    snapshot.data!.caption,
-                    expandText: 'show more',
-                    collapseText: 'show less',
-                    maxLines: 3,
-                    animation: true,
-                    collapseOnTextTap: true,
-                    expandOnTextTap: true,
-                    linkColor: Colors.grey,
-                    linkStyle:
-                        GoogleFonts.readexPro(fontWeight: FontWeight.w200),
-                    animationDuration: const Duration(milliseconds: 500),
-                    style: GoogleFonts.readexPro(color: Colors.white),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                        pageBuilder:
+                            (context, animation, secondaryAnimation) =>
+                            PostDetailsScreen(post: snapshot.data),
+                        transitionsBuilder: (context, animation,
+                            secondaryAnimation, child) {
+                          return _buildSlideTransition(animation, child);
+                        },
+                        transitionDuration:
+                        const Duration(milliseconds: 150),
+                        reverseTransitionDuration:  const Duration(milliseconds: 150),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    color: Colors.transparent,
+                    padding: const EdgeInsets.only(left: 15, right: 15),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ExpandableText(
+                          snapshot.data!.caption,
+                          expandText: 'show more',
+                          maxLines: 3,
+                          animation: true,
+                          expandOnTextTap: true,
+                          linkColor: Colors.grey,
+                          linkStyle:
+                              GoogleFonts.readexPro(fontWeight: FontWeight.w200),
+                          animationDuration: const Duration(milliseconds: 500),
+                          style: GoogleFonts.readexPro(color: Colors.white),
+                        ),
+                        const SizedBox(
+                          height: 30,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                const SizedBox(
-                  height: 15,
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 15, right: 15),
-                  child: GestureDetector(
-                    onTap: () {},
-                    child: Text("See all comments",
-                        style: Theme.of(context).textTheme.labelLarge),
-                  ),
-                )
               ],
             );
           } else if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
-              child: CircularProgressIndicator(),
+              child: PostShimmer(),
             );
           } else {
             return Text("Error: ${snapshot.error.toString()}");
           }
         },
       ),
+    );
+  }
+
+  SlideTransition _buildSlideTransition(
+      Animation<double> animation, Widget child) {
+    return SlideTransition(
+      position: Tween<Offset>(
+        begin: const Offset(1.0, 0.0),
+        end: Offset.zero,
+      ).animate(animation),
+      child: child,
     );
   }
 }

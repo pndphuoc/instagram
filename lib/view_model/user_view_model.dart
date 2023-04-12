@@ -1,34 +1,58 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
+import 'package:instagram/services/relationship_services.dart';
 import 'package:instagram/services/user_services.dart';
 
 import '../models/post.dart';
 import '../models/user.dart';
 import '../services/post_services.dart';
 
-class UserViewModel with ChangeNotifier {
+class UserViewModel extends ChangeNotifier {
   final UserService _userService = UserService();
   final PostService _postService = PostService();
+  final RelationshipService _relationshipService = RelationshipService();
 
   List<Post> posts = [];
   bool _isLoading = false;
   int _currentPage = 1;
   int _totalPage = 1;
   final int _pageSize = 12;
+  bool _isFollowing = false;
 
-  //List<Post> get posts => _posts;
+  bool get isFollowing => _isFollowing;
 
+  set isFollowing(bool value) {
+    _isFollowing = value;
+    _followStateController.sink.add(value);
+    _followerController.sink.add(value ? ++_user.followerCount : --_user.followerCount);
+    notifyListeners();
+  }
+
+  late User _user;
+
+  User get user => _user;
+
+
+  final _followStateController = StreamController<bool>();
   final _postController = StreamController<List<Post>>();
+  final _followerController = StreamController<int>();
+
+  Stream<int> get followerStream => _followerController.stream;
+  Stream<bool> get followStateStream => _followStateController.stream;
   Stream<List<Post>> get postsStream => _postController.stream;
-  late User? _user;
 
   bool _hasMorePosts = true;
+
   bool get hasMorePosts => _hasMorePosts;
+
   bool get isLoading => _isLoading;
 
-  Future<User?> getUserDetails(String id) async {
-    _user = await _userService.getUserDetails(id);
+  Future<User> getUserDetails(
+      String currentUserId, String targetUserId) async {
+    _user = await _userService.getUserDetails(targetUserId);
+    _followStateController.sink.add(await _relationshipService.isFollowing(currentUserId, targetUserId));
+    _followerController.sink.add(_user.followerCount);
     return _user;
   }
 
@@ -57,7 +81,27 @@ class UserViewModel with ChangeNotifier {
 
     _isLoading = false;
     _currentPage++;
+  }
 
+  Future<String> addNewUser(
+      {required String email,
+      required String username,
+      required String uid,
+      String displayName = '',
+      String bio = '',
+      String avatarUrl = ''}) async {
+    return await _userService.addNewUser(
+        email: email,
+        username: username,
+        uid: uid,
+        displayName: displayName,
+        avatarUrl: avatarUrl,
+        bio: bio);
+  }
+
+  Future<void> isFollowed(String currentUserId, String targetUserId) async {
+    _isFollowing =
+        await _relationshipService.isFollowing(currentUserId, targetUserId);
   }
 
   @override

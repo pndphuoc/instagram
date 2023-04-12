@@ -12,10 +12,9 @@ import '../models/post.dart';
 import '../resources/storage_methods.dart';
 import '../services/post_services.dart';
 
-class PostViewModel with ChangeNotifier {
+class PostViewModel extends ChangeNotifier {
   final PostService _postService = PostService();
   final CurrentUserViewModel _userViewModel = CurrentUserViewModel();
-  final LikeService _likeService = LikeService();
 
   List<Post> _posts = [];
   bool _isUploading = false;
@@ -24,12 +23,17 @@ class PostViewModel with ChangeNotifier {
 
   bool get isUploading => _isUploading;
 
+  bool _isEnableShimmer = true;
+
+  bool get isEnableShimmer => _isEnableShimmer;
+
   set isUploading(bool value) {
     _isUploading = value;
   }
 
   Future<void> getPosts() async {
     _posts = await _postService.getPosts();
+    _isEnableShimmer = false;
     notifyListeners();
   }
 

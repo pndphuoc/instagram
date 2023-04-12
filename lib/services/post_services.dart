@@ -35,15 +35,15 @@ class PostService implements IPostServices {
     post.uid = uid;
 
     DocumentReference likeRef = _likesCollection.doc();
-    likeRef.set({"likedBy": [], "id": likeRef.id});
+    likeRef.set({"likedBy": [], "postId": uid});
     post.likedListId = likeRef.id;
 
     DocumentReference commentListRef = _commentListCollection.doc();
-    commentListRef.set({"uid": commentListRef.id});
+    commentListRef.set({"uid": commentListRef.id, "postId": uid});
     post.commentListId = commentListRef.id;
 
     DocumentReference viewedListRef = _viewedListCollection.doc();
-    viewedListRef.set({"uid": viewedListRef.id});
+    viewedListRef.set({"uid": viewedListRef.id, "postId": uid});
     post.viewedListId = viewedListRef.id;
 
     await docRef.set(post.toJson());
@@ -62,20 +62,6 @@ class PostService implements IPostServices {
   @override
   Future<void> deletePost(String postId) async {
     await _postsCollection.doc(postId).delete();
-  }
-
-  @override
-  Future<void> likePost(String postId) async {
-    await _postsCollection.doc(postId).update({
-      'likeCount': FieldValue.increment(1),
-    });
-  }
-
-  @override
-  Future<void> unlikePost(String postId) async {
-    await _postsCollection.doc(postId).update({
-      'likeCount': FieldValue.increment(-1),
-    });
   }
 
   @override

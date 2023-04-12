@@ -13,10 +13,12 @@ class AuthenticationService implements IAuthenticationService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
-  final CollectionReference _followerListCollection = FirebaseFirestore.instance.collection('followerList');
-  final CollectionReference _followingListCollection = FirebaseFirestore.instance.collection('followingList');
-  final CollectionReference _blockedListCollection = FirebaseFirestore.instance.collection('blockedList');
-  final FireBaseStorageService _firestoreService = FireBaseStorageService();
+  final CollectionReference _followerListCollection =
+      FirebaseFirestore.instance.collection('followerList');
+  final CollectionReference _followingListCollection =
+      FirebaseFirestore.instance.collection('followingList');
+  final CollectionReference _blockedListCollection =
+      FirebaseFirestore.instance.collection('blockedList');
 
   @override
   Future<String> completeSignInWithGoogle(
@@ -26,8 +28,8 @@ class AuthenticationService implements IAuthenticationService {
       String? photoUrl;
 
       if (file != null) {
-        photoUrl =
-        await StorageMethods().uploadPhotoToStorage('profilePics', file, false);
+        photoUrl = await StorageMethods()
+            .uploadPhotoToStorage('profilePics', file, false);
       }
 
       final userRef = _firestore.collection('users').doc(currentUser.uid);
@@ -65,14 +67,15 @@ class AuthenticationService implements IAuthenticationService {
   }
 
   @override
-  Future<String> login({required String email, required String password}) async {
+  Future<String> login(
+      {required String email, required String password}) async {
     try {
       if (email.isEmpty || password.isEmpty) {
         return "Please enter all fields";
       }
 
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: email, password: password);
+      await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
 
       return "Login successful";
     } on FirebaseAuthException catch (e) {
@@ -90,7 +93,6 @@ class AuthenticationService implements IAuthenticationService {
     }
   }
 
-
   @override
   Future<void> logout() async {
     if (await _googleSignIn.isSignedIn()) {
@@ -101,7 +103,7 @@ class AuthenticationService implements IAuthenticationService {
   }
 
   @override
-  Future<bool> signInWithGoogle() async {
+  Future<UserCredential> signInWithGoogle() async {
     // Trigger the authentication flow
     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
@@ -117,81 +119,25 @@ class AuthenticationService implements IAuthenticationService {
 
     final authResult =
         await FirebaseAuth.instance.signInWithCredential(credential);
-    if (authResult.additionalUserInfo!.isNewUser) {
-      return true;
-    }
 
-    return false;
+    return authResult;
   }
 
   @override
   Future<String> signUp({
     required String email,
     required String password,
-    required String username,
-    String displayName = '',
-    String bio = '',
-    String avatarUrl = ''
   }) async {
-    String res = "Some error occurred";
     try {
-      if (email.isNotEmpty && password.isNotEmpty && username.isNotEmpty) {
-        UserCredential cred = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      UserCredential cred = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-        final currentUser = FirebaseAuth.instance.currentUser;
+      return "success";
 
-        DocumentReference followerListRef = _followerListCollection.doc();
-        followerListRef.set({"followerIds": []});
-
-        DocumentReference followingListRef = _followingListCollection.doc();
-        followingListRef.set({"followingIds": []});
-
-        DocumentReference blockedListRef = _blockedListCollection.doc();
-        blockedListRef.set({"blockedIds": []});
-
-        final user = model.User(
-          uid: currentUser!.uid,
-          username: username,
-          displayName: displayName,
-          email: email,
-          bio: bio,
-          followerListId: followerListRef.id,
-          followerCount: 0,
-          followingListId: followingListRef.id,
-          followingCount: 0,
-          savedPostIds: [],
-          blockedListId: blockedListRef.id,
-          avatarUrl: avatarUrl,
-          postIds: [],
-          createdAt: DateTime.now(),
-        );
-        await _firestore.collection('users').doc(currentUser.uid).set(user.toJson());
-        res = "success";
-      } else {
-        res = "Please enter all fields";
-      }
     } catch (err) {
-      res = err.toString();
-    }
-    return res;
-  }
-
-
-  @override
-  Future<bool> isNewUser() async {
-    try {
-      List<String> signInMethods =
-          await _auth.fetchSignInMethodsForEmail(_auth.currentUser!.email!);
-      if (signInMethods.isEmpty) {
-        print('Email has never been logged in before.');
-        return true;
-      } else {
-        print('Email has been logged in using these methods:');
-        return false;
-      }
-    } catch (e) {
-      print('Error occurred while fetching sign-in methods: $e');
-      rethrow;
+      return err.toString();
     }
   }
 }

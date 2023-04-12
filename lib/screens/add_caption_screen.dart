@@ -45,11 +45,16 @@ class _AddCaptionScreenState extends State<AddCaptionScreen> {
                 const SizedBox(
                   width: 20,
                 ),
-                const CircleAvatar(
-                  radius: 25,
-                  backgroundImage: CachedNetworkImageProvider(
-                      "https://firebasestorage.googleapis.com/v0/b/instagram-b3812.appspot.com/o/unnamed.jpg?alt=media&token=ceed00bc-6ebb-4b51-9dc8-6e0d95707fd2"),
-                ),
+
+                Consumer<CurrentUserViewModel>(builder: (context, value, child) {
+                  return CircleAvatar(
+                    radius: 25,
+                    backgroundImage: value.user!.avatarUrl.isNotEmpty ? CachedNetworkImageProvider(value.user!.avatarUrl) :
+                      const AssetImage("assets/default_avatar.png") as ImageProvider
+                    ,
+                  );
+                },),
+
                 const SizedBox(
                   width: 10,
                 ),

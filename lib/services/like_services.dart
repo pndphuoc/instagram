@@ -8,30 +8,29 @@ class LikeService implements ILikeService {
 
   @override
   Future<bool> isLiked(String likeListId, String userId) async {
+    DocumentSnapshot likeDoc = await _likesCollection.doc(likeListId).get();
 
-    final snapshot = await _likesCollection
-        .where('id', isEqualTo: likeListId)
-        .where('likedBy', arrayContains: userId)
-        .limit(1)
-        .get();
-    return snapshot.docs.isNotEmpty;
+    Map<String, dynamic> data = likeDoc.data() as Map<String, dynamic>;
+    List<String> likedByList = List<String>.from(data['likedBy']);
+
+    return likedByList.contains(userId);
   }
 
   @override
-  Future<void> like(String likesListId, String userId) async {
-    DocumentSnapshot likeDoc = await _likesCollection.doc(likesListId).get();
+  Future<void> like(String likeListId, String userId) async {
+    DocumentSnapshot likeDoc = await _likesCollection.doc(likeListId).get();
     if (likeDoc.exists) {
-      await _likesCollection.doc(likesListId).update({
+      await _likesCollection.doc(likeListId).update({
         'likedBy': FieldValue.arrayUnion([userId])
       });
     }
   }
 
   @override
-  Future<void> unlike(String postId, String userId) async {
-    DocumentSnapshot likeDoc = await _likesCollection.doc(postId).get();
+  Future<void> unlike(String likesListId, String userId) async {
+    DocumentSnapshot likeDoc = await _likesCollection.doc(likesListId).get();
     if (likeDoc.exists) {
-      await _likesCollection.doc(postId).update({
+      await _likesCollection.doc(likesListId).update({
         'likedBy': FieldValue.arrayRemove([userId])
       });
     }
