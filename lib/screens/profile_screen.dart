@@ -191,11 +191,13 @@ class _ProfileScreenState extends State<ProfileScreen>
       stream: _userViewModel.postsStream,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
+          posts.addAll(snapshot.data!);
+          snapshot.data!.clear();
           return GridView.builder(
             physics: const NeverScrollableScrollPhysics(),
             itemCount: _userViewModel.hasMorePosts
-                ? snapshot.data!.length + 1
-                : snapshot.data!.length,
+                ? posts.length + 1
+                : posts.length,
             shrinkWrap: true,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
@@ -203,7 +205,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 crossAxisSpacing: 2,
                 mainAxisSpacing: 1),
             itemBuilder: (context, index) {
-              if (index >= snapshot.data!.length &&
+              if (index >= posts.length &&
                   _userViewModel.hasMorePosts) {
                 return const Center(
                   child: CircularProgressIndicator(),
@@ -216,7 +218,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                     PageRouteBuilder(
                       pageBuilder: (context, animation, secondaryAnimation) =>
                           PostDetailsScreen(
-                        posts: snapshot.data!,
+                        posts: posts,
                         index: index,
                       ),
                       transitionsBuilder:
@@ -230,7 +232,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   );
                 },
                 child: CachedNetworkImage(
-                  imageUrl: snapshot.data![index].mediaUrls.first,
+                  imageUrl: posts[index].mediaUrls.first,
                   fit: BoxFit.cover,
                   fadeInDuration: const Duration(milliseconds: 200),
                 ),
