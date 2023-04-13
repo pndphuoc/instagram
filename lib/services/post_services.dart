@@ -7,22 +7,43 @@ import 'package:instagram/models/comment.dart';
 import '../models/post.dart';
 
 class PostService implements IPostServices {
-  final FirebaseStorage _firebaseStorage = FirebaseStorage.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final CollectionReference _postsCollection =
       FirebaseFirestore.instance.collection('posts');
+
   final CollectionReference _likesCollection =
       FirebaseFirestore.instance.collection('likes');
-  final CollectionReference _commentListCollection = FirebaseFirestore.instance.collection("commentList");
+
+  final CollectionReference _commentListCollection =
+      FirebaseFirestore.instance.collection("commentList");
+
+  final CollectionReference _viewedListCollection =
+      FirebaseFirestore.instance.collection("viewedList");
 
   @override
-  Future<List<Post>> getPosts() async {
-    QuerySnapshot snapshot = await _postsCollection.get();
-    print("aaa ${snapshot.docs.length}");
+  Future<List<Post>> getPosts(List<String> followingIds) async {
+    QuerySnapshot snapshot = await _postsCollection
+        .where('userId', whereIn: followingIds)
+        .orderBy('createAt', descending: true)
+        .orderBy('likeCount', descending: true)
+        .get();
     return snapshot.docs
         .map((doc) => Post.fromJson(doc.data() as Map<String, dynamic>))
         .toList();
   }
+
+  @override
+  Future<List<Post>> getDiscoverPosts(List<String> followingIds) async {
+    followingIds.add(FirebaseAuth.instance.currentUser!.uid);
+    QuerySnapshot snapshot = await _postsCollection
+        .where('userId', whereNotIn: followingIds).orderBy('userId', descending: true)
+        .get();
+    List<Post> posts = snapshot.docs
+        .map((doc) => Post.fromJson(doc.data() as Map<String, dynamic>))
+        .toList();
+    return posts;
+  }
+
 
   @override
   Future<String> addPost(Post post) async {
@@ -31,12 +52,17 @@ class PostService implements IPostServices {
     post.uid = uid;
 
     DocumentReference likeRef = _likesCollection.doc();
-    likeRef.set({"likedBy": [], "id": likeRef.id});
+    likeRef.set({"likedBy": [], "postId": uid});
     post.likedListId = likeRef.id;
 
     DocumentReference commentListRef = _commentListCollection.doc();
-    commentListRef.set({"uid": commentListRef.id});
-    
+    commentListRef.set({"uid": commentListRef.id, "postId": uid});
+    post.commentListId = commentListRef.id;
+
+    DocumentReference viewedListRef = _viewedListCollection.doc();
+    viewedListRef.set({"uid": viewedListRef.id, "postId": uid});
+    post.viewedListId = viewedListRef.id;
+
     await docRef.set(post.toJson());
     return uid;
   }
@@ -53,20 +79,6 @@ class PostService implements IPostServices {
   @override
   Future<void> deletePost(String postId) async {
     await _postsCollection.doc(postId).delete();
-  }
-
-  @override
-  Future<void> likePost(String postId) async {
-    await _postsCollection.doc(postId).update({
-      'likeCount': FieldValue.increment(1),
-    });
-  }
-
-  @override
-  Future<void> unlikePost(String postId) async {
-    await _postsCollection.doc(postId).update({
-      'likeCount': FieldValue.increment(-1),
-    });
   }
 
   @override

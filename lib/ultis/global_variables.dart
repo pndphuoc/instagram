@@ -7,3 +7,5 @@ import '../screens/add_post_screen.dart';
 
 
 const String profilePicturesPath = 'profilePics';
+
+const double avatarInPostCardSize = 20;

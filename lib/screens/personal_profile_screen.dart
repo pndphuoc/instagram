@@ -1,186 +1,203 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:instagram/screens/post_details_screen.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/authentication_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:provider/provider.dart';
-import 'package:shimmer/shimmer.dart';
-
-import '../view_model/elastic_view_model.dart';
+import '../models/post.dart';
+import '../models/user.dart' as model;
+import '../ultis/ultils.dart';
 import '../widgets/sticky_tab_bar_delegate.dart';
 
 class PersonalProfileScreen extends StatefulWidget {
   const PersonalProfileScreen({Key? key}) : super(key: key);
 
   @override
-  State<PersonalProfileScreen> createState() =>
-      _PersonalProfileScreenState();
+  State<PersonalProfileScreen> createState() => _PersonalProfileScreenState();
 }
 
 class _PersonalProfileScreenState extends State<PersonalProfileScreen>
     with TickerProviderStateMixin {
   final double avatarSize = 60;
   late TabController _tabController;
+  int page = 1;
+
+  late CurrentUserViewModel _currentUserViewModel;
 
   @override
   void initState() {
     super.initState();
+    _currentUserViewModel = context.read<CurrentUserViewModel>();
     _tabController = TabController(initialIndex: 0, length: 2, vsync: this);
-    context.read<CurrentUserViewModel>().getOwnPosts().whenComplete(() {
-      setState(() {});
-    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<CurrentUserViewModel>(
-      builder: (context, value, child) {
-        return Scaffold(
-          appBar: _appBar(context, value.user!.username),
-          body: NotificationListener<ScrollNotification>(
-            onNotification: (scrollNotification) {
-              const double threshold = 0.5; // 90% of the list length
-              final double extentAfter = scrollNotification.metrics.extentAfter;
-              final double maxScrollExtent =
-                  scrollNotification.metrics.maxScrollExtent;
+    return Scaffold(
+      appBar: _appBar(context, _currentUserViewModel.user!.username),
+      body: NotificationListener<ScrollNotification>(
+          onNotification: (scrollNotification) {
+            const double threshold = 0.5; // 90% of the list length
+            final double extentAfter = scrollNotification.metrics.extentAfter;
+            final double maxScrollExtent =
+                scrollNotification.metrics.maxScrollExtent;
 
-              if (value.hasMorePosts &&
-                  scrollNotification is ScrollEndNotification &&
-                  extentAfter / maxScrollExtent < threshold) {
-                value.getOwnPosts().whenComplete(() {
-                  setState(() {});
-                });
-              }
-              return true;
-            },
-            child: NestedScrollView(
-              headerSliverBuilder: (context, innerBoxIsScrolled) => [
-                SliverToBoxAdapter(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      value.user!.avatarUrl!.isNotEmpty
-                          ? CircleAvatar(
-                        radius: avatarSize,
-                        backgroundImage:
-                        CachedNetworkImageProvider(value.user!.avatarUrl!),
-                      )
-                          : CircleAvatar(
-                        radius: avatarSize,
-                        backgroundImage: const AssetImage("assets/default_avatar.png")),
-                      const SizedBox(
-                        height: 15,
-                      ),
-                      Text(
-                        value.user!.username,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      Text(
-                        value.user!.bio ?? "",
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      Row(
-                        children: [
-                          const SizedBox(
-                            width: 20,
+            if (_currentUserViewModel.hasMorePosts &&
+                scrollNotification is ScrollEndNotification &&
+                extentAfter / maxScrollExtent < threshold) {
+              print("da cuon");
+              _currentUserViewModel.getPosts(++page);
+              /*_currentUserViewModel.getOwnPosts().whenComplete(() {
+                setState(() {});
+              });*/
+            }
+            return true;
+          },
+          child: StreamBuilder(
+              stream: _currentUserViewModel
+                  .getUserData(FirebaseAuth.instance.currentUser!.uid),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                } else if (snapshot.hasError) {
+                  return Center(
+                    child: Text(snapshot.error.toString()),
+                  );
+                }
+                return NestedScrollView(
+                  headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                    SliverToBoxAdapter(
+                        child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        _currentUserViewModel.user!.avatarUrl.isNotEmpty
+                            ? CircleAvatar(
+                                radius: avatarSize,
+                                backgroundImage: CachedNetworkImageProvider(
+                                    _currentUserViewModel.user!.avatarUrl),
+                              )
+                            : CircleAvatar(
+                                radius: avatarSize,
+                                backgroundImage: const AssetImage(
+                                    "assets/default_avatar.png")),
+                        const SizedBox(
+                          height: 15,
+                        ),
+                        Text(
+                          _currentUserViewModel.user!.username,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        if (_currentUserViewModel.user!.displayName.isNotEmpty)
+                          Text(
+                            _currentUserViewModel.user!.displayName,
+                            style: Theme.of(context).textTheme.labelSmall,
                           ),
-                          _statsBlock(name: 'Posts', count: value.user!.postIds.length),
-                          _statsBlock(
-                              name: 'Followers', count: value.user!.followerCount),
-                          _statsBlock(
-                              name: 'Following',
-                              count: value.user!.followerCount),
-                          const SizedBox(
-                            width: 20,
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Text(
+                          _currentUserViewModel.user!.bio,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        _statsRow(context, _currentUserViewModel.user!),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        _buttonsRow(context),
+                      ],
+                    )),
+                    SliverPersistentHeader(
+                      delegate: StickyTabBarDelegate(
+                        child: TabBar(controller: _tabController, tabs: const [
+                          Tab(
+                            child: Icon(Icons.grid_view),
                           ),
-                        ],
+                          Tab(
+                            child: Icon(Icons.video_collection_outlined),
+                          )
+                        ]),
                       ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      Row(
-                        children: [
-                          const SizedBox(
-                            width: 20,
-                          ),
-                          Expanded(
-                            child: ElevatedButton(
-                                onPressed: () {
-                                  final ElasticViewModel elastic = ElasticViewModel();
-                                  elastic.searchData('users', {"username": "hiii_chin"});
-                                  //print(elastic.searchResults.first);
-                                },
-                                style: ElevatedButton.styleFrom(
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10)),
-                                    backgroundColor: secondaryColor),
-                                child: Text(
-                                  "Edit profile",
-                                  style: Theme.of(context).textTheme.titleMedium,
-                                )),
-                          ),
-                          const SizedBox(
-                            width: 10,
-                          ),
-                          Expanded(
-                            child: ElevatedButton(
-                                onPressed: () {
-                                  context.read<AuthenticationViewModel>().logout();
-                                  context.read<CurrentUserViewModel>().removeData();
-                                },
-                                style: ElevatedButton.styleFrom(
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10)),
-                                    backgroundColor: secondaryColor),
-                                child: Text(
-                                  "Log out",
-                                  style: Theme.of(context).textTheme.titleMedium,
-                                )),
-                          ),
-                          const SizedBox(
-                            width: 20,
-                          ),
-                        ],
-                      ),
-                    ],
+                      pinned: true,
+                    ),
+                  ],
+                  body: TabBarView(
+                    controller: _tabController,
+                    children: [_postGrid(context), _videosGrid(context)],
                   ),
-                ),
-                SliverPersistentHeader(
-                  delegate: StickyTabBarDelegate(
-                    child: TabBar(controller: _tabController, tabs: const [
-                      Tab(
-                        child: Icon(Icons.grid_view),
-                      ),
-                      Tab(
-                        child: Icon(Icons.video_collection_outlined),
-                      )
-                    ]),
-                  ),
-                  pinned: true,
-                ),
-              ]
-              , body: TabBarView(
-              controller: _tabController,
-              children: [
-                _postGrid(context, value),
-                _videosGrid(context)
-              ],
-            ),
-            )
-          )
-          ,
-        );
-      },
+                );
+              })),
+    );
+  }
+
+  Widget _buttonsRow(BuildContext context) {
+    return Row(
+      children: [
+        const SizedBox(
+          width: 20,
+        ),
+        Expanded(
+          child: ElevatedButton(
+              onPressed: () {},
+              style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                  backgroundColor: secondaryColor),
+              child: Text(
+                "Edit profile",
+                style: Theme.of(context).textTheme.titleMedium,
+              )),
+        ),
+        const SizedBox(
+          width: 10,
+        ),
+        Expanded(
+          child: ElevatedButton(
+              onPressed: () {
+                context.read<AuthenticationViewModel>().logout();
+                context.read<CurrentUserViewModel>().dispose();
+              },
+              style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                  backgroundColor: secondaryColor),
+              child: Text(
+                "Log out",
+                style: Theme.of(context).textTheme.titleMedium,
+              )),
+        ),
+        const SizedBox(
+          width: 20,
+        ),
+      ],
+    );
+  }
+
+  Widget _statsRow(BuildContext context, model.User user) {
+    return Row(
+      children: [
+        const SizedBox(
+          width: 20,
+        ),
+        _statsBlock(name: 'Posts', count: user.postIds.length),
+        _statsBlock(name: 'Followers', count: user.followerCount),
+        _statsBlock(name: 'Following', count: user.followingCount),
+        const SizedBox(
+          width: 20,
+        ),
+      ],
     );
   }
 
@@ -233,32 +250,79 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
     );
   }
 
-  Widget _postGrid(BuildContext context, CurrentUserViewModel userViewModel) {
-    return GridView.builder(
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: userViewModel.hasMorePosts
-          ? userViewModel.ownPosts.length + 1
-          : userViewModel.ownPosts.length,
-      shrinkWrap: true,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          childAspectRatio: 1,
-          crossAxisSpacing: 2,
-          mainAxisSpacing: 1),
-      itemBuilder: (context, index) {
-        if (index >= userViewModel.ownPosts.length &&
-            userViewModel.hasMorePosts) {
-          return const Center(child: CircularProgressIndicator(),);
-        }
-        return CachedNetworkImage(
-          imageUrl: userViewModel.ownPosts[index].mediaUrls.first,
-          fit: BoxFit.cover,
-        );
-      },
-    );
+  Widget _postGrid(BuildContext context) {
+    List<Post> posts = [];
+    page = 1;
+    _currentUserViewModel.getPosts(page);
+    return StreamBuilder(
+        stream: _currentUserViewModel.postStream,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text(snapshot.error.toString()),
+            );
+          } else {
+            if (snapshot.data == null) {
+              return Container();
+            }
+            posts.addAll(snapshot.data!);
+            snapshot.data!.clear();
+            return GridView.builder(
+              cacheExtent: 1000,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _currentUserViewModel.hasMorePosts
+                  ? posts.length + 1
+                  : posts.length,
+              shrinkWrap: true,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  childAspectRatio: 1,
+                  crossAxisSpacing: 2,
+                  mainAxisSpacing: 1),
+              itemBuilder: (context, index) {
+                if (index >= posts.length &&
+                    _currentUserViewModel.hasMorePosts) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+                return GestureDetector(
+                  onTap: (){
+                    Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                        pageBuilder:
+                            (context, animation, secondaryAnimation) =>
+                            PostDetailsScreen(posts: posts, index: index,),
+                        transitionsBuilder: (context, animation,
+                            secondaryAnimation, child) {
+                          return buildSlideTransition(animation, child);
+                        },
+                        transitionDuration:
+                        const Duration(milliseconds: 150),
+                        reverseTransitionDuration:  const Duration(milliseconds: 150),
+                      ),
+                    );
+                  },
+                  child: CachedNetworkImage(
+                    imageUrl: posts[index].mediaUrls.first,
+                    fit: BoxFit.cover,
+                    fadeInDuration: const Duration(milliseconds: 100),
+                  ),
+                );
+              },
+            );
+          }
+        });
   }
 
   Widget _videosGrid(BuildContext context) {
     return Container();
   }
+
+
 }

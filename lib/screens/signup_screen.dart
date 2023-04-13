@@ -8,6 +8,7 @@ import 'package:instagram/ultis/ultils.dart';
 import 'package:instagram/view_model/authentication_view_model.dart';
 import 'package:instagram/view_model/elastic_view_model.dart';
 import 'package:instagram/view_model/firestore_view_model.dart';
+import 'package:instagram/view_model/user_view_model.dart';
 import 'package:instagram/widgets/text_form_field.dart';
 import 'package:provider/provider.dart';
 
@@ -37,6 +38,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _scaffoldKey = GlobalKey<ScaffoldMessengerState>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   late AuthenticationViewModel _authenticationViewModel;
+  final UserViewModel _userViewModel = UserViewModel();
 
   @override
   void initState() {
@@ -83,7 +85,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
       if (!mounted) return;
       showSnackBar(context, signUpResult);
     } else {
-      await _addUserToElasticSearch(avatarUrl ?? "");
       if (!mounted) return;
       Navigator.pop(context);
     }
@@ -99,25 +100,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   Future<String> _performSignUp(String avatarUrl) async {
-    return await _authenticationViewModel.signUp(
-      email: _emailController.text,
-      password: _passwordController.text,
-      displayName: _displayNameController.text,
-      username: _usernameController.text,
-      bio: _bioController.text,
-      avatarUrl: avatarUrl,
-    );
-  }
+    String result = await _authenticationViewModel.signUp(
+        email: _emailController.text,
+        password: _passwordController.text,
+        username: _usernameController.text);
 
-  Future<void> _addUserToElasticSearch(String avatarUrl) async {
-    final elasticViewModel = ElasticViewModel();
-    final auth = FirebaseAuth.instance;
-    await elasticViewModel.addDataToIndex('users', {
-      "username": _usernameController.text,
-      "displayName": _displayNameController.text,
-      "uid": auth.currentUser!.uid,
-      "avatarUrl": avatarUrl,
-    });
+    if (result == 'success') {
+      await _userViewModel.addNewUser(
+          email: _emailController.text,
+          username: _usernameController.text,
+          uid: FirebaseAuth.instance.currentUser!.uid,
+          bio: _bioController.text,
+          displayName: _displayNameController.text,
+          avatarUrl: avatarUrl);
+    }
+
+    return result;
   }
 
   @override

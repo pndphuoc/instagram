@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
+import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/post_view_model.dart';
 import 'package:instagram/widgets/post_card.dart';
+import 'package:instagram/widgets/post_shimmer.dart';
 import 'package:instagram/widgets/uploading_post_card.dart';
 import 'package:provider/provider.dart';
 
@@ -15,12 +17,13 @@ class NewsFeedScreen extends StatefulWidget {
 }
 
 class _NewsFeedScreenState extends State<NewsFeedScreen> {
-  late dynamic _getPost;
-
+  late Future _getPosts;
+  late CurrentUserViewModel _currentUserViewModel;
   @override
   void initState() {
     super.initState();
-    _getPost = context.read<PostViewModel>().getPosts();
+    _currentUserViewModel = context.read<CurrentUserViewModel>();
+    _getPosts = context.read<PostViewModel>().getPosts(_currentUserViewModel.user!.followingListId);
   }
 
   @override
@@ -32,16 +35,22 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
       body: Consumer<PostViewModel>(
         builder: (context, value, child) {
           return FutureBuilder(
-            future: _getPost,
+            future: _getPosts,
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: CircularProgressIndicator(),
+                return SingleChildScrollView(
+                  child: Column(
+                    children: const [
+                      PostShimmer(),
+                      SizedBox(height: 20,),
+                      PostShimmer(),
+                    ],
+                  ),
                 );
               } else if (snapshot.connectionState == ConnectionState.done) {
-                //List<Post> posts = value.posts;
                 if (value.posts.isNotEmpty) {
                   return ListView.separated(
+                    cacheExtent: 1000,
                     separatorBuilder: (context, index) => const SizedBox(
                       height: 20,
                     ),
@@ -52,7 +61,7 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
                             post: value.posts.first,
                             asset: assetProvider.firstAsset!);
                       }
-                      return PostCard(postId: value.posts[index].uid);
+                      return PostCard(post: value.posts[index]);
                     },
                   );
                 } else {
@@ -71,11 +80,15 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
       ),
     );
   }
-  
+
   AppBar _appBar(BuildContext context) {
     return AppBar(
       backgroundColor: mobileBackgroundColor,
-      title: SvgPicture.asset('assets/ic_instagram.svg', width: MediaQuery.of(context).size.width/3, color: primaryColor,),
+      title: SvgPicture.asset(
+        'assets/ic_instagram.svg',
+        width: MediaQuery.of(context).size.width / 3,
+        color: primaryColor,
+      ),
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 20),

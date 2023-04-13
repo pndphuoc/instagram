@@ -1,47 +1,83 @@
-const functions = require("firebase-functions");
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
 
-// // Create and deploy your first functions
-// // https://firebase.google.com/docs/functions/get-started
-//
-// exports.helloWorld = functions.https.onRequest((request, response) => {
-//   functions.logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+admin.initializeApp();
 
-exports.updatePostsOfUser = functions.firestore
-  .document('users/{userId}')
-  .onUpdate((change, context) => {
-    const userId = context.params.userId;
-    const newUser = change.after.data();
-    const previousUser = change.before.data();
+const db = admin.firestore();
 
-    // Check if the user has updated their username or avatarUrl
-    if (newUser.username !== previousUser.username || newUser.avatarUrl !== previousUser.avatarUrl) {
+exports.updateLikeCount = functions.firestore
+    .document('likes/{likeId}')
+    .onWrite(async (change, context) => {
+        const postData = change.after.data();
+        const postId = postData.postId;
+        const commentId = postData.commentId;
+        const commentListId = postData.commentListId;
+        const likedBy = postData.likedBy;
 
-      // Get all posts of the user
-      const postsRef = db.collection('posts').where('userId', '==', userId);
+        if (postId === undefined) {
+            const commentRef = db.collection('commentList').doc(commentListId).collection('comments').doc(commentId);
 
-      return postsRef.get()
-        .then(snapshot => {
-          const batch = db.batch();
-          snapshot.forEach(doc => {
-            const postRef = db.collection('posts').doc(doc.id);
+            await db.runTransaction(async (transaction) => {
+                const likeCount = likedBy.length;
 
-            // Update the username and avatarUrl of the post
-            batch.update(postRef, {
-              username: newUser.username,
-              avatarUrl: newUser.avatarUrl
+                transaction.update(commentRef, { likeCount });
             });
-          });
+        } else {
+            const postRef = db.collection('posts').doc(postId);
 
-          // Commit the batch
-          return batch.commit();
+            await db.runTransaction(async (transaction) => {
+                const likeCount = likedBy.length;
+
+                transaction.update(postRef, { likeCount });
+            });
+        } 
+    });
+
+
+// Listen for changes in subcollection 'comments' of collection 'commentList'
+exports.updateCommentCount = functions.firestore.document('commentList/{commentListId}/comments/{commentId}')
+    .onWrite(async (change, context) => {
+        const commentListId = context.params.commentListId;
+
+        const postQuerySnapshot = await db.collection('posts').where('commentListId', '==', commentListId).get();
+        const postId = postQuerySnapshot.docs[0].id;
+
+        const commentsQuerySnapshot = await db.collection(`commentList/${commentListId}/comments`).get();
+        const commentCount = commentsQuerySnapshot.size;
+
+        return db.collection('posts').doc(postId).update({ commentCount });
+    });
+
+//Tự động tăng, giảm số lượng following của user thực hiện follow/unfollow
+exports.updateFollowingCount = functions.firestore.document('followingList/{followingListId}')
+    .onWrite(async (change, context) => {
+        const userId = change.after.data().userId;
+        const followingIds = change.after.data().followingIds;
+
+        const userRef = db.collection('users').doc(userId);
+
+        await db.runTransaction(async (transaction) => {
+            const userDoc = await transaction.get(userRef);
+            const followingCount = followingIds.length;
+
+            transaction.update(userRef, { followingCount });
         })
-        .catch(err => {
-          console.log(err);
-          return Promise.reject(err);
-        });
-    } else {
-      return null;
-    }
-  });
+    
+    });
+
+//Tự động tăng/giảm số lượng follower của user được follow/unfollw
+exports.updateFollowerCount = functions.firestore.document('followerList/{followerListId}')
+    .onWrite(async (change, context) => {
+        const userId = change.after.data().userId;
+        const followerIds = change.after.data().followerIds;
+
+        const userRef = db.collection('users').doc(userId);
+
+        await db.runTransaction(async (transaction) => {
+            const userDoc = await transaction.get(userRef);
+            const followerCount = followerIds.length;
+
+            transaction.update(userRef, { followerCount });
+        })
+    
+    });

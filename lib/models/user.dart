@@ -45,7 +45,7 @@ class User {
     List<String>.from(json['savedPostIds'] as List<dynamic>),
     blockedListId: json['blockedListId'],
     avatarUrl: json['avatarUrl'] as String,
-    postIds: List<String>.from(json['postIds'] as List<dynamic>),
+    postIds: List<String>.from(json['postIds'] as List<dynamic>).reversed.toList(),
     createdAt: DateTime.parse(json['createdAt'] as String),
   );
 

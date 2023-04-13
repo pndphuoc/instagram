@@ -39,7 +39,6 @@ dependencies:
   firebase_core: ^2.8.0
   firebase_auth: ^4.3.0
   cloud_firestore: ^4.4.5
-  flutter_storage: ^0.9.4
   firebase_storage: ^11.0.16
   flutter_svg:
   google_fonts: ^4.0.3
@@ -55,6 +54,8 @@ dependencies:
   shimmer: ^2.0.0
   http: ^0.13.5
   elastic_client: ^0.3.11
+  rxdart: ^0.27.7
+  loading_animation_widget: ^1.2.0+4
 
 dev_dependencies:
   flutter_test:

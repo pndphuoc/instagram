@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/screens/personal_profile_screen.dart';
+import 'package:instagram/screens/post_details_screen.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/user_view_model.dart';
 import 'package:instagram/widgets/bottom_navigator_bar.dart';
@@ -10,6 +10,8 @@ import '../models/user.dart' as model;
 import 'package:provider/provider.dart';
 
 import '../ultis/colors.dart';
+import '../ultis/ultils.dart';
+import '../view_model/relationship_view_model.dart';
 import '../widgets/sticky_tab_bar_delegate.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -24,15 +26,22 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen>
     with TickerProviderStateMixin {
   final double avatarSize = 60;
+  final RelationshipViewModel _relationshipViewModel = RelationshipViewModel();
+  late CurrentUserViewModel _currentUserViewModel;
   late TabController _tabController;
-  late UserViewModel _userViewModel;
+  final UserViewModel _userViewModel = UserViewModel();
   late Future getUserDetails;
   late List<Post> posts = [];
+
   @override
   void initState() {
     _tabController = TabController(initialIndex: 0, length: 2, vsync: this);
-    _userViewModel = UserViewModel();
-    getUserDetails = _userViewModel.getUserDetails(widget.userId).whenComplete(() => _userViewModel.getPosts());
+
+    _currentUserViewModel = context.read<CurrentUserViewModel>();
+
+    getUserDetails = _userViewModel
+        .getUserDetails(_currentUserViewModel.user!.uid, widget.userId)
+        .whenComplete(() => _userViewModel.getPosts());
     super.initState();
   }
 
@@ -41,6 +50,39 @@ class _ProfileScreenState extends State<ProfileScreen>
     _userViewModel.dispose();
     super.dispose();
   }
+
+  _onPressedFollowButton() {
+    _relationshipViewModel.follow(
+        _currentUserViewModel.user!.uid,
+        _currentUserViewModel.user!.followingListId,
+        widget.userId,
+        _userViewModel.user.followerListId);
+    _userViewModel.isFollowing = true;
+  }
+
+  _onPressedUnfollowButton() {
+    _relationshipViewModel.unfollow(
+        _currentUserViewModel.user!.uid,
+        _currentUserViewModel.user!.followingListId,
+        widget.userId,
+        _userViewModel.user.followerListId);
+    _userViewModel.isFollowing = false;
+  }
+
+/*  bool _scrollNotification(scrollNotification) {
+    const double threshold = 0.5; // 90% of the list length
+    final double extentAfter =
+        scrollNotification.metrics.extentAfter;
+    final double maxScrollExtent =
+        scrollNotification.metrics.maxScrollExtent;
+
+    if (_userViewModel.hasMorePosts &&
+        scrollNotification is ScrollEndNotification &&
+        extentAfter / maxScrollExtent < threshold) {
+      _userViewModel.getPosts();
+    }
+    return true;
+  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -61,159 +103,80 @@ class _ProfileScreenState extends State<ProfileScreen>
             return const PersonalProfileScreen();
           }
           return Scaffold(
+            backgroundColor: mobileBackgroundColor,
             appBar: _appBar(context, user.username),
             body: NotificationListener<ScrollNotification>(
               onNotification: (scrollNotification) {
-                const double threshold = 0.5; // 90% of the list length
-                final double extentAfter =
-                    scrollNotification.metrics.extentAfter;
-                final double maxScrollExtent =
-                    scrollNotification.metrics.maxScrollExtent;
-
-                if (_userViewModel.hasMorePosts &&
-                    scrollNotification is ScrollEndNotification &&
-                    extentAfter / maxScrollExtent < threshold) {
-                  _userViewModel.getPosts();
-                }
-                return true;
+                return scrollEvent(scrollNotification, _userViewModel, 0.5);
               },
-              child: NestedScrollView(
-                  headerSliverBuilder: (context, innerBoxIsScrolled) =>
-                  [
-                    SliverToBoxAdapter(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          user.avatarUrl != null
-                              ? CircleAvatar(
-                            radius: avatarSize,
-                            backgroundImage: CachedNetworkImageProvider(
-                                user.avatarUrl!),
-                          )
-                              : Image.asset(
-                            'assets/default_avatar.jpg',
-                            width: avatarSize,
-                            height: avatarSize,
-                          ),
-                          const SizedBox(
-                            height: 15,
-                          ),
-                          Text(
-                            user.username,
-                            style: Theme
-                                .of(context)
-                                .textTheme
-                                .titleLarge,
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          Text(
-                            user.bio ?? "",
-                            style: Theme
-                                .of(context)
-                                .textTheme
-                                .bodyMedium,
-                          ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          Row(
-                            children: [
-                              const SizedBox(
-                                width: 20,
-                              ),
-                              _statsBlock(
-                                  name: 'Posts',
-                                  count: user.postIds.length),
-                              _statsBlock(
-                                  name: 'Followers',
-                                  count: user.followerCount),
-                              _statsBlock(
-                                  name: 'Following',
-                                  count: user.followingCount),
-                              const SizedBox(
-                                width: 20,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                          Row(
-                            children: [
-                              const SizedBox(
-                                width: 20,
-                              ),
-                              Expanded(
-                                child: ElevatedButton(
-                                    onPressed: () {},
-                                    style: ElevatedButton.styleFrom(
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                            BorderRadius.circular(10)),
-                                        backgroundColor: primaryColor),
-                                    child: Text(
-                                      "Follow",
-                                      style:
-                                      Theme
-                                          .of(context)
-                                          .textTheme
-                                          .titleMedium,
-                                    )),
-                              ),
-                              const SizedBox(
-                                width: 10,
-                              ),
-                              Expanded(
-                                child: ElevatedButton(
-                                    onPressed: () {},
-                                    style: ElevatedButton.styleFrom(
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                            BorderRadius.circular(10)),
-                                        backgroundColor: secondaryColor),
-                                    child: Text(
-                                      "Message",
-                                      style:
-                                      Theme
-                                          .of(context)
-                                          .textTheme
-                                          .titleMedium,
-                                    )),
-                              ),
-                              const SizedBox(
-                                width: 20,
-                              ),
-                            ],
-                          ),
-                        ],
+              child: Consumer<CurrentUserViewModel>(
+                builder: (context, currentUser, child) {
+                  return NestedScrollView(
+                    headerSliverBuilder: (context, innerBoxIsScrolled) => [
+                      SliverToBoxAdapter(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            user.avatarUrl.isNotEmpty
+                                ? CircleAvatar(
+                                    radius: avatarSize,
+                                    backgroundImage: CachedNetworkImageProvider(
+                                        user.avatarUrl),
+                                  )
+                                : Image.asset(
+                                    'assets/default_avatar.jpg',
+                                    width: avatarSize,
+                                    height: avatarSize,
+                                  ),
+                            const SizedBox(
+                              height: 15,
+                            ),
+                            Text(
+                              user.username,
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            Text(
+                              user.bio,
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            _statsRow(context),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                            _buttonsRow(context),
+                          ],
+                        ),
                       ),
-                    ),
-                    SliverPersistentHeader(
-                      delegate: StickyTabBarDelegate(
-                        child: TabBar(controller: _tabController, tabs: const [
-                          Tab(
-                            child: Icon(Icons.grid_view),
-                          ),
-                          Tab(
-                            child: Icon(Icons.video_collection_outlined),
-                          )
-                        ]),
+                      SliverPersistentHeader(
+                        delegate: StickyTabBarDelegate(
+                          child:
+                              TabBar(controller: _tabController, tabs: const [
+                            Tab(
+                              child: Icon(Icons.grid_view),
+                            ),
+                            Tab(
+                              child: Icon(Icons.video_collection_outlined),
+                            )
+                          ]),
+                        ),
+                        pinned: true,
                       ),
-                      pinned: true,
-                    ),
-                  ],
-                  body: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _postGrid(context),
-                      _videosGrid(context)
                     ],
-                  ),
+                    body: TabBarView(
+                      controller: _tabController,
+                      children: [_postGrid(context), _videosGrid(context)],
+                    ),
+                  );
+                },
               ),
             ),
             bottomNavigationBar: const BottomNavBar(),
@@ -228,12 +191,11 @@ class _ProfileScreenState extends State<ProfileScreen>
       stream: _userViewModel.postsStream,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          posts.addAll(snapshot.data!);
           return GridView.builder(
             physics: const NeverScrollableScrollPhysics(),
             itemCount: _userViewModel.hasMorePosts
-                ? posts.length + 1
-                : posts.length,
+                ? snapshot.data!.length + 1
+                : snapshot.data!.length,
             shrinkWrap: true,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
@@ -241,20 +203,46 @@ class _ProfileScreenState extends State<ProfileScreen>
                 crossAxisSpacing: 2,
                 mainAxisSpacing: 1),
             itemBuilder: (context, index) {
-              if (index >= posts.length &&
+              if (index >= snapshot.data!.length &&
                   _userViewModel.hasMorePosts) {
                 return const Center(
                   child: CircularProgressIndicator(),
                 );
               }
-              return CachedNetworkImage(
-                imageUrl: posts[index].mediaUrls.first,
-                fit: BoxFit.cover,
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          PostDetailsScreen(
+                        posts: snapshot.data!,
+                        index: index,
+                      ),
+                      transitionsBuilder:
+                          (context, animation, secondaryAnimation, child) {
+                        return buildSlideTransition(animation, child);
+                      },
+                      transitionDuration: const Duration(milliseconds: 150),
+                      reverseTransitionDuration:
+                          const Duration(milliseconds: 150),
+                    ),
+                  );
+                },
+                child: CachedNetworkImage(
+                  imageUrl: snapshot.data![index].mediaUrls.first,
+                  fit: BoxFit.cover,
+                  fadeInDuration: const Duration(milliseconds: 200),
+                ),
               );
             },
           );
         } else {
-          return const Center(child: CircularProgressIndicator(color: Colors.blue,),);
+          return const Center(
+            child: CircularProgressIndicator(
+              color: Colors.blue,
+            ),
+          );
         }
       },
     );
@@ -271,10 +259,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       backgroundColor: mobileBackgroundColor,
       title: Text(
         username,
-        style: Theme
-            .of(context)
-            .textTheme
-            .titleLarge,
+        style: Theme.of(context).textTheme.titleLarge,
       ),
       actions: [
         GestureDetector(
@@ -295,6 +280,86 @@ class _ProfileScreenState extends State<ProfileScreen>
     );
   }
 
+  Widget _buttonsRow(BuildContext context) {
+    return Row(
+      children: [
+        const SizedBox(
+          width: 20,
+        ),
+        Expanded(
+            child: StreamBuilder<bool>(
+          stream: _userViewModel.followStateStream,
+          initialData: _userViewModel.isFollowing,
+          builder: (context, snapshot) {
+            if (snapshot.data!) {
+              return ElevatedButton(
+                  onPressed: _onPressedUnfollowButton,
+                  style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                      backgroundColor: secondaryColor),
+                  child: Text(
+                    "Unfollow",
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ));
+            } else {
+              return ElevatedButton(
+                  onPressed: _onPressedFollowButton,
+                  style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                      backgroundColor: primaryColor),
+                  child: Text(
+                    "Follow",
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ));
+            }
+          },
+        )),
+        const SizedBox(
+          width: 10,
+        ),
+        Expanded(
+          child: ElevatedButton(
+              onPressed: () {},
+              style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                  backgroundColor: secondaryColor),
+              child: Text(
+                "Message",
+                style: Theme.of(context).textTheme.titleMedium,
+              )),
+        ),
+        const SizedBox(
+          width: 20,
+        ),
+      ],
+    );
+  }
+
+  Widget _statsRow(BuildContext context) {
+    return Row(
+      children: [
+        const SizedBox(
+          width: 20,
+        ),
+        _statsBlock(name: 'Posts', count: _userViewModel.user.postIds.length),
+        StreamBuilder<int>(
+            stream: _userViewModel.followerStream,
+            initialData: _userViewModel.user.followerCount,
+            builder: (context, snapshot) {
+              return _statsBlock(name: 'Followers', count: snapshot.data!);
+            }),
+        _statsBlock(
+            name: 'Following', count: _userViewModel.user.followingCount),
+        const SizedBox(
+          width: 20,
+        ),
+      ],
+    );
+  }
+
   Widget _statsBlock(
       {required String name, required int count, Function()? onTap}) {
     return Expanded(
@@ -304,17 +369,11 @@ class _ProfileScreenState extends State<ProfileScreen>
           children: [
             Text(
               count.toString(),
-              style: Theme
-                  .of(context)
-                  .textTheme
-                  .titleMedium,
+              style: Theme.of(context).textTheme.titleMedium,
             ),
             Text(
               name,
-              style: Theme
-                  .of(context)
-                  .textTheme
-                  .labelLarge,
+              style: Theme.of(context).textTheme.labelLarge,
             )
           ],
         ),

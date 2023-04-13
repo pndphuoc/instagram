@@ -17,12 +17,8 @@ class ElasticViewModel extends ChangeNotifier {
     _searchResults = res.map((e) => SearchResult.fromJson(e)).toList();
   }
 
-  Future<void> addDataToIndex(String index, Map<String, dynamic> data) async {
-    await _elasticService.addDataToIndex(index, data);
-  }
-
   Future<bool> isUsernameExists(String index, String username) async {
-    final result = await _elasticService.isUsernameExists('users', username);
+    final result = await _elasticService.isUsernameExists(username);
     return result;
   }
 }

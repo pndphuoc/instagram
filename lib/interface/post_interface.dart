@@ -5,7 +5,9 @@ import 'package:instagram/models/comment.dart';
 import '../models/post.dart';
 
 abstract class IPostServices {
-  Future<List<Post>> getPosts();
+  Future<List<Post>> getPosts(List<String> followingIds);
+
+  Future<List<Post>> getDiscoverPosts(List<String> followingIds);
 
   Future<Post> getPost(String postId);
 
@@ -14,10 +16,6 @@ abstract class IPostServices {
   Future<void> updatePost(Post post);
 
   Future<void> deletePost(String postId);
-
-  Future<void> likePost(String postId);
-
-  Future<void> unlikePost(String postId);
 
   Future<void> addComment(String postId);
 

@@ -6,4 +6,12 @@ abstract class IUserService {
 
   Future<bool> updatePostInformation(String postId);
 
+  Future<String> addNewUser({
+    required String uid,
+    required String email,
+    required String username,
+    String displayName = '',
+    String bio = '',
+    String avatarUrl = '',
+  });
 }

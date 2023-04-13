@@ -1,7 +1,7 @@
 class Post {
   String uid;
   String caption;
-  String commentedListId;
+  String commentListId;
   int commentCount;
   String likedListId;
   int likeCount;
@@ -13,11 +13,11 @@ class Post {
   DateTime createAt;
   DateTime updateAt;
   bool isDeleted;
-
+  bool isLiked = false;
   Post({
     required this.uid,
     required this.caption,
-    required this.commentedListId,
+    required this.commentListId,
     required this.commentCount,
     required this.likedListId,
     required this.likeCount,
@@ -35,7 +35,7 @@ class Post {
     return Post(
       uid: json['uid'] as String,
       caption: json['caption'] as String,
-      commentedListId: json['commentedListId'] as String,
+      commentListId: json['commentListId'] as String,
       commentCount: json['commentCount'] as int,
       likedListId: json['likedListId'] as String,
       likeCount: json['likeCount'] as int,
@@ -54,7 +54,7 @@ class Post {
     return {
       'uid': uid,
       'caption': caption,
-      'commentedListId': commentedListId,
+      'commentListId': commentListId,
       'commentCount': commentCount,
       'likedListId': likedListId,
       'likeCount': likeCount,
