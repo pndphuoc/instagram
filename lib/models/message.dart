@@ -1,16 +1,14 @@
-import 'message_content.dart';
-
 class Message {
   final String id;
   final String senderId;
-  final String conversationId;
+  final String type;
   final DateTime timestamp;
-  final MessageContent content;
+  final String content;
 
   Message({
     required this.id,
     required this.senderId,
-    required this.conversationId,
+    required this.type,
     required this.timestamp,
     required this.content,
   });
@@ -18,33 +16,28 @@ class Message {
   Message.fromJson(Map<String, dynamic> json)
       : id = json['id'],
         senderId = json['sender'],
-        conversationId = json['receiver'],
+        type = json['type'],
         timestamp = json['timestamp'].toDate(),
-        content = _getContentFromJson(json['content']);
+        content = json['content'];
 
   Map<String, dynamic> toJson() => <String, dynamic>{
     'id': id,
     'senderId': senderId,
-    'roomId': conversationId,
     'sentAt': timestamp.toIso8601String(),
-    'content': content.toJson(),
+    'content': content,
   };
 
-  static MessageContent _getContentFromJson(Map<String, dynamic> json) {
+/*  static MessageContent _getContentFromJson(Map<String, dynamic> json) {
     String type = json['type'];
     switch (type) {
       case 'text':
         return TextMessageContent.fromJson(json);
       case 'image':
-        return ImageMessageContent.fromJson(json);
+        return ImagesMessageContent.fromJson(json);
       case 'video':
-        return VideoMessageContent.fromJson(json);
-      case 'multiple_images':
-        return MultipleImagesMessageContent.fromJson(json);
-      case 'multiple_videos':
-        return MultipleVideosMessageContent.fromJson(json);
+        return VideosMessageContent.fromJson(json);
       default:
         throw Exception('Invalid message content type: $type');
     }
-  }
+  }*/
 }
