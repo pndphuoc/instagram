@@ -15,4 +15,8 @@ class RelationshipViewModel extends ChangeNotifier {
   Future<bool> isFollowing(String userId, String targetUserId) async {
     return await _relationshipService.isFollowing(userId, targetUserId);
   }
+
+  Future<List<String>> getFollowingIds(String followingListId) async {
+    return await _relationshipService.getFollowingIds(followingListId);
+  }
 }

@@ -10,6 +10,7 @@ import '../models/user.dart' as model;
 import 'package:provider/provider.dart';
 
 import '../ultis/colors.dart';
+import '../ultis/ultils.dart';
 import '../view_model/relationship_view_model.dart';
 import '../widgets/sticky_tab_bar_delegate.dart';
 
@@ -68,7 +69,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     _userViewModel.isFollowing = false;
   }
 
-  bool _scrollNotification(scrollNotification) {
+/*  bool _scrollNotification(scrollNotification) {
     const double threshold = 0.5; // 90% of the list length
     final double extentAfter =
         scrollNotification.metrics.extentAfter;
@@ -81,7 +82,7 @@ class _ProfileScreenState extends State<ProfileScreen>
       _userViewModel.getPosts();
     }
     return true;
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +107,7 @@ class _ProfileScreenState extends State<ProfileScreen>
             appBar: _appBar(context, user.username),
             body: NotificationListener<ScrollNotification>(
               onNotification: (scrollNotification) {
-                return _scrollNotification(scrollNotification);
+                return scrollEvent(scrollNotification, _userViewModel, 0.5);
               },
               child: Consumer<CurrentUserViewModel>(
                 builder: (context, currentUser, child) {
@@ -190,11 +191,11 @@ class _ProfileScreenState extends State<ProfileScreen>
       stream: _userViewModel.postsStream,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          posts.addAll(snapshot.data!);
           return GridView.builder(
             physics: const NeverScrollableScrollPhysics(),
-            itemCount:
-                _userViewModel.hasMorePosts ? posts.length + 1 : posts.length,
+            itemCount: _userViewModel.hasMorePosts
+                ? snapshot.data!.length + 1
+                : snapshot.data!.length,
             shrinkWrap: true,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
@@ -202,17 +203,34 @@ class _ProfileScreenState extends State<ProfileScreen>
                 crossAxisSpacing: 2,
                 mainAxisSpacing: 1),
             itemBuilder: (context, index) {
-              if (index >= posts.length && _userViewModel.hasMorePosts) {
+              if (index >= snapshot.data!.length &&
+                  _userViewModel.hasMorePosts) {
                 return const Center(
                   child: CircularProgressIndicator(),
                 );
               }
               return GestureDetector(
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => PostDetailsScreen(posts: posts, index: index),));
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          PostDetailsScreen(
+                        posts: snapshot.data!,
+                        index: index,
+                      ),
+                      transitionsBuilder:
+                          (context, animation, secondaryAnimation, child) {
+                        return buildSlideTransition(animation, child);
+                      },
+                      transitionDuration: const Duration(milliseconds: 150),
+                      reverseTransitionDuration:
+                          const Duration(milliseconds: 150),
+                    ),
+                  );
                 },
                 child: CachedNetworkImage(
-                  imageUrl: posts[index].mediaUrls.first,
+                  imageUrl: snapshot.data![index].mediaUrls.first,
                   fit: BoxFit.cover,
                   fadeInDuration: const Duration(milliseconds: 200),
                 ),
@@ -270,42 +288,34 @@ class _ProfileScreenState extends State<ProfileScreen>
         ),
         Expanded(
             child: StreamBuilder<bool>(
-              stream: _userViewModel.followStateStream,
-              initialData: _userViewModel.isFollowing,
-              builder: (context, snapshot) {
-                if (snapshot.data!) {
-                  return ElevatedButton(
-                      onPressed: _onPressedUnfollowButton,
-                      style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                              borderRadius:
-                              BorderRadius.circular(
-                                  10)),
-                          backgroundColor: secondaryColor),
-                      child: Text(
-                        "Unfollow",
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium,
-                      ));
-                } else {
-                  return ElevatedButton(
-                      onPressed: _onPressedFollowButton,
-                      style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                              borderRadius:
-                              BorderRadius.circular(
-                                  10)),
-                          backgroundColor: primaryColor),
-                      child: Text(
-                        "Follow",
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium,
-                      ));
-                }
-              },
-            )),
+          stream: _userViewModel.followStateStream,
+          initialData: _userViewModel.isFollowing,
+          builder: (context, snapshot) {
+            if (snapshot.data!) {
+              return ElevatedButton(
+                  onPressed: _onPressedUnfollowButton,
+                  style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                      backgroundColor: secondaryColor),
+                  child: Text(
+                    "Unfollow",
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ));
+            } else {
+              return ElevatedButton(
+                  onPressed: _onPressedFollowButton,
+                  style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                      backgroundColor: primaryColor),
+                  child: Text(
+                    "Follow",
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ));
+            }
+          },
+        )),
         const SizedBox(
           width: 10,
         ),
@@ -314,14 +324,11 @@ class _ProfileScreenState extends State<ProfileScreen>
               onPressed: () {},
               style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
-                      borderRadius:
-                      BorderRadius.circular(10)),
+                      borderRadius: BorderRadius.circular(10)),
                   backgroundColor: secondaryColor),
               child: Text(
                 "Message",
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium,
+                style: Theme.of(context).textTheme.titleMedium,
               )),
         ),
         const SizedBox(
@@ -337,20 +344,15 @@ class _ProfileScreenState extends State<ProfileScreen>
         const SizedBox(
           width: 20,
         ),
-        _statsBlock(
-            name: 'Posts', count: _userViewModel.user.postIds.length),
+        _statsBlock(name: 'Posts', count: _userViewModel.user.postIds.length),
         StreamBuilder<int>(
             stream: _userViewModel.followerStream,
-            initialData:
-            _userViewModel.user.followerCount,
+            initialData: _userViewModel.user.followerCount,
             builder: (context, snapshot) {
-              return _statsBlock(
-                  name: 'Followers',
-                  count: snapshot.data!);
+              return _statsBlock(name: 'Followers', count: snapshot.data!);
             }),
         _statsBlock(
-            name: 'Following',
-            count: _userViewModel.user.followingCount),
+            name: 'Following', count: _userViewModel.user.followingCount),
         const SizedBox(
           width: 20,
         ),

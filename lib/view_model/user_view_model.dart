@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:instagram/services/relationship_services.dart';
 import 'package:instagram/services/user_services.dart';
+import 'package:rxdart/rxdart.dart';
 
 import '../models/post.dart';
 import '../models/user.dart';
@@ -35,7 +36,7 @@ class UserViewModel extends ChangeNotifier {
 
 
   final _followStateController = StreamController<bool>();
-  final _postController = StreamController<List<Post>>();
+  final StreamController<List<Post>> _postController = BehaviorSubject();
   final _followerController = StreamController<int>();
 
   Stream<int> get followerStream => _followerController.stream;

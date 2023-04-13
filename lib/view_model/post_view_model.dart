@@ -1,7 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:instagram/provider/home_screen_provider.dart';
 import 'package:instagram/services/firestorage_services.dart';
 import 'package:instagram/services/like_services.dart';
+import 'package:instagram/services/relationship_services.dart';
+import 'package:instagram/services/user_services.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/like_view_model.dart';
@@ -14,7 +17,9 @@ import '../services/post_services.dart';
 
 class PostViewModel extends ChangeNotifier {
   final PostService _postService = PostService();
-  final CurrentUserViewModel _userViewModel = CurrentUserViewModel();
+  final UserService _userService = UserService();
+  final LikeService _likeService = LikeService();
+  final RelationshipService _relationshipService = RelationshipService();
 
   List<Post> _posts = [];
   bool _isUploading = false;
@@ -31,17 +36,38 @@ class PostViewModel extends ChangeNotifier {
     _isUploading = value;
   }
 
-  Future<void> getPosts() async {
-    _posts = await _postService.getPosts();
+  Future<void> getPosts(String followingListId) async {
+    List<String> followingIds = await _relationshipService.getFollowingIds(followingListId);
+
+    print("following ids length ${followingIds.length} ");
+
+    _posts = await _postService.getPosts(followingIds);
+    for (var element in _posts) {
+      element.isLiked = await _likeService.isLiked(element.likedListId, FirebaseAuth.instance.currentUser!.uid);
+    }
     _isEnableShimmer = false;
     notifyListeners();
   }
 
   Future<Post> getPost(String postId, LikeViewModel likeViewModel, String userId) async {
     final post = await _postService.getPost(postId);
-    await likeViewModel.getIsLiked(post.likedListId, userId);
+    post.isLiked = await likeViewModel.getIsLiked(post.likedListId, userId);
     return post;
   }
+
+  Future<List<Post>> getDiscoverPosts(String followingListId) async {
+    List<String> followingIds = await _relationshipService.getFollowingIds(followingListId);
+
+    List<Post> discoverPosts = await _postService.getDiscoverPosts(followingIds);
+    for (var element in discoverPosts) {
+      element.isLiked = await _likeService.isLiked(element.likedListId, FirebaseAuth.instance.currentUser!.uid);
+    }
+
+    discoverPosts.shuffle();
+
+    return discoverPosts;
+  }
+
 
   Future uploadMediasOfPost(AssetViewModel assetViewModel) async {
     _isUploading = true;
@@ -118,12 +144,10 @@ class PostViewModel extends ChangeNotifier {
   void handleUploadNewPost(Post post, AssetViewModel asset) async {
     posts.insert(0, post);
     isUploading = true;
-
     final List<String> urls = await uploadMediasOfPost(asset);
-
     post.mediaUrls = urls;
     String id = await addPost(post);
-    await _userViewModel.updatePostInformation(id);
+    await _userService.updatePostInformation(id);
     isUploading = false;
   }
 }

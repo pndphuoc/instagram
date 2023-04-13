@@ -35,3 +35,28 @@ String getElapsedTime(DateTime startTime) {
     return '${timePassed.inSeconds}s';
   }
 }
+
+bool scrollEvent(scrollNotification, viewModel, double threshold) {
+  final double extentAfter =
+      scrollNotification.metrics.extentAfter;
+  final double maxScrollExtent =
+      scrollNotification.metrics.maxScrollExtent;
+
+  if (viewModel.hasMorePosts &&
+      scrollNotification is ScrollEndNotification &&
+      extentAfter / maxScrollExtent < threshold) {
+    viewModel.getPosts();
+  }
+  return true;
+}
+
+SlideTransition buildSlideTransition(
+    Animation<double> animation, Widget child) {
+  return SlideTransition(
+    position: Tween<Offset>(
+      begin: const Offset(1.0, 0.0),
+      end: Offset.zero,
+    ).animate(animation),
+    child: child,
+  );
+}

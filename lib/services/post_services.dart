@@ -18,15 +18,32 @@ class PostService implements IPostServices {
       FirebaseFirestore.instance.collection("commentList");
 
   final CollectionReference _viewedListCollection =
-  FirebaseFirestore.instance.collection("viewedList");
+      FirebaseFirestore.instance.collection("viewedList");
 
   @override
-  Future<List<Post>> getPosts() async {
-    QuerySnapshot snapshot = await _postsCollection.get();
+  Future<List<Post>> getPosts(List<String> followingIds) async {
+    QuerySnapshot snapshot = await _postsCollection
+        .where('userId', whereIn: followingIds)
+        .orderBy('createAt', descending: true)
+        .orderBy('likeCount', descending: true)
+        .get();
     return snapshot.docs
         .map((doc) => Post.fromJson(doc.data() as Map<String, dynamic>))
         .toList();
   }
+
+  @override
+  Future<List<Post>> getDiscoverPosts(List<String> followingIds) async {
+    followingIds.add(FirebaseAuth.instance.currentUser!.uid);
+    QuerySnapshot snapshot = await _postsCollection
+        .where('userId', whereNotIn: followingIds).orderBy('userId', descending: true)
+        .get();
+    List<Post> posts = snapshot.docs
+        .map((doc) => Post.fromJson(doc.data() as Map<String, dynamic>))
+        .toList();
+    return posts;
+  }
+
 
   @override
   Future<String> addPost(Post post) async {

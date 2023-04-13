@@ -12,7 +12,6 @@ import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/like_view_model.dart';
 import 'package:instagram/view_model/post_view_model.dart';
 import 'package:instagram/widgets/like_animation.dart';
-import 'package:instagram/widgets/post_shimmer.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -33,36 +32,35 @@ class _PostCardState extends State<PostCard> {
   final LikeViewModel _likeViewModel = LikeViewModel();
   final PostViewModel _postViewModel = PostViewModel();
   late CurrentUserViewModel _currentUserViewModel;
-  late Future _getPost;
   bool isEnableShimmer = true;
 
   @override
   void initState() {
     super.initState();
+
     _currentUserViewModel = context.read<CurrentUserViewModel>();
     _postViewModel.addListener(() {
       isEnableShimmer = _postViewModel.isEnableShimmer;
     });
-/*    _getPost = _postViewModel.getPost(
-        widget.postId, _likeViewModel, _currentUserViewModel.user!.uid);*/
   }
 
-/*  void _toggleLikePost(snapshot) {
+  void _toggleLikePost() {
     final currentUserViewModel = context.read<CurrentUserViewModel>();
-    if (!_likeViewModel.isLiked) {
+    if (!widget.post.isLiked) {
       _likeViewModel.like(
-          widget.post!.likedListId, currentUserViewModel.user!.uid);
-      widget.post!.likeCount++;
+          widget.post.likedListId, currentUserViewModel.user!.uid);
+      widget.post.likeCount++;
+      widget.post.isLiked = true;
     } else {
       _likeViewModel.unlike(
-        widget.post!.likedListId,
+        widget.post.likedListId,
         currentUserViewModel.user!.uid,
       );
-      widget.post!.likeCount--;
+      widget.post.likeCount--;
+      widget.post.isLiked = false;
     }
     setState(() {});
-  }*/
-  //_likeViewModel.isLikeAnimating = _likeViewModel.isLiked;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +84,7 @@ class _PostCardState extends State<PostCard> {
                       ProfileScreen(userId: widget.post!.userId),
                   transitionsBuilder: (context, animation,
                       secondaryAnimation, child) {
-                    return _buildSlideTransition(animation, child);
+                    return buildSlideTransition(animation, child);
                   },
                   transitionDuration:
                   const Duration(milliseconds: 150),
@@ -101,11 +99,11 @@ class _PostCardState extends State<PostCard> {
                   const SizedBox(
                     width: 10,
                   ),
-                  widget.post!.avatarUrl.isNotEmpty
+                  widget.post.avatarUrl.isNotEmpty
                       ? CircleAvatar(
                     radius: avatarInPostCardSize,
                     backgroundImage: CachedNetworkImageProvider(
-                      widget.post!.avatarUrl,
+                      widget.post.avatarUrl,
                     ),
                   )
                       : const CircleAvatar(
@@ -120,13 +118,13 @@ class _PostCardState extends State<PostCard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          widget.post!.username,
+                          widget.post.username,
                           style: Theme.of(context).textTheme.titleSmall,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          getElapsedTime(widget.post!.createAt),
+                          getElapsedTime(widget.post.createAt),
                           style: Theme.of(context).textTheme.bodySmall,
                         )
                       ],
@@ -149,7 +147,7 @@ class _PostCardState extends State<PostCard> {
             padding: const EdgeInsets.only(left: 15, right: 15),
             child: GestureDetector(
               onDoubleTap: () {
-                //if (!_likeViewModel.isLiked) _toggleLikePost(snapshot);
+                if (!widget.post.isLiked) _toggleLikePost();
               },
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(25),
@@ -161,7 +159,7 @@ class _PostCardState extends State<PostCard> {
                       enableInfiniteScroll: false,
                       viewportFraction: 1,
                       onPageChanged: (index, reason) async {}),
-                  items: widget.post!.mediaUrls.map<Widget>((e) {
+                  items: widget.post.mediaUrls.map<Widget>((e) {
                     return CachedNetworkImage(
                         imageUrl: e,
                         width: double.infinity,
@@ -191,10 +189,10 @@ class _PostCardState extends State<PostCard> {
                 width: 20,
               ),
               GestureDetector(
-                //onTap: () => _toggleLikePost(snapshot),
+                onTap: () => _toggleLikePost(),
                 child: LikeAnimation(
                     isAnimating: _likeViewModel.isLikeAnimating,
-                    child: _likeViewModel.isLiked
+                    child: widget.post.isLiked
                         ? const Icon(
                       Icons.favorite,
                       color: Colors.red,
@@ -209,7 +207,7 @@ class _PostCardState extends State<PostCard> {
                 width: 10,
               ),
               Text(
-                widget.post!.likeCount.toString(),
+                widget.post.likeCount.toString(),
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(
@@ -225,7 +223,7 @@ class _PostCardState extends State<PostCard> {
                           CommentReadingScreen(post: widget.post),
                       transitionsBuilder: (context, animation,
                           secondaryAnimation, child) {
-                        return _buildSlideTransition(animation, child);
+                        return buildSlideTransition(animation, child);
                       },
                       transitionDuration:
                       const Duration(milliseconds: 150),
@@ -278,7 +276,7 @@ class _PostCardState extends State<PostCard> {
                       CommentReadingScreen(post: widget.post),
                   transitionsBuilder: (context, animation,
                       secondaryAnimation, child) {
-                    return _buildSlideTransition(animation, child);
+                    return buildSlideTransition(animation, child);
                   },
                   transitionDuration:
                   const Duration(milliseconds: 150),
@@ -317,14 +315,4 @@ class _PostCardState extends State<PostCard> {
     );
   }
 
-  SlideTransition _buildSlideTransition(
-      Animation<double> animation, Widget child) {
-    return SlideTransition(
-      position: Tween<Offset>(
-        begin: const Offset(1.0, 0.0),
-        end: Offset.zero,
-      ).animate(animation),
-      child: child,
-    );
-  }
 }

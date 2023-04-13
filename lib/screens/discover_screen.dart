@@ -1,8 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/route/route_name.dart';
+import 'package:instagram/screens/post_details_screen.dart';
 import 'package:instagram/screens/search_screen.dart';
+import 'package:instagram/view_model/current_user_view_model.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:provider/provider.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../models/post.dart';
 import '../provider/home_screen_provider.dart';
@@ -20,10 +24,11 @@ class DiscoverScreen extends StatefulWidget {
 class _DiscoverScreenState extends State<DiscoverScreen> {
   late HomeScreenProvider homeScreenProvider;
   late Future getPosts;
+  final PostViewModel _postViewModel = PostViewModel();
 
   @override
   void initState() {
-    getPosts = context.read<PostViewModel>().getPosts();
+    getPosts = _postViewModel.getDiscoverPosts(context.read<CurrentUserViewModel>().user!.followingListId);
     homeScreenProvider = context.read<HomeScreenProvider>();
     super.initState();
   }
@@ -37,7 +42,6 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           return FutureBuilder(
             future: getPosts,
             builder: (context, snapshot) {
-              List<Post> posts = value.posts;
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(
                   child: CircularProgressIndicator(
@@ -49,6 +53,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                   child: Text("Error: ${snapshot.error.toString()}"),
                 );
               } else {
+                List<Post> posts = snapshot.data;
                 return _postGrid(context, posts);
               }
             },
@@ -127,9 +132,15 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             child: CircularProgressIndicator(),
           );
         }
-        return CachedNetworkImage(
-          imageUrl: posts[index].mediaUrls.first,
-          fit: BoxFit.cover,
+        return GestureDetector(
+          onTap: (){
+            Navigator.push(context, MaterialPageRoute(builder: (context) => PostDetailsScreen(posts: posts, index: index),));
+          },
+          child: CachedNetworkImage(
+            imageUrl: posts[index].mediaUrls.first,
+            fit: BoxFit.cover,
+            fadeInDuration: const Duration(milliseconds: 200),
+          ),
         );
       },
     );

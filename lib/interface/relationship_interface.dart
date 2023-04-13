@@ -8,4 +8,6 @@ abstract class IRelationshipService {
   Future<void> blockUser(String userId, String userBeBlockedId);
 
   Future<void> unblockUser(String userId, String userBeUnblockedId);
+
+  Future<void> getFollowingIds(String likeListId);
 }

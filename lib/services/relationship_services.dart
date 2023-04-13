@@ -45,5 +45,14 @@ class RelationshipService implements IRelationshipService {
     QuerySnapshot snapshot = await _followerListRef.where('userId', isEqualTo: targetUserId).where('followerIds', arrayContains: userId).limit(1).get();
     return snapshot.docs.isNotEmpty;
   }
-  
+
+  @override
+  Future<List<String>> getFollowingIds(String followingListId) async {
+    final doc = await _followingListRef.doc(followingListId).get();
+    final data = doc.data() as Map<String, dynamic>?;
+    final followingIds = data?['followingIds'] as List?;
+    return followingIds?.cast<String>() ?? [];
+  }
+
+
 }

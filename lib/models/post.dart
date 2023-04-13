@@ -13,7 +13,7 @@ class Post {
   DateTime createAt;
   DateTime updateAt;
   bool isDeleted;
-
+  bool isLiked = false;
   Post({
     required this.uid,
     required this.caption,
