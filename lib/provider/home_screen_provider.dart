@@ -7,6 +7,9 @@ import '../screens/news_feed_screen.dart';
 import '../screens/personal_profile_screen.dart';
 
 class HomeScreenProvider with ChangeNotifier {
+
+  final ScrollController scrollController = ScrollController();
+
   final List<Widget> screens = [
     const NewsFeedScreen(),
     const DiscoverScreen(),
