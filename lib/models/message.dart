@@ -17,7 +17,7 @@ class Message {
 
   Message.fromJson(Map<String, dynamic> json)
       : id = json['id'],
-        senderId = json['sender'],
+        senderId = json['senderId'],
         type = json['type'],
         timestamp = json['timestamp'].toDate(),
         content = json['content'],
@@ -26,8 +26,9 @@ class Message {
   Map<String, dynamic> toJson() => <String, dynamic>{
     'id': id,
     'senderId': senderId,
-    'sentAt': timestamp.toIso8601String(),
+    'timestamp': timestamp,
     'content': content,
+    'type': type,
     'status': status
   };
 

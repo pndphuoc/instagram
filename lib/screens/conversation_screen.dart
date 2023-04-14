@@ -19,6 +19,19 @@ class ConversationScreen extends StatefulWidget {
       {Key? key, this.conversation, required this.restUser})
       : super(key: key);
 
+  factory ConversationScreen.fromProfileScreen(
+      {required String conversationId, required ChatUser restUser}) {
+    return ConversationScreen(restUser: restUser);
+  }
+
+  factory ConversationScreen.fromChatScreen(
+      {required Conversation conversation, required ChatUser restUser}) {
+    return ConversationScreen(
+      restUser: restUser,
+      conversation: conversation,
+    );
+  }
+
   @override
   State<ConversationScreen> createState() => _ConversationScreenState();
 }
@@ -29,46 +42,27 @@ class _ConversationScreenState extends State<ConversationScreen> {
   final MessageViewModel _messageViewModel = MessageViewModel();
   final TextEditingController _messageController = TextEditingController();
   late CurrentUserViewModel _currentUserViewModel;
-
-  final List<Message> messages = [
-    Message(
-        id: "abc",
-        senderId: FirebaseAuth.instance.currentUser!.uid,
-        type: 'text',
-        timestamp: DateTime.now(),
-        content:
-            "iu chinnnnnnn nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
-        status: 'sending'),
-    Message(
-        id: "abc",
-        senderId: "chinchin",
-        type: 'image',
-        timestamp: DateTime.parse("2023-04-14 14:16:50.639664"),
-        content:
-            "https://firebasestorage.googleapis.com/v0/b/instagram-b3812.appspot.com/o/photos%2F1681318354694?alt=media&token=91d18015-746a-4a6b-a9ba-293f5f056a07",
-        status: 'sending'),
-    Message(
-        id: "abc",
-        senderId: "chinchin",
-        type: 'text',
-        timestamp: DateTime.parse("2023-04-14 14:16:51.639664"),
-        content:
-            "https://firebasestorage.googleapis.com/v0/b/instagram-b3812.appspot.com/o/photos%2F1681318354694?alt=media&token=91d18015-746a-4a6b-a9ba-293f5f056a07",
-        status: 'sending'),
-    Message(
-        id: "abc",
-        senderId: FirebaseAuth.instance.currentUser!.uid,
-        type: 'image',
-        timestamp: DateTime.now(),
-        content:
-            "https://firebasestorage.googleapis.com/v0/b/instagram-b3812.appspot.com/o/photos%2F1681350909708?alt=media&token=3e971373-edac-40b1-9c9c-68561d6781f6",
-        status: 'sending')
-  ];
+  List<Message> messages = [];
+  List<ChatUser> users = [];
+  late Conversation conversation;
+  late Future _getConversationId;
+  String conversationId = '';
 
   @override
   void initState() {
-    super.initState();
     _currentUserViewModel = context.read<CurrentUserViewModel>();
+    users.addAll([
+      widget.restUser,
+      ChatUser(
+          userId: _auth.currentUser!.uid,
+          username: _currentUserViewModel.user!.username,
+          avatarUrl: _currentUserViewModel.user!.avatarUrl,
+          displayName: _currentUserViewModel.user!.displayName,
+          isOnline: true)
+    ]);
+    _getConversationId = _messageViewModel.getConversationId(
+    _auth.currentUser!.uid, widget.restUser.userId);
+    super.initState();
   }
 
   @override
@@ -81,23 +75,101 @@ class _ConversationScreenState extends State<ConversationScreen> {
           child: Column(
             children: [
               Expanded(
-                child: ListView.separated(
-                    separatorBuilder: (context, index) => const SizedBox(
-                          height: 10,
-                        ),
-                    padding:
-                        const EdgeInsets.only(bottom: 40, left: 10, right: 10),
-                    reverse: true,
-                    itemCount: messages.length,
-                    itemBuilder: (context, index) {
-                      if (messages[index].senderId == _auth.currentUser!.uid) {
-                        return SentMessageCard(message: messages[index]);
-                      } else {
-                        return ReceivedMessageCard(
-                            message: messages[index], user: widget.restUser);
-                      }
-                    }),
-              ),
+                  child: widget.conversation == null
+                      ? FutureBuilder(
+                          future: _getConversationId,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            } else if (snapshot.hasError) {
+                              return Center(
+                                child: Text(snapshot.error.toString()),
+                              );
+                            } else {
+                              conversationId = snapshot.data;
+                              return StreamBuilder(
+                                  stream: _messageViewModel.getMessage(conversationId),
+                                  builder: (context, streamSnapshot) {
+                                    if (streamSnapshot.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return const Center(
+                                        child: CircularProgressIndicator(),
+                                      );
+                                    } else if (streamSnapshot.hasError) {
+                                      return Center(
+                                        child: Text(streamSnapshot.error.toString()),
+                                      );
+                                    } else if (streamSnapshot.hasData) {
+                                      return ListView.separated(
+                                          separatorBuilder: (context, index) =>
+                                              const SizedBox(
+                                                height: 10,
+                                              ),
+                                          padding: const EdgeInsets.only(
+                                              bottom: 40, left: 10, right: 10),
+                                          reverse: true,
+                                          itemCount: (streamSnapshot.data as List<Message>).length,
+                                          itemBuilder: (context, index) {
+                                            if ((streamSnapshot.data as List<Message>)[index].senderId ==
+                                                _auth.currentUser!.uid) {
+                                              return SentMessageCard(
+                                                  message: (streamSnapshot.data as List<Message>)[index]);
+                                            } else {
+                                              return ReceivedMessageCard(
+                                                  message: (streamSnapshot.data as List<Message>)[index],
+                                                  user: widget.restUser);
+                                            }
+                                          });
+                                    } else {
+                                      return Container();
+                                    }
+                                  });
+                            }
+                          },
+                        )
+                      : StreamBuilder<Object>(
+                          stream: _messageViewModel
+                              .getMessage(widget.conversation!.uid),
+                          builder: (context, snapshot) {
+                            conversationId = widget.conversation!.uid;
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            } else if (snapshot.hasError) {
+                              return Center(
+                                child: Text(snapshot.error.toString()),
+                              );
+                            } else if (snapshot.hasData) {
+                              messages.addAll(snapshot.data as List<Message>);
+                              return ListView.separated(
+                                  separatorBuilder: (context, index) =>
+                                      const SizedBox(
+                                        height: 10,
+                                      ),
+                                  padding: const EdgeInsets.only(
+                                      bottom: 40, left: 10, right: 10),
+                                  reverse: true,
+                                  itemCount: messages.length,
+                                  itemBuilder: (context, index) {
+                                    if (messages[index].senderId ==
+                                        _auth.currentUser!.uid) {
+                                      return SentMessageCard(
+                                          message: messages[index]);
+                                    } else {
+                                      return ReceivedMessageCard(
+                                          message: messages[index],
+                                          user: widget.restUser);
+                                    }
+                                  });
+                            } else {
+                              return Container();
+                            }
+                          })),
               Container(
                 width: MediaQuery.of(context).size.width,
                 height: 35,
@@ -233,26 +305,17 @@ class _ConversationScreenState extends State<ConversationScreen> {
                 } else {
                   return GestureDetector(
                     onTap: () async {
-                      late String conversationId;
-                      if (await _messageViewModel.isExistsConversation(
-                          _auth.currentUser!.uid, widget.restUser.userId) == false) {
-                        List<ChatUser> users = [
-                          ChatUser(
-                              userId: _auth.currentUser!.uid,
-                              username: _currentUserViewModel.user!.username,
-                              avatarUrl: _currentUserViewModel.user!.avatarUrl,
-                              displayName:
-                                  _currentUserViewModel.user!.displayName,
-                              isOnline: true),
-                          widget.restUser
-                        ];
+/*                      late String conversationId;
+                      if (widget.conversation == null) {
+                        conversationId =
+                            await _messageViewModel.createConversation(users);
+                      }*/
+                      if (conversationId.isEmpty) {
                         conversationId = await _messageViewModel.createConversation(users);
-                      } else {
-                        conversationId = await _messageViewModel.getConversationId(_auth.currentUser!.uid, widget.restUser.userId);
                       }
-                      _messageViewModel.sendMessage(
-                        conversationId: conversationId,
-                          senderId: _auth.currentUser!.uid,
+                      await _messageViewModel.sendMessage(
+                          conversationId: conversationId,
+                          senderId: _currentUserViewModel.user!.uid,
                           messageType: 'text',
                           messageContent: _messageController.text,
                           timestamp: DateTime.now());

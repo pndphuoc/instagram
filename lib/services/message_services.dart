@@ -4,36 +4,41 @@ import 'package:instagram/models/chat_user.dart';
 import 'package:instagram/models/conversation.dart';
 import 'package:instagram/models/message.dart';
 
-import '../models/message_content.dart';
-
 class MessageServices implements IMessageService {
   final CollectionReference _conversationsCollection =
       FirebaseFirestore.instance.collection('conversations');
+  final CollectionReference _usersCollection = FirebaseFirestore.instance.collection('users');
 
   @override
   Future<String> createConversation(List<ChatUser> users) async {
     final conversationRef = _conversationsCollection.doc();
-    await conversationRef.set({'userIds': FieldValue.arrayUnion(users.map((user) => user.userId).toList())});
+
+    List<String> userIds = users.map((e) => e.userId).toList()..sort();
+
+    await conversationRef.set({'userIds': FieldValue.arrayUnion(userIds.map((user) => user).toList())});
     await conversationRef.update({'users': FieldValue.arrayUnion(users.map((user) => user.toJson()).toList())});
+
+    for (var user in users) {
+        await _usersCollection.doc(user.userId).update({"conversationsIds": FieldValue.arrayUnion([conversationRef.id])});
+    }
+
     return conversationRef.id;
   }
 
   @override
-  Future<void> sendMessage(
-      {String conversationId = '',
+  Future<void> sendTextMessage(
+      {required String conversationId,
       required String senderId,
-      required String messageType,
       required String messageContent,
       required DateTime timestamp}) async {
     try {
-      // Lấy reference của document conversation cần gửi tin nhắn vào
       final messageRef = _conversationsCollection.doc(conversationId).collection('messages').doc();
 
       // Tạo một message mới
       final message = Message(
         id: messageRef.id,
         senderId: senderId,
-        type: messageType,
+        type: 'text',
         content: messageContent,
         timestamp: timestamp,
         status: 'sent'
@@ -69,20 +74,29 @@ class MessageServices implements IMessageService {
 
   @override
   Future<bool> isExistsConversation(String userId1, String userId2) async {
-    final List<String> userIds = [userId1, userId2];
+    final List<String> userIds = [userId1, userId2]..sort();
     final QuerySnapshot conversationsQuery = await _conversationsCollection
         .where('userIds', isEqualTo: userIds)
         .get();
-    print(conversationsQuery.docs.length);
     return conversationsQuery.docs.isNotEmpty;
   }
 
   @override
   Future<String> getConversationId(String userId1, String userId2) async {
-    final List<String> userIds = [userId1, userId2];
+    final List<String> userIds = [userId1, userId2]..sort();
     final QuerySnapshot conversationsQuery = await _conversationsCollection
         .where('userIds', isEqualTo: userIds).limit(1)
         .get();
     return conversationsQuery.docs.first.id;
+  }
+
+  @override
+  Future<Conversation> getConversationData(String conversationId) async {
+    final conversationRef = await _conversationsCollection.doc(conversationId).get();
+    if (conversationRef.exists) {
+      return Conversation.fromJson(conversationRef.data() as Map<String, dynamic>);
+    } else {
+      throw Exception('Post not found');
+    }
   }
 }
