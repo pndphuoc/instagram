@@ -65,7 +65,7 @@ class MyApp extends StatelessWidget {
                   fontSize: 20,
                   fontWeight: FontWeight.normal),
               bodyMedium: const TextStyle(
-                color: onBackground,
+                color: onBackgroundSecondary,
               ),
               bodySmall: const TextStyle(color: onBackground),
               labelLarge: const TextStyle(
@@ -77,6 +77,7 @@ class MyApp extends StatelessWidget {
               headlineSmall: const TextStyle(color: onBackground),
               titleLarge: const TextStyle(color: onBackground),
               labelSmall: const TextStyle(color: onBackground),
+              labelMedium: const TextStyle(color: onBackground),
               titleMedium: const TextStyle(color: onBackground),
               titleSmall: const TextStyle(color: onBackground),
             ),

@@ -4,6 +4,7 @@ class Message {
   final String type;
   final DateTime timestamp;
   final String content;
+  final String status;
 
   Message({
     required this.id,
@@ -11,6 +12,7 @@ class Message {
     required this.type,
     required this.timestamp,
     required this.content,
+    required this.status
   });
 
   Message.fromJson(Map<String, dynamic> json)
@@ -18,13 +20,15 @@ class Message {
         senderId = json['sender'],
         type = json['type'],
         timestamp = json['timestamp'].toDate(),
-        content = json['content'];
+        content = json['content'],
+        status = json['status'];
 
   Map<String, dynamic> toJson() => <String, dynamic>{
     'id': id,
     'senderId': senderId,
     'sentAt': timestamp.toIso8601String(),
     'content': content,
+    'status': status
   };
 
 /*  static MessageContent _getContentFromJson(Map<String, dynamic> json) {

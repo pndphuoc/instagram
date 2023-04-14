@@ -1,10 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:instagram/screens/conversation_screen.dart';
 import 'package:instagram/screens/personal_profile_screen.dart';
 import 'package:instagram/screens/post_details_screen.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/user_view_model.dart';
 import 'package:instagram/widgets/bottom_navigator_bar.dart';
+import '../models/chat_user.dart';
 import '../models/post.dart';
 import '../models/user.dart' as model;
 import 'package:provider/provider.dart';
@@ -195,9 +197,8 @@ class _ProfileScreenState extends State<ProfileScreen>
           snapshot.data!.clear();
           return GridView.builder(
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: _userViewModel.hasMorePosts
-                ? posts.length + 1
-                : posts.length,
+            itemCount:
+                _userViewModel.hasMorePosts ? posts.length + 1 : posts.length,
             shrinkWrap: true,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
@@ -205,8 +206,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                 crossAxisSpacing: 2,
                 mainAxisSpacing: 1),
             itemBuilder: (context, index) {
-              if (index >= posts.length &&
-                  _userViewModel.hasMorePosts) {
+              if (index >= posts.length && _userViewModel.hasMorePosts) {
                 return const Center(
                   child: CircularProgressIndicator(),
                 );
@@ -323,7 +323,28 @@ class _ProfileScreenState extends State<ProfileScreen>
         ),
         Expanded(
           child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                final ChatUser restUser = ChatUser(
+                    userId: widget.userId,
+                    username: _userViewModel.user.username,
+                    avatarUrl: _userViewModel.user.avatarUrl,
+                    displayName: _userViewModel.user.displayName,
+                    isOnline: false);
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                        ConversationScreen(restUser: restUser,),
+                    transitionsBuilder:
+                        (context, animation, secondaryAnimation, child) {
+                      return buildSlideTransition(animation, child);
+                    },
+                    transitionDuration: const Duration(milliseconds: 150),
+                    reverseTransitionDuration:
+                        const Duration(milliseconds: 150),
+                  ),
+                );
+              },
               style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),

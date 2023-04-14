@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:instagram/provider/home_screen_provider.dart';
+import 'package:instagram/screens/chat_screen.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
@@ -9,6 +10,8 @@ import 'package:instagram/widgets/post_card.dart';
 import 'package:instagram/widgets/post_shimmer.dart';
 import 'package:instagram/widgets/uploading_post_card.dart';
 import 'package:provider/provider.dart';
+
+import '../ultis/ultils.dart';
 
 class NewsFeedScreen extends StatefulWidget {
   const NewsFeedScreen({Key? key}) : super(key: key);
@@ -107,6 +110,23 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
         Padding(
           padding: const EdgeInsets.only(right: 20),
           child: InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder:
+                      (context, animation, secondaryAnimation) =>
+                      const ChatScreen(),
+                  transitionsBuilder: (context, animation,
+                      secondaryAnimation, child) {
+                    return buildSlideTransition(animation, child);
+                  },
+                  transitionDuration:
+                  const Duration(milliseconds: 150),
+                  reverseTransitionDuration:  const Duration(milliseconds: 150),
+                ),
+              );
+            },
             borderRadius: BorderRadius.circular(30),
             child: const Icon(Icons.mail_outline),
           ),

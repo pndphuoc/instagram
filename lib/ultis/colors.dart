@@ -8,3 +8,4 @@ const primaryColor = Colors.blue;
 const secondaryColor = Color.fromARGB(255, 45, 45, 47);
 const onBackground = Colors.white;
 const postCardBackgroundColor = Color.fromARGB(255, 45, 45, 47);
+const onBackgroundSecondary = Colors.grey;

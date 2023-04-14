@@ -16,7 +16,11 @@ class CommentCard extends StatefulWidget {
   final String commentListId;
   final Color backgroundColor;
 
-  const CommentCard({Key? key, required this.cmt, required this.commentListId, this.backgroundColor = Colors.transparent})
+  const CommentCard(
+      {Key? key,
+      required this.cmt,
+      required this.commentListId,
+      this.backgroundColor = Colors.transparent})
       : super(key: key);
 
   @override

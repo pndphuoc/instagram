@@ -5,12 +5,14 @@ class Conversation {
   String lastMessageContent;
   DateTime lastMessageTime;
   List<ChatUser> users;
+  bool isSeen;
 
   Conversation({
     required this.uid,
     required this.lastMessageContent,
     required this.lastMessageTime,
     required this.users,
+    required this.isSeen
   });
 
   factory Conversation.fromJson(Map<String, dynamic> json) {
@@ -22,6 +24,7 @@ class Conversation {
       lastMessageContent: json['lastMessageContent'] ?? '',
       lastMessageTime: json['lastMessageTime'].toDate(),
       users: users,
+      isSeen: json['isSeen']
     );
   }
 
@@ -33,6 +36,7 @@ class Conversation {
       'lastMessageContent': lastMessageContent,
       'lastMessageTime': lastMessageTime.toIso8601String(),
       'users': usersJson,
+      'isSeen': isSeen
     };
   }
 }

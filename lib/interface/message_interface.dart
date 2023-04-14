@@ -8,4 +8,6 @@ abstract class IMessageService {
   Stream<List<Message>> getMessages(
       {required String conversationId, int pageSize = 10, DocumentSnapshot? lastDocument});
   Future<String> createConversation(List<ChatUser> users);
+  Future<bool> isExistsConversation(String userId1, String userId2);
+  Future<String> getConversationId(String userId1, String userId2);
 }

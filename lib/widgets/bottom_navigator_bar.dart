@@ -26,7 +26,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
           elevation: 0,
           backgroundColor: mobileBackgroundColor,
           onTap: (index) {
-            if (index == 0) {
+            if (index == 0 && value.currentIndex == 0) {
               value.scrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.fastOutSlowIn);
             }
             if (index == 2) {

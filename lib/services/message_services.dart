@@ -13,7 +13,8 @@ class MessageServices implements IMessageService {
   @override
   Future<String> createConversation(List<ChatUser> users) async {
     final conversationRef = _conversationsCollection.doc();
-    await conversationRef.set(users.map((user) => user.toJson()).toList());
+    await conversationRef.set({'userIds': FieldValue.arrayUnion(users.map((user) => user.userId).toList())});
+    await conversationRef.update({'users': FieldValue.arrayUnion(users.map((user) => user.toJson()).toList())});
     return conversationRef.id;
   }
 
@@ -25,7 +26,6 @@ class MessageServices implements IMessageService {
       required String messageContent,
       required DateTime timestamp}) async {
     try {
-
       // Lấy reference của document conversation cần gửi tin nhắn vào
       final messageRef = _conversationsCollection.doc(conversationId).collection('messages').doc();
 
@@ -36,6 +36,7 @@ class MessageServices implements IMessageService {
         type: messageType,
         content: messageContent,
         timestamp: timestamp,
+        status: 'sent'
       );
 
       // Thêm message vào mảng messages của document conversation
@@ -64,5 +65,24 @@ class MessageServices implements IMessageService {
     return query.snapshots().map((snapshot) => snapshot.docs
         .map((doc) => Message.fromJson(doc.data() as Map<String, dynamic>))
         .toList());
+  }
+
+  @override
+  Future<bool> isExistsConversation(String userId1, String userId2) async {
+    final List<String> userIds = [userId1, userId2];
+    final QuerySnapshot conversationsQuery = await _conversationsCollection
+        .where('userIds', isEqualTo: userIds)
+        .get();
+    print(conversationsQuery.docs.length);
+    return conversationsQuery.docs.isNotEmpty;
+  }
+
+  @override
+  Future<String> getConversationId(String userId1, String userId2) async {
+    final List<String> userIds = [userId1, userId2];
+    final QuerySnapshot conversationsQuery = await _conversationsCollection
+        .where('userIds', isEqualTo: userIds).limit(1)
+        .get();
+    return conversationsQuery.docs.first.id;
   }
 }
