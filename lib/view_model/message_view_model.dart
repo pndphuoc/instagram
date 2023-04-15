@@ -74,7 +74,7 @@ class MessageViewModel extends ChangeNotifier {
     await _messageServices.sendTextMessage(conversationId: conversationId, senderId: senderId, messageContent: messageContent, timestamp: timestamp);
   }
 
-  Stream<List<Message>> getMessages({int pageSize = 10, DocumentSnapshot? lastDocument}) {
+  Stream<List<Message>> getMessages({int pageSize = 25, DocumentSnapshot? lastDocument}) {
     return _messageServices.getMessages(conversationId: _conversationId, pageSize: pageSize, lastDocument: lastDocument);
   }
 

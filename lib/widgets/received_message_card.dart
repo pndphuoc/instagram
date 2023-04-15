@@ -16,7 +16,7 @@ class ReceivedMessageCard extends StatefulWidget {
 
 class _ReceivedMessageCardState extends State<ReceivedMessageCard> {
   final double borderRadius = 20;
-  final double avatarSize = 20;
+  final double avatarSize = 15;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +34,6 @@ class _ReceivedMessageCardState extends State<ReceivedMessageCard> {
 
   Widget _buildTextMessage(BuildContext context) {
     return Container(
-      width: MediaQuery.of(context).size.width / 10 * 6.5,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
           color: const Color.fromRGBO(55, 126, 189, 1.0),

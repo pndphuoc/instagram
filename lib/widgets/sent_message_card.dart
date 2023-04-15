@@ -26,13 +26,13 @@ class _SentMessageCardState extends State<SentMessageCard> {
         if (widget.message.status == 'sent')
           Container(
             alignment: Alignment.centerRight,
-            width: 10,
-            height: 10,
+            width: 13,
+            height: 13,
             decoration: const BoxDecoration(
              shape: BoxShape.circle,
               border: Border.fromBorderSide(BorderSide(width: 1, color: primaryColor))
             ),
-            child: const Icon(Icons.check, color: Colors.white, size: 10,),
+            child: const Center(child: Icon(Icons.check, color: primaryColor, size: 10)),
           ),
         if (widget.message.status == 'sending')
           Container(
@@ -43,13 +43,14 @@ class _SentMessageCardState extends State<SentMessageCard> {
                 border: Border.fromBorderSide(BorderSide(width: 1.5, color: primaryColor))
             ),
           ),
+        const SizedBox(width: 5,)
       ],
     );
   }
 
   Widget _buildTextMessage(BuildContext context) {
     return Container(
-      width: MediaQuery.of(context).size.width / 10 * 6.5,
+      constraints: BoxConstraints( maxWidth: MediaQuery.of(context).size.width / 10 * 6.5),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
         color: secondaryColor,
