@@ -3,6 +3,7 @@ import 'package:instagram/models/chat_user.dart';
 import 'package:instagram/models/conversation.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
+import 'package:instagram/view_model/message_view_model.dart';
 import 'package:instagram/widgets/avatar_with_status.dart';
 import 'package:instagram/widgets/conversation_card.dart';
 import 'package:provider/provider.dart';
@@ -16,7 +17,8 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   late CurrentUserViewModel _currentUserViewModel;
-
+  late Stream<List<String>> _getConversationIds;
+  final MessageViewModel _messageViewModel = MessageViewModel();
   final double activeAvatarSize = 35;
   final ChatUser fakeData = ChatUser(
       userId: "ccc",
@@ -25,34 +27,15 @@ class _ChatScreenState extends State<ChatScreen> {
       isOnline: true,
       avatarUrl:
           "https://firebasestorage.googleapis.com/v0/b/instagram-b3812.appspot.com/o/photos%2F1681318354694?alt=media&token=91d18015-746a-4a6b-a9ba-293f5f056a07");
-
+  final searchFieldBorder =
+  OutlineInputBorder(borderRadius: BorderRadius.circular(10));
   late Conversation conversation;
-
+  List<Conversation> conversations = [];
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _currentUserViewModel = context.read<CurrentUserViewModel>();
-    conversation = Conversation(
-        uid: "sdfasdf",
-        lastMessageContent: "em iu anhhhhh hhhhhhhhhhhh hhhhhhhh hhhhhh hhhhhhhhhhh",
-        isSeen: true,
-        lastMessageTime: DateTime.now(),
-        users: [
-          ChatUser(
-              userId: "abc",
-              username: "hiii_chin",
-              displayName: "Nguyễn Thùy Chin",
-              isOnline: true,
-              avatarUrl:
-                  "https://firebasestorage.googleapis.com/v0/b/instagram-b3812.appspot.com/o/photos%2F1681318354694?alt=media&token=91d18015-746a-4a6b-a9ba-293f5f056a07"),
-          ChatUser(
-              userId: _currentUserViewModel.user!.uid,
-              username: _currentUserViewModel.user!.username,
-              displayName: _currentUserViewModel.user!.displayName,
-              isOnline: true,
-              avatarUrl: _currentUserViewModel.user!.avatarUrl)
-        ]);
+    _getConversationIds = _messageViewModel.getConversationIds(userId: _currentUserViewModel.user!.uid);
   }
 
   @override
@@ -135,9 +118,6 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  final searchFieldBorder =
-      OutlineInputBorder(borderRadius: BorderRadius.circular(10));
-
   Widget _buildSearchBar(BuildContext context) {
     return Container(
       padding: const EdgeInsets.only(left: 20, right: 20),
@@ -162,13 +142,35 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildConversationList(BuildContext context) {
-    return ListView.builder(
-      padding: const EdgeInsets.only(top: 10),
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: 10,
-      itemBuilder: (context, index) =>
-          ConversationCard(conversation: conversation),
+    return StreamBuilder(
+      stream: _getConversationIds,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(child: Text("No conversation"),);
+        } else if (snapshot.hasError) {
+          return Center(child: Text(snapshot.error.toString()),);
+        } else {
+          return ListView.builder(
+            physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              itemCount: snapshot.data!.length,
+              itemBuilder: (context, index) => _buildConversationCard(context, snapshot.data![index]));
+        }
+      }
     );
+  }
+
+  Widget _buildConversationCard(BuildContext context, String conversationId) {
+    return StreamBuilder(
+        stream: _messageViewModel.getConversationData(conversationId),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: Text("No conversation"),);
+          } else if (snapshot.hasError) {
+            return Center(child: Text(snapshot.error.toString()),);
+          } else {
+            return ConversationCard(conversation: snapshot.data!);
+          }
+        },);
   }
 }

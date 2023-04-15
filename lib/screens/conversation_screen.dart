@@ -30,14 +30,13 @@ class _ConversationScreenState extends State<ConversationScreen> {
   late String conversationId;
   late Stream<Conversation> _getConversationData;
   late Stream<List<Message>> _getMessages;
-  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
-
   @override
   void initState() {
     _currentUserViewModel = context.read<CurrentUserViewModel>();
     _messageViewModel.users
         .addAll([widget.restUser, _currentUserViewModel.chatUser]);
-    _getConversationData = _messageViewModel.getConversationData();
+    _messageViewModel.createConversationIdFromUsers();
+    _getConversationData = _messageViewModel.getConversationData(_messageViewModel.conversationId);
     _getMessages = _messageViewModel.getMessages();
     super.initState();
   }
@@ -47,59 +46,57 @@ class _ConversationScreenState extends State<ConversationScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: _buildAppBar(context),
-      body: SizedBox(
-        child: Column(
-          children: [
-            Expanded(
-                child: StreamBuilder(
-              stream: _getConversationData,
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  return StreamBuilder(
-                    stream: _getMessages,
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        return Container();
-                      } else if (snapshot.hasError) {
-                        return Center(
-                          child: Text(snapshot.error.toString()),
-                        );
-                      } else {
-                        return ListView.separated(
-                          reverse: true,
-                          separatorBuilder: (context, index) => const SizedBox(height: 5,),
-                          itemCount: snapshot.data!.length,
-                          itemBuilder: (context, index) {
-                            if (!snapshot.hasData) {
-                              return Container();
-                            } else if (snapshot.hasError) {
-                              return Center(
-                                child: Text(snapshot.error.toString()),
-                              );
-                            } else if (snapshot.data![index].senderId ==
-                                _auth.currentUser!.uid) {
-                              return SentMessageCard(
-                                  message: snapshot.data![index]);
-                            } else {
-                              return ReceivedMessageCard(
-                                  message: snapshot.data![index],
-                                  user: widget.restUser);
-                            }
-                          },
-                        );
-                      }
-                    },
-                  );
-                } else {
-                  return const Center(
-                    child: Text("Let's chat to each other"),
-                  );
-                }
-              },
-            )),
-            _buildWriteMessage(context)
-          ],
-        ),
+      body: Column(
+        children: [
+          Expanded(
+              child: StreamBuilder(
+            stream: _getConversationData,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return StreamBuilder(
+                  stream: _getMessages,
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return Container();
+                    } else if (snapshot.hasError) {
+                      return Center(
+                        child: Text(snapshot.error.toString()),
+                      );
+                    } else {
+                      return ListView.separated(
+                        reverse: true,
+                        separatorBuilder: (context, index) => const SizedBox(height: 5,),
+                        itemCount: snapshot.data!.length,
+                        itemBuilder: (context, index) {
+                          if (!snapshot.hasData) {
+                            return Container();
+                          } else if (snapshot.hasError) {
+                            return Center(
+                              child: Text(snapshot.error.toString()),
+                            );
+                          } else if (snapshot.data![index].senderId ==
+                              _auth.currentUser!.uid) {
+                            return SentMessageCard(
+                                message: snapshot.data![index]);
+                          } else {
+                            return ReceivedMessageCard(
+                                message: snapshot.data![index],
+                                user: widget.restUser);
+                          }
+                        },
+                      );
+                  }
+                  },
+                );
+              } else {
+                return const Center(
+                  child: Text("Let's chat to each other"),
+                );
+              }
+            },
+          )),
+          _buildWriteMessage(context)
+        ],
       ),
     );
   }
@@ -112,7 +109,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
           AvatarWithStatus(
               radius: avatarSize,
               imageUrl: widget.restUser.avatarUrl,
-              isOnline: widget.restUser.isOnline!),
+              isOnline: false),
           const SizedBox(
             width: 10,
           ),
@@ -208,7 +205,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
               stream: _messageViewModel.writingMessageStream,
               initialData: '',
               builder: (context, snapshot) {
-                if (snapshot.data!.isEmpty) {
+                if (snapshot.data!.trim().isEmpty) {
                   return Row(
                     children: const [
                       Icon(Icons.photo_outlined, color: Colors.white, size: 30),
@@ -225,11 +222,11 @@ class _ConversationScreenState extends State<ConversationScreen> {
                 } else {
                   return GestureDetector(
                     onTap: () async {
-                      if (_messageController.text.isNotEmpty) {
+                      if (_messageController.text.trim().isNotEmpty) {
                         _messageViewModel.sendTextMessage(
                             senderId: _auth.currentUser!.uid,
                             messageType: 'text',
-                            messageContent: _messageController.text,
+                            messageContent: _messageController.text.trim(),
                             timestamp: DateTime.now());
                         _messageController.clear();
                       }
