@@ -18,13 +18,12 @@ class Conversation {
   factory Conversation.fromJson(Map<String, dynamic> json) {
     List<dynamic> usersJson = json['users'] ?? [];
     List<ChatUser> users = usersJson.map((userJson) => ChatUser.fromJson(userJson)).toList();
-
     return Conversation(
       uid: json['uid'] ?? '',
       lastMessageContent: json['lastMessageContent'] ?? '',
-      lastMessageTime: json['lastMessageTime'].toDate(),
+      lastMessageTime: json['lastMessageTime'].toDate() ?? '',
       users: users,
-      isSeen: json['isSeen']
+      isSeen: json['isSeen'] ?? ''
     );
   }
 
@@ -34,7 +33,7 @@ class Conversation {
     return {
       'uid': uid,
       'lastMessageContent': lastMessageContent,
-      'lastMessageTime': lastMessageTime.toIso8601String(),
+      'lastMessageTime': lastMessageTime,
       'users': usersJson,
       'isSeen': isSeen
     };

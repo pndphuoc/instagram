@@ -39,11 +39,16 @@ class MessageServices implements IMessageService {
   }
 
   @override
-  Future<void> createConversation(List<ChatUser> users, String conversationId) async {
+  Future<void> createConversation(List<ChatUser> users, String conversationId, String messageContent, DateTime messageTime) async {
     final conversationRef = _conversationsCollection.doc(conversationId).set({
       'users':
-      FieldValue.arrayUnion(users.map((user) => user.toJson()).toList())
+      FieldValue.arrayUnion(users.map((user) => user.toJson()).toList()),
+      'uid': conversationId,
+      'lastMessageContent': messageContent,
+      'lastMessageTime': messageTime,
+      'isSeen': false
     });
+
     //await conversationRef.update();
 
     for (var user in users) {

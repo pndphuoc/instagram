@@ -62,36 +62,31 @@ class MessageViewModel extends ChangeNotifier {
     final messageRef = await FirebaseFirestore.instance.collection('conversations').doc(conversationId).collection('messages').get();
   }
 
-  Future<void> sendTextMessage({String conversationId = '',
+  Future<void> sendTextMessage({
     required String senderId,
     required String messageType,
     required String messageContent,
     required DateTime timestamp}) async {
     String conversationId = createConversationIdFromUsers();
     if (await _messageServices.isExistsConversation(_users.map((e) => e.userId).toList()) == false) {
-      await _messageServices.createConversation(_users, conversationId);
+      await _messageServices.createConversation(_users, conversationId, messageContent, timestamp);
     }
     await _messageServices.sendTextMessage(conversationId: conversationId, senderId: senderId, messageContent: messageContent, timestamp: timestamp);
   }
 
-  Future<void> createConversation(List<ChatUser> users) async {
-    await _messageServices.createConversation(users, conversationId);
-  }
-
-  Stream<List<Message>> getMessages({required String conversationId, int pageSize = 10, DocumentSnapshot? lastDocument}) {
-    return _messageServices.getMessages(conversationId: conversationId, pageSize: pageSize, lastDocument: lastDocument);
+  Stream<List<Message>> getMessages({int pageSize = 10, DocumentSnapshot? lastDocument}) {
+    return _messageServices.getMessages(conversationId: _conversationId, pageSize: pageSize, lastDocument: lastDocument);
   }
 
   Stream<Conversation> getConversationData() {
-    print("hahaha");
-    final String conversationId = createConversationIdFromUsers();
-    print(conversationId);
-    return _messageServices.getConversationData(conversationId).transform(
+    _conversationId = createConversationIdFromUsers();
+    return _messageServices.getConversationData(_conversationId).transform(
       StreamTransformer<DocumentSnapshot<Map<String, dynamic>>, Conversation>.fromHandlers(
         handleData: (snapshot, sink) {
           if (snapshot.data() == null) {
             return;
           }
+
           sink.add(Conversation.fromJson(snapshot.data()!));
         },
         handleError: (error, stackTrace, sink) {

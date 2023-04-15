@@ -28,11 +28,15 @@ class _ConversationScreenState extends State<ConversationScreen> {
   final TextEditingController _messageController = TextEditingController();
   late CurrentUserViewModel _currentUserViewModel;
   late String conversationId;
+  late Stream<Conversation> _getConversationData;
+  late Stream<List<Message>> _getMessages;
 
   @override
   void initState() {
     _currentUserViewModel = context.read<CurrentUserViewModel>();
     _messageViewModel.users.addAll([widget.restUser, _currentUserViewModel.chatUser]);
+    _getConversationData = _messageViewModel.getConversationData();
+    _getMessages = _messageViewModel.getMessages();
     super.initState();
   }
 
@@ -47,12 +51,17 @@ class _ConversationScreenState extends State<ConversationScreen> {
             children: [
               Expanded(
                   child: StreamBuilder(
-                stream: _messageViewModel.getConversationData(),
+                stream: _getConversationData,
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
-                    return const Center(
-                      child: Text("hehe"),
-                    );
+                    return StreamBuilder(
+                        stream: _getMessages,
+                        builder: (context, snapshot) {
+                          return ListView.builder(
+                              itemBuilder: (context, index) {
+
+                              },);
+                        },);
                   } else {
                     return const Center(
                       child: Text("Let's chat to each other"),
