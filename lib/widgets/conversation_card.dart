@@ -41,7 +41,7 @@ class _ConversationCardState extends State<ConversationCard> {
           PageRouteBuilder(
             pageBuilder:
                 (context, animation, secondaryAnimation) =>
-                ConversationScreen(conversation: widget.conversation, restUser: restUser),
+                ConversationScreen(restUser: restUser),
             transitionsBuilder: (context, animation,
                 secondaryAnimation, child) {
               return buildSlideTransition(animation, child);

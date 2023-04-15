@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:rxdart/rxdart.dart';
 
+import '../models/chat_user.dart';
 import '../models/post.dart';
 import '../models/user.dart' as model;
 import '../services/post_services.dart';
@@ -18,6 +19,9 @@ class CurrentUserViewModel extends ChangeNotifier {
 
   model.User? _user;
 
+  ChatUser? _chatUser;
+
+  ChatUser get chatUser => _chatUser!;
   bool _hasMorePosts = true;
 
   model.User? get user => _user;
@@ -36,6 +40,7 @@ class CurrentUserViewModel extends ChangeNotifier {
           StreamTransformer<DocumentSnapshot<Map<String, dynamic>>, model.User>.fromHandlers(
             handleData: (snapshot, sink) {
               _user = model.User.fromJson(snapshot.data()!);
+              _chatUser = ChatUser(userId: _user!.uid, username: _user!.username, avatarUrl: _user!.avatarUrl, displayName: _user!.displayName);
               sink.add(user!);
             },
             handleError: (error, stackTrace, sink) {
