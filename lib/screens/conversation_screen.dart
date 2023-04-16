@@ -130,7 +130,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
                   height: 5,
                 ),
                 Text(
-                  widget.restUser.isOnline!
+                  widget.restUser.isOnline == null || widget.restUser.isOnline!
                       ? "Online"
                       : widget.restUser.username,
                   style: Theme.of(context).textTheme.labelMedium,

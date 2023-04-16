@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:instagram/interface/message_interface.dart';
 import 'package:instagram/models/chat_user.dart';
-import 'package:instagram/models/conversation.dart';
 import 'package:instagram/models/message.dart';
 
 class MessageServices implements IMessageService {

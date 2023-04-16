@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -8,7 +9,6 @@ import 'package:instagram/provider/home_screen_provider.dart';
 import 'package:instagram/responsive/mobile_screen_layout.dart';
 import 'package:instagram/responsive/responsive_layout_screen.dart';
 import 'package:instagram/responsive/web_screen_layout.dart';
-import 'package:instagram/screens/infomation_input_screen.dart';
 import 'package:instagram/screens/login_screen.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
@@ -37,12 +37,45 @@ void main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  AppLifecycleState? _notification;
+  CurrentUserViewModel currentUserViewModel = CurrentUserViewModel();
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+
+    if (state == AppLifecycleState.resumed) {
+      print("App is foreground");
+      currentUserViewModel.setOnlineStatus(true);
+    } else if (state == AppLifecycleState.detached) {
+      print("App is background");
+      currentUserViewModel.setOnlineStatus(false);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    currentUserViewModel.setOnlineStatus(true);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final _userStatusDatabaseRef = FirebaseDatabase.instance.reference().child('userStatus');
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => CurrentUserViewModel()),

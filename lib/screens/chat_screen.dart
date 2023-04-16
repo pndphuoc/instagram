@@ -8,6 +8,8 @@ import 'package:instagram/widgets/avatar_with_status.dart';
 import 'package:instagram/widgets/conversation_card.dart';
 import 'package:provider/provider.dart';
 
+import '../widgets/conversation_card.dart';
+
 class ChatScreen extends StatefulWidget {
   const ChatScreen({Key? key}) : super(key: key);
 
@@ -154,23 +156,9 @@ class _ChatScreenState extends State<ChatScreen> {
             physics: const NeverScrollableScrollPhysics(),
               shrinkWrap: true,
               itemCount: snapshot.data!.length,
-              itemBuilder: (context, index) => _buildConversationCard(context, snapshot.data![index]));
+              itemBuilder: (context, index) => ConversationCard(conversationId: snapshot.data![index],));
         }
       }
     );
-  }
-
-  Widget _buildConversationCard(BuildContext context, String conversationId) {
-    return StreamBuilder(
-        stream: _messageViewModel.getConversationData(conversationId),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: Text("No conversation"),);
-          } else if (snapshot.hasError) {
-            return Center(child: Text(snapshot.error.toString()),);
-          } else {
-            return ConversationCard(conversation: snapshot.data!);
-          }
-        },);
   }
 }

@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:instagram/interface/user_interface.dart';
-import 'package:instagram/models/post.dart';
 import 'package:instagram/models/user.dart' as model;
 
 class UserService implements IUserService {
@@ -15,6 +15,7 @@ class UserService implements IUserService {
   FirebaseFirestore.instance.collection('blockedList');
   final CollectionReference _usersListCollection =
   FirebaseFirestore.instance.collection('users');
+  final _userStatusDatabaseRef = FirebaseDatabase.instance.ref().child('userStatus');
 
   @override
   Future<model.User> getUserDetails(String userId) async {
@@ -87,5 +88,10 @@ class UserService implements IUserService {
     } catch (e) {
       rethrow;
     }
+  }
+
+  @override
+  Future<void> setOnlineStatus(bool isOnline) async {
+    await _userStatusDatabaseRef.child(FirebaseAuth.instance.currentUser!.uid).set({'online': isOnline});
   }
 }

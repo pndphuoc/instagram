@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "264062629818",
+    "firebase_url": "https://instagram-b3812-default-rtdb.asia-southeast1.firebasedatabase.app",
     "project_id": "instagram-b3812",
     "storage_bucket": "instagram-b3812.appspot.com"
   },
@@ -13,6 +14,22 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "264062629818-4ac2rvaaup17gu0n2gcmbei1geql3de5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pndphuoc.instagram.clone.instagram",
+            "certificate_hash": "d92f979ae6491e04e7d82daae551de2f2fa1251f"
+          }
+        },
+        {
+          "client_id": "264062629818-dqqq6j8grqc37rkiqf641m7rajrvatqb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pndphuoc.instagram.clone.instagram",
+            "certificate_hash": "20ae4eddb07fc1ab0733116d9de8c800e3e88b63"
+          }
+        },
         {
           "client_id": "264062629818-vjv6234cjehginht55agcpl8m2abdetq.apps.googleusercontent.com",
           "client_type": 1,

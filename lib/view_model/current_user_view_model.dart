@@ -79,4 +79,8 @@ class CurrentUserViewModel extends ChangeNotifier {
       rethrow;
     }
   }
+
+  Future<void> setOnlineStatus(bool isOnline) async {
+    await _userServices.setOnlineStatus(isOnline);
+  }
 }

@@ -14,4 +14,6 @@ abstract class IUserService {
     String bio = '',
     String avatarUrl = '',
   });
+
+  Future<void> setOnlineStatus(bool isOnline);
 }
