@@ -37,10 +37,16 @@ class CurrentUserViewModel extends ChangeNotifier {
 
   Stream<model.User> getUserData(String userId) {
     return _firestore.collection('users').doc(userId).snapshots().transform(
-          StreamTransformer<DocumentSnapshot<Map<String, dynamic>>, model.User>.fromHandlers(
+          StreamTransformer<DocumentSnapshot<Map<String, dynamic>>,
+              model.User>.fromHandlers(
             handleData: (snapshot, sink) {
               _user = model.User.fromJson(snapshot.data()!);
-              _chatUser = ChatUser(userId: _user!.uid, username: _user!.username, avatarUrl: _user!.avatarUrl, displayName: _user!.displayName);
+              _chatUser = ChatUser(
+                  userId: _user!.uid,
+                  username: _user!.username,
+                  avatarUrl: _user!.avatarUrl,
+                  displayName: _user!.displayName,
+                  isOnline: true);
               sink.add(user!);
             },
             handleError: (error, stackTrace, sink) {
@@ -67,7 +73,6 @@ class CurrentUserViewModel extends ChangeNotifier {
         .map((postId) => _postService.getPost(postId))
         .toList());
     _postController.sink.add(newPosts);
-
   }
 
   Future<void> getCurrentUserDetails() async {

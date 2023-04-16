@@ -323,28 +323,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         ),
         Expanded(
           child: ElevatedButton(
-              onPressed: () {
-                final ChatUser restUser = ChatUser(
-                    userId: widget.userId,
-                    username: _userViewModel.user.username,
-                    avatarUrl: _userViewModel.user.avatarUrl,
-                    displayName: _userViewModel.user.displayName,
-                    isOnline: false);
-                Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) =>
-                        ConversationScreen(restUser: restUser,),
-                    transitionsBuilder:
-                        (context, animation, secondaryAnimation, child) {
-                      return buildSlideTransition(animation, child);
-                    },
-                    transitionDuration: const Duration(milliseconds: 150),
-                    reverseTransitionDuration:
-                        const Duration(milliseconds: 150),
-                  ),
-                );
-              },
+              onPressed: _onMessageButtonPressed,
               style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),
@@ -400,6 +379,29 @@ class _ProfileScreenState extends State<ProfileScreen>
             )
           ],
         ),
+      ),
+    );
+  }
+
+  _onMessageButtonPressed() {
+    final ChatUser restUser = ChatUser(
+        userId: widget.userId,
+        username: _userViewModel.user.username,
+        avatarUrl: _userViewModel.user.avatarUrl,
+        displayName: _userViewModel.user.displayName,
+        isOnline: false);
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            ConversationScreen(restUser: restUser,),
+        transitionsBuilder:
+            (context, animation, secondaryAnimation, child) {
+          return buildSlideTransition(animation, child);
+        },
+        transitionDuration: const Duration(milliseconds: 150),
+        reverseTransitionDuration:
+        const Duration(milliseconds: 150),
       ),
     );
   }

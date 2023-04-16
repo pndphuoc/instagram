@@ -50,10 +50,15 @@ class ConversationCard extends StatelessWidget {
               const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
               child: Row(
                 children: [
-                  AvatarWithStatus(
-                      radius: avatarSize,
-                      imageUrl: restUser.avatarUrl,
-                      isOnline: true),
+                  StreamBuilder<Object>(
+                    stream: null,
+                    builder: (context, snapshot) {
+                      return AvatarWithStatus(
+                          radius: avatarSize,
+                          imageUrl: restUser.avatarUrl,
+                          isOnline: true);
+                    }
+                  ),
                   const SizedBox(
                     width: 15,
                   ),

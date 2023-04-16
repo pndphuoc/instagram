@@ -3,14 +3,14 @@ class ChatUser {
   String username;
   String avatarUrl;
   String displayName;
-  bool? isOnline;
+  bool isOnline;
 
   ChatUser({
     required this.userId,
     required this.username,
     required this.avatarUrl,
     required this.displayName,
-    this.isOnline
+    required this.isOnline
   });
 
   factory ChatUser.fromJson(Map<String, dynamic> json) {

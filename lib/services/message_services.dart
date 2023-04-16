@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart' as realtime;
 import 'package:instagram/interface/message_interface.dart';
 import 'package:instagram/models/chat_user.dart';
 import 'package:instagram/models/message.dart';
@@ -8,6 +10,7 @@ class MessageServices implements IMessageService {
       FirebaseFirestore.instance.collection('conversations');
   final CollectionReference _usersCollection =
       FirebaseFirestore.instance.collection('users');
+  final _userStatusDatabaseRef = realtime.FirebaseDatabase.instance.ref().child('userStatus');
 
   @override
   Stream<DocumentSnapshot> getStreamConversationData(String conversationId) {
@@ -40,7 +43,7 @@ class MessageServices implements IMessageService {
   @override
   Future<void> createConversation(List<ChatUser> users, String conversationId,
       String messageContent, DateTime messageTime) async {
-    final conversationRef = _conversationsCollection.doc(conversationId).set({
+    await _conversationsCollection.doc(conversationId).set({
       'users':
           FieldValue.arrayUnion(users.map((user) => user.toJson()).toList()),
       'uid': conversationId,
@@ -148,5 +151,10 @@ class MessageServices implements IMessageService {
           .doc(conversationId)
           .update({'lastMessageTime': timestamp});
     }
+  }
+
+  @override
+  Stream<bool> getOnlineStatus(String userId) {
+    return _userStatusDatabaseRef.child("${FirebaseAuth.instance.currentUser!.uid}/online").onValue.map((event) => (event.snapshot.value as bool?) ?? false);
   }
 }

@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:instagram/models/conversation.dart';
 import 'package:instagram/services/message_services.dart';
+import 'package:instagram/services/user_services.dart';
 
 import '../models/chat_user.dart';
 import '../models/message.dart';
@@ -13,6 +15,7 @@ class MessageViewModel extends ChangeNotifier {
   MessageViewModel() {
     createConversationIdFromUsers();
   }
+  final UserService _userService = UserService();
 
   final MessageServices _messageServices = MessageServices();
   final StreamController<String> _writingMessageController = StreamController<String>();
@@ -60,10 +63,11 @@ class MessageViewModel extends ChangeNotifier {
   Stream<Conversation> getConversationData(String conversationId) {
     return _messageServices.getStreamConversationData(conversationId).transform(
       StreamTransformer<DocumentSnapshot<Map<String, dynamic>>, Conversation>.fromHandlers(
-        handleData: (snapshot, sink) {
+        handleData: (snapshot, sink) async {
           if (snapshot.data() == null) {
             return;
           }
+
           sink.add(Conversation.fromJson(snapshot.data()!));
         },
         handleError: (error, stackTrace, sink) {

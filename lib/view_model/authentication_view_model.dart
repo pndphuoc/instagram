@@ -62,10 +62,4 @@ class AuthenticationViewModel extends ChangeNotifier {
 
     return result;
   }
-
-  Future<String> completeSignInWithGoogle(
-      {required String username, String bio = "", Uint8List? file}) async {
-    return await _service.completeSignInWithGoogle(
-        username: username, bio: bio, file: file);
-  }
 }

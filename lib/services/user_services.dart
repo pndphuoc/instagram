@@ -92,6 +92,10 @@ class UserService implements IUserService {
 
   @override
   Future<void> setOnlineStatus(bool isOnline) async {
-    await _userStatusDatabaseRef.child(FirebaseAuth.instance.currentUser!.uid).set({'online': isOnline});
+    if (isOnline) {
+      _userStatusDatabaseRef.child(FirebaseAuth.instance.currentUser!.uid).set(
+          {'online': isOnline, 'lastOnline': ServerValue.timestamp});
+    }
   }
+
 }

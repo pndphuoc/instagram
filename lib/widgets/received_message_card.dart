@@ -25,7 +25,7 @@ class _ReceivedMessageCardState extends State<ReceivedMessageCard> {
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         const SizedBox(width: 10,),
-        AvatarWithStatus(radius: avatarSize, imageUrl: widget.user.avatarUrl, isOnline: widget.user.isOnline!),
+        AvatarWithStatus(radius: avatarSize, imageUrl: widget.user.avatarUrl, isOnline: widget.user.isOnline),
         const SizedBox(width: 10,),
         if (widget.message.type == 'text') _buildTextMessage(context),
         if (widget.message.type == 'image') _buildImageMessage(context)

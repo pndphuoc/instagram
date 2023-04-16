@@ -47,17 +47,6 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   AppLifecycleState? _notification;
   CurrentUserViewModel currentUserViewModel = CurrentUserViewModel();
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-
-    if (state == AppLifecycleState.resumed) {
-      print("App is foreground");
-      currentUserViewModel.setOnlineStatus(true);
-    } else if (state == AppLifecycleState.detached) {
-      print("App is background");
-      currentUserViewModel.setOnlineStatus(false);
-    }
-  }
 
   @override
   void initState() {
@@ -74,8 +63,17 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final _userStatusDatabaseRef = FirebaseDatabase.instance.reference().child('userStatus');
-
+    final userStatusDatabaseRef =
+        FirebaseDatabase.instance.ref().child('userStatus');
+    if (FirebaseAuth.instance.currentUser != null) {
+      userStatusDatabaseRef
+          .child(FirebaseAuth.instance.currentUser!.uid)
+          .onDisconnect()
+          .update({
+        'online': false,
+        'lastOnline': ServerValue.timestamp,
+      });
+    }
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => CurrentUserViewModel()),
@@ -86,76 +84,79 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         ChangeNotifierProvider(create: (context) => ElasticViewModel()),
         ChangeNotifierProvider(create: (context) => UserViewModel())
       ],
-      child: MaterialApp(
-          routes: routes,
-          debugShowCheckedModeBanner: false,
-          title: 'Instagram Clone',
-          theme: ThemeData.dark().copyWith(
-            scaffoldBackgroundColor: mobileBackgroundColor,
-            textTheme: GoogleFonts.readexProTextTheme().copyWith(
-              bodyLarge: const TextStyle(
-                  color: onBackground,
-                  fontSize: 20,
-                  fontWeight: FontWeight.normal),
-              bodyMedium: const TextStyle(
-                color: onBackgroundSecondary,
+      builder: (context, child) {
+        return MaterialApp(
+            routes: routes,
+            debugShowCheckedModeBanner: false,
+            title: 'Instagram Clone',
+            theme: ThemeData.dark().copyWith(
+              scaffoldBackgroundColor: mobileBackgroundColor,
+              textTheme: GoogleFonts.readexProTextTheme().copyWith(
+                bodyLarge: const TextStyle(
+                    color: onBackground,
+                    fontSize: 20,
+                    fontWeight: FontWeight.normal),
+                bodyMedium: const TextStyle(
+                  color: onBackgroundSecondary,
+                ),
+                bodySmall: const TextStyle(color: onBackground),
+                labelLarge: const TextStyle(
+                    color: Colors.grey, fontWeight: FontWeight.w300),
+                displayLarge: const TextStyle(color: onBackground),
+                displayMedium: const TextStyle(color: onBackground),
+                displaySmall: const TextStyle(color: onBackground),
+                headlineMedium: const TextStyle(color: onBackground),
+                headlineSmall: const TextStyle(color: onBackground),
+                titleLarge: const TextStyle(color: onBackground),
+                labelSmall: const TextStyle(color: onBackground),
+                labelMedium: const TextStyle(color: onBackground),
+                titleMedium: const TextStyle(color: onBackground),
+                titleSmall: const TextStyle(color: onBackground),
               ),
-              bodySmall: const TextStyle(color: onBackground),
-              labelLarge: const TextStyle(
-                  color: Colors.grey, fontWeight: FontWeight.w300),
-              displayLarge: const TextStyle(color: onBackground),
-              displayMedium: const TextStyle(color: onBackground),
-              displaySmall: const TextStyle(color: onBackground),
-              headlineMedium: const TextStyle(color: onBackground),
-              headlineSmall: const TextStyle(color: onBackground),
-              titleLarge: const TextStyle(color: onBackground),
-              labelSmall: const TextStyle(color: onBackground),
-              labelMedium: const TextStyle(color: onBackground),
-              titleMedium: const TextStyle(color: onBackground),
-              titleSmall: const TextStyle(color: onBackground),
             ),
-          ),
-          /*   home: const ResponsiveLayout(
+            /*   home: const ResponsiveLayout(
           mobileScreenLayout: MobileScreenLayout(),
           webScreenLayout: WebScreenLayout(),
         ),*/
-          home: Consumer<CurrentUserViewModel>(
-            builder: (context, value, child) {
-              return StreamBuilder(
-                stream: FirebaseAuth.instance.authStateChanges(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: CircularProgressIndicator(color: primaryColor),
-                    );
-                  } else if (snapshot.hasError) {
-                    return Center(
-                      child: Text(snapshot.error.toString()),
-                    );
-                  } else if (!snapshot.hasData) {
-                    return const LoginScreen();
-                  } else {
-                    return FutureBuilder(
-                      future: value.getCurrentUserDetails(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.done) {
-                          return const ResponsiveLayout(
-                            webScreenLayout: WebScreenLayout(),
-                            mobileScreenLayout: MobileScreenLayout(),
-                          );
-                        } else {
-                          return const Center(
-                            child:
-                                CircularProgressIndicator(color: primaryColor),
-                          );
-                        }
-                      },
-                    );
-                  }
-                },
-              );
-            },
-          )),
+            home: Consumer<CurrentUserViewModel>(
+              builder: (context, value, child) {
+                return StreamBuilder(
+                  stream: FirebaseAuth.instance.authStateChanges(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                        child: CircularProgressIndicator(color: primaryColor),
+                      );
+                    } else if (snapshot.hasError) {
+                      return Center(
+                        child: Text(snapshot.error.toString()),
+                      );
+                    } else if (!snapshot.hasData) {
+                      return const LoginScreen();
+                    } else {
+                      return FutureBuilder(
+                        future: value.getCurrentUserDetails(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.done) {
+                            return const ResponsiveLayout(
+                              webScreenLayout: WebScreenLayout(),
+                              mobileScreenLayout: MobileScreenLayout(),
+                            );
+                          } else {
+                            return const Center(
+                              child: CircularProgressIndicator(
+                                  color: primaryColor),
+                            );
+                          }
+                        },
+                      );
+                    }
+                  },
+                );
+              },
+            ));
+      },
     );
   }
 }
