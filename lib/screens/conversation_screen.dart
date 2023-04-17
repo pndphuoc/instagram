@@ -9,7 +9,10 @@ import 'package:instagram/view_model/message_view_model.dart';
 import 'package:instagram/widgets/avatar_with_status.dart';
 import 'package:instagram/widgets/received_message_card.dart';
 import 'package:instagram/widgets/sent_message_card.dart';
+import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
+
+import '../widgets/image_thumbail.dart';
 
 class ConversationScreen extends StatefulWidget {
   final ChatUser restUser;
@@ -30,15 +33,41 @@ class _ConversationScreenState extends State<ConversationScreen> {
   late String conversationId;
   late Stream<Conversation> _getConversationData;
   late Stream<List<Message>> _getMessages;
+  final ScrollController _scrollController = ScrollController();
+  int page = 1;
+
+  final double _crossAxisSpacing = 2;
+  final double _mainAxisSpacing = 2;
+  final double _childAspectRatio = 1;
+  final _gridViewCrossAxisCount = 3;
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   @override
   void initState() {
     _currentUserViewModel = context.read<CurrentUserViewModel>();
     _messageViewModel.users
         .addAll([widget.restUser, _currentUserViewModel.chatUser]);
     _messageViewModel.createConversationIdFromUsers();
-    _getConversationData = _messageViewModel.getConversationData(_messageViewModel.conversationId);
+    _getConversationData =
+        _messageViewModel.getConversationData(_messageViewModel.conversationId);
     _getMessages = _messageViewModel.getMessages();
+    _messageViewModel.firstLoading();
     super.initState();
+  }
+
+  double _calculateItemHeight(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double itemWidth =
+        (screenWidth - _crossAxisSpacing * (_gridViewCrossAxisCount - 1)) /
+            _gridViewCrossAxisCount;
+    double itemHeight = itemWidth / _childAspectRatio + _mainAxisSpacing;
+    return itemHeight;
   }
 
   @override
@@ -65,7 +94,9 @@ class _ConversationScreenState extends State<ConversationScreen> {
                     } else {
                       return ListView.separated(
                         reverse: true,
-                        separatorBuilder: (context, index) => const SizedBox(height: 5,),
+                        separatorBuilder: (context, index) => const SizedBox(
+                          height: 5,
+                        ),
                         itemCount: snapshot.data!.length,
                         itemBuilder: (context, index) {
                           if (!snapshot.hasData) {
@@ -85,7 +116,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
                           }
                         },
                       );
-                  }
+                    }
                   },
                 );
               } else {
@@ -131,13 +162,14 @@ class _ConversationScreenState extends State<ConversationScreen> {
                   height: 5,
                 ),
                 StreamBuilder(
-                    stream: _messageViewModel.getOnlineStatus(widget.restUser.userId),
+                    stream: _messageViewModel
+                        .getOnlineStatus(widget.restUser.userId),
                     builder: (context, snapshot) {
-                      return Text(snapshot.data ?? widget.restUser.username,
+                      return Text(
+                        snapshot.data ?? widget.restUser.username,
                         style: Theme.of(context).textTheme.labelMedium,
                       );
-                    }
-                )
+                    })
               ],
             ),
           )
@@ -213,7 +245,8 @@ class _ConversationScreenState extends State<ConversationScreen> {
                     children: [
                       GestureDetector(
                           onTap: _showMediasSelector,
-                          child: const Icon(Icons.photo_outlined, color: Colors.white, size: 30)),
+                          child: const Icon(Icons.photo_outlined,
+                              color: Colors.white, size: 30)),
                       const SizedBox(
                         width: 10,
                       ),
@@ -253,19 +286,171 @@ class _ConversationScreenState extends State<ConversationScreen> {
   }
 
   _showMediasSelector() {
-    return showModalBottomSheet(context: context, builder: (context) {
-      return mediasSelector();
-    },);
-  }
-
-  Widget mediasSelector() {
-    return Column(
-      children: [
-        Text("Phuoc dep trai"),
-
-      ],
+    return showModalBottomSheet(
+      enableDrag: true,
+      context: context,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+              topRight: Radius.circular(20), topLeft: Radius.circular(20))),
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.5,
+          maxChildSize: 1,
+          minChildSize: 0.5,
+          expand: true,
+          builder: (context, scrollController) {
+            return Container(
+              color: secondaryColor,
+              child: Column(
+                children: [
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Center(
+                    child: GestureDetector(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            _messageViewModel.selectedPath.name,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          const SizedBox(
+                            width: 5,
+                          ),
+                          const Icon(Icons.keyboard_arrow_up)
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Expanded(child: _mediasGrid(context, scrollController)),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
+  Widget _mediasGrid(BuildContext context, ScrollController scrollController) {
+    double itemHeight = _calculateItemHeight(context);
+    return NotificationListener<ScrollNotification>(
+      onNotification: (scrollNotification) {
+        const double threshold = 0.5; // 90% of the list length
+        final double extentAfter = scrollNotification.metrics.extentAfter;
+        final double maxScrollExtent =
+            scrollNotification.metrics.maxScrollExtent;
+        if (scrollNotification is ScrollEndNotification &&
+            extentAfter / maxScrollExtent < threshold &&
+            _messageViewModel.hasMoreToLoad) {
+          _messageViewModel.loadAssetsOfPath(page: page);
+          page++;
+        }
+        return true;
+      },
+      child: StreamBuilder<List<AssetEntity>>(
+          stream: _messageViewModel.selectedEntitiesStream,
+          initialData: const [],
+          builder: (context, snapshot) {
+            return Stack(
+              children: [
+                GridView.builder(
+                  cacheExtent: 500,
+                  controller: scrollController,
+                  itemCount: _messageViewModel.entities.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: _gridViewCrossAxisCount,
+                      mainAxisSpacing: _mainAxisSpacing,
+                      crossAxisSpacing: _crossAxisSpacing,
+                      childAspectRatio: _childAspectRatio),
+                  itemBuilder: (context, index) {
+                    return GestureDetector(
+                      onTap: () {
+                        scrollController.animateTo(
+                            index ~/ _gridViewCrossAxisCount * itemHeight,
+                            curve: Curves.bounceInOut,
+                            duration: const Duration(milliseconds: 200));
+                        _messageViewModel.onTapMedia(_messageViewModel.entities[index]);
+                      },
+                      child: Stack(
+                        children: [
+                          ImageItemWidget(
+                            entity: _messageViewModel.entities[index],
+                            option: const ThumbnailOption(
+                              size: ThumbnailSize(300, 300),
+                            ),
+                          ),
+                          if (snapshot.data!.isEmpty ||
+                              !snapshot.data!
+                                  .contains(_messageViewModel.entities[index]))
+                            Positioned(
+                                top: 5,
+                                right: 5,
+                                child: Container(
+                                  height: 25,
+                                  width: 25,
+                                  decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.fromBorderSide(BorderSide(
+                                          color: Colors.white, width: 1)),
+                                      color: blueColor),
+                                ))
+                          else
+                            Positioned(
+                                top: 5,
+                                right: 5,
+                                child: Container(
+                                  height: 25,
+                                  width: 25,
+                                  decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.fromBorderSide(BorderSide(
+                                          color: Colors.white, width: 1)),
+                                      color: Colors.blue),
+                                  child: Center(
+                                      child: Text((_messageViewModel
+                                                  .selectedEntities
+                                                  .indexOf(_messageViewModel
+                                                      .entities[index]) +
+                                              1)
+                                          .toString())),
+                                ))
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                if (snapshot.data!.isNotEmpty)
+                  Positioned(
+                      bottom: 10,
+                      left: 10,
+                      right: 10,
+                      child: SizedBox(
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: (){
+                            _messageViewModel.onTapSendImageMessages();
+                            Navigator.of(context).pop();
+                          },
+                          style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15)
+                              )
+                          ),
+                          child: Text("Send", style: Theme.of(context).textTheme.titleMedium,),
+                        ),
+                      ))
 
+              ],
+            );
+          }),
+    );
+  }
 }

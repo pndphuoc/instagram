@@ -131,7 +131,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                 child: Row(
                   children: [
                     Text(
-                      value.setSelectedPath.name,
+                      value.selectedPath.name,
                       style: Theme.of(context).textTheme.titleMedium,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -312,7 +312,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                   ...value.paths.map((path) => InkWell(
                         onTap: () {
                           page = 0;
-                          value.setSelectedPath = path;
+                          value.selectedPath = path;
                           value.loadAssetsOfPath(page: page);
                           page++;
                           Navigator.pop(context);

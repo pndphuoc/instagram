@@ -23,7 +23,7 @@ class AssetViewModel extends ChangeNotifier {
 
   List<AssetEntity> get selectedEntities => _selectedEntities;
 
-  AssetPathEntity get setSelectedPath => _selectedPath;
+  AssetPathEntity get selectedPath => _selectedPath;
 
   AssetEntity? get selectedEntity => _selectedEntity;
 
@@ -33,7 +33,9 @@ class AssetViewModel extends ChangeNotifier {
 
   bool get isAllPermissionGranted => _isAllPermissionGranted;
 
-  set setSelectedPath(AssetPathEntity path) {
+
+
+  set selectedPath(AssetPathEntity path) {
     _selectedPath = path;
     _entities = [];
     _selectedEntity = null;
@@ -91,11 +93,9 @@ class AssetViewModel extends ChangeNotifier {
     try {
       await loadAssetPathList();
       _selectedPath = _paths.first;
-      print("test assets");
       await loadAssetsOfPath();
 
       _selectedEntity = _entities.first;
-      print(_entities.length);
       notifyListeners();
       return true;
     } catch (err) {
@@ -123,6 +123,20 @@ class AssetViewModel extends ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  void onTapEntityInMessage(AssetEntity entity) {
+    _isMultiSelect = true;
+
+    bool isExistInSelectedEntities = _selectedEntities.contains(entity);
+
+    if (isExistInSelectedEntities) {
+      _selectedEntities.remove(entity);
+    } else {
+      _selectedEntities.add(entity);
+
+
+      notifyListeners(); }
   }
 
   void onLongPress(AssetEntity entity) {

@@ -153,5 +153,55 @@ class MessageServices implements IMessageService {
     }
   }
 
+  @override
+  Future<void> sendImageMessage({required String conversationId, required String senderId, required String messageContent, required DateTime timestamp}) async {
+    try {
+      final messageRef = _conversationsCollection
+          .doc(conversationId)
+          .collection('messages')
+          .doc();
+
+      // Tạo một message mới
+      final message = Message(
+          id: messageRef.id,
+          senderId: senderId,
+          type: 'image',
+          content: messageContent,
+          timestamp: timestamp,
+          status: 'sent');
+
+      // Thêm message vào mảng messages của document conversation
+      await messageRef.set(message.toJson());
+    } catch (error) {
+      // Xử lý lỗi nếu có
+      print('Error sending message: $error');
+    }
+  }
+
+  @override
+  Future<void> sendVideoMessage({required String conversationId, required String senderId, required String messageContent, required DateTime timestamp}) async {
+    try {
+      final messageRef = _conversationsCollection
+          .doc(conversationId)
+          .collection('messages')
+          .doc();
+
+      // Tạo một message mới
+      final message = Message(
+          id: messageRef.id,
+          senderId: senderId,
+          type: 'video',
+          content: messageContent,
+          timestamp: timestamp,
+          status: 'sent');
+
+      // Thêm message vào mảng messages của document conversation
+      await messageRef.set(message.toJson());
+    } catch (error) {
+      // Xử lý lỗi nếu có
+      print('Error sending message: $error');
+    }
+  }
+
 
 }

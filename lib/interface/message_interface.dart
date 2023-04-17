@@ -6,6 +6,9 @@ import '../models/chat_user.dart';
 
 abstract class IMessageService {
   Future<void> sendTextMessage({required String conversationId, required String senderId, required String messageContent, required DateTime timestamp});
+  Future<void> sendImageMessage({required String conversationId, required String senderId, required String messageContent, required DateTime timestamp});
+  Future<void> sendVideoMessage({required String conversationId, required String senderId, required String messageContent, required DateTime timestamp});
+
   Stream<List<Message>> getStreamMessages(
       {required String conversationId, int pageSize = 10, DocumentSnapshot? lastDocument});
   Stream<DocumentSnapshot> getStreamConversationData(String conversationId);

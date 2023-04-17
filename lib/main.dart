@@ -13,6 +13,7 @@ import 'package:instagram/responsive/responsive_layout_screen.dart';
 import 'package:instagram/responsive/web_screen_layout.dart';
 import 'package:instagram/screens/login_screen.dart';
 import 'package:instagram/ultis/colors.dart';
+import 'package:instagram/view_model/asset_message_view_model.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
 import 'package:instagram/view_model/authentication_view_model.dart';
 import 'package:instagram/view_model/elastic_view_model.dart';
@@ -89,7 +90,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         ChangeNotifierProvider(create: (context) => PostViewModel()),
         ChangeNotifierProvider(create: (context) => AuthenticationViewModel()),
         ChangeNotifierProvider(create: (context) => ElasticViewModel()),
-        ChangeNotifierProvider(create: (context) => UserViewModel())
+        ChangeNotifierProvider(create: (context) => UserViewModel()),
+        ChangeNotifierProvider(create: (context) => AssetMessageViewModel())
       ],
       builder: (context, child) {
         if (FirebaseAuth.instance.currentUser != null) {
