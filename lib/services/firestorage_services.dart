@@ -1,6 +1,8 @@
 import 'dart:io';
-
+import 'package:http/http.dart' as http;
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../interface/firestorage_interface.dart';
 
@@ -22,8 +24,16 @@ class FireBaseStorageService implements IStorageService {
         customMetadata: {'picked-file-path': file.path}, // Lưu đường dẫn file gốc
       );
     }
-    final task = ref.putFile(
-      file,
+
+    final compressedFile = await FlutterImageCompress.compressWithFile(
+      file.absolute.path,
+      minWidth: 1024,
+      minHeight: 1024,
+      quality: 90,
+    );
+
+    final task = ref.putData(
+      compressedFile!,
       metadata,
     );
 
@@ -41,6 +51,21 @@ class FireBaseStorageService implements IStorageService {
   Future<void> deleteFile(String path) async {
     final ref = _firebaseStorage.ref(path);
     await ref.delete();
+  }
+
+  @override
+  Future<bool> downloadFile(String url) async {
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      // Save file to device
+      final directory = await getExternalStorageDirectory();
+      print(directory!.path);
+      final file = File('/storage/emulated/0/DCIM/${DateTime.now()}.jpg');
+      await file.writeAsBytes(response.bodyBytes);
+      return true;
+    }
+    return false;
   }
 
 }

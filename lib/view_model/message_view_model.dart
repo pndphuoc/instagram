@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:instagram/models/conversation.dart';
 import 'package:instagram/services/message_services.dart';
 import 'package:instagram/services/user_services.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -37,6 +39,10 @@ class MessageViewModel extends ChangeNotifier {
   final _messagesController = StreamController<List<Message>>();
 
   Stream<List<Message>> get messagesStream => _messagesController.stream;
+
+  final _sendingMessageController = StreamController<List<AssetEntity>>();
+
+  Stream<List<AssetEntity>> get sendingMessageStream => _sendingMessageController.stream;
 
   final StreamController<List<ChatUser>> _usersList =
       StreamController<List<ChatUser>>();
@@ -239,6 +245,7 @@ class MessageViewModel extends ChangeNotifier {
       await _messageServices.createConversation(
           _users, _conversationId, '', DateTime.now());
     }
+    _sendingMessageController.sink.add(_selectedEntities);
     for (final entity in _selectedEntities) {
       late String lastMessageContent;
       late String url;
@@ -275,13 +282,38 @@ class MessageViewModel extends ChangeNotifier {
             messageContent: url,
             timestamp: time);
       }
-      updateLastMessageOfConversation(conversationId: _conversationId, content: lastMessageContent, type: type, timestamp: time);
-    }
+      updateLastMessageOfConversation(
+          conversationId: _conversationId,
+          content: lastMessageContent,
+          type: type,
+          timestamp: time);
+    }_sendingMessageController.sink.add([]);
     _selectedEntities = [];
 
     //await _messageServices.sendTextMessage(conversationId: _conversationId, senderId: senderId, messageContent: messageContent, timestamp: timestamp);
     //await updateLastMessageOfConversation(conversationId: _conversationId, content: messageContent, type: messageType, timestamp: timestamp);
   }
+
+  Future<bool> onDownload(String url) async {
+    var status = await Permission.storage.status;
+    if (status == PermissionStatus.granted) {
+      _requestPermission();
+    }
+    return _fireBaseStorageService.downloadFile(url);
+  }
+
+  Future<bool> _requestPermission() async {
+    final PermissionStatus status =
+    await Permission.manageExternalStorage.request();
+    if (status == PermissionStatus.denied) {
+      Fluttertoast.showToast(msg: "Unable to download because permission is not granted");
+      return false;
+    } else if (status == PermissionStatus.granted) {
+      return true;
+    }
+    return false;
+  }
+
 /*  Stream<List<Conversation>> getConversations() {
     return _messageServices.getConversations(userId: FirebaseAuth.instance.currentUser!.uid).transform(
       StreamTransformer<List<dynamic>, List<Conversation>>.fromHandlers(
