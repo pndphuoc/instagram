@@ -1,5 +1,6 @@
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 pickImage(ImageSource source) async {
   final ImagePicker _imagePicker = ImagePicker();
@@ -23,16 +24,18 @@ void showSnackBar(BuildContext context, String text) {
 
 String getElapsedTime(DateTime startTime) {
   Duration timePassed = DateTime.now().difference(startTime);
-  if (timePassed.inDays > 30) {
-    return '${timePassed.inDays}';
+  if (timePassed.inDays > 7) {
+    final DateFormat formatter = DateFormat('yyyy-MM-dd');
+    final String formatted = formatter.format(startTime);
+    return formatted;
   } else if (timePassed.inDays > 0) {
-    return '${timePassed.inDays}d';
+    return '${timePassed.inDays} days';
   } else if (timePassed.inHours > 0) {
-    return '${timePassed.inHours}h';
+    return '${timePassed.inHours} hours';
   } else if (timePassed.inMinutes > 0) {
-    return '${timePassed.inMinutes}m';
+    return '${timePassed.inMinutes} minutes';
   } else {
-    return '${timePassed.inSeconds}s';
+    return '${timePassed.inSeconds} seconds';
   }
 }
 

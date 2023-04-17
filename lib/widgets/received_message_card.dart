@@ -8,7 +8,10 @@ import '../models/message.dart';
 class ReceivedMessageCard extends StatefulWidget {
   final Message message;
   final ChatUser user;
-  const ReceivedMessageCard({Key? key, required this.message, required this.user}) : super(key: key);
+
+  const ReceivedMessageCard(
+      {Key? key, required this.message, required this.user})
+      : super(key: key);
 
   @override
   State<ReceivedMessageCard> createState() => _ReceivedMessageCardState();
@@ -24,9 +27,18 @@ class _ReceivedMessageCardState extends State<ReceivedMessageCard> {
       crossAxisAlignment: CrossAxisAlignment.end,
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        const SizedBox(width: 10,),
-        AvatarWithStatus(radius: avatarSize, imageUrl: widget.user.avatarUrl, isOnline: widget.user.isOnline),
-        const SizedBox(width: 10,),
+        const SizedBox(
+          width: 10,
+        ),
+        CircleAvatar(
+          radius: avatarSize,
+          backgroundImage: widget.user.avatarUrl.isNotEmpty
+              ? CachedNetworkImageProvider(widget.user.avatarUrl)
+              : const AssetImage('assets/default_avatar.png') as ImageProvider,
+        ),
+        const SizedBox(
+          width: 10,
+        ),
         if (widget.message.type == 'text') _buildTextMessage(context),
         if (widget.message.type == 'image') _buildImageMessage(context)
       ],
@@ -38,9 +50,10 @@ class _ReceivedMessageCardState extends State<ReceivedMessageCard> {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
           color: const Color.fromRGBO(55, 126, 189, 1.0),
-          borderRadius: BorderRadius.circular(borderRadius)
-      ),
-      child: Text(widget.message.content, style: const TextStyle(color: Colors.white),
+          borderRadius: BorderRadius.circular(borderRadius)),
+      child: Text(
+        widget.message.content,
+        style: const TextStyle(color: Colors.white),
         maxLines: null,
       ),
     );
@@ -56,5 +69,4 @@ class _ReceivedMessageCardState extends State<ReceivedMessageCard> {
       ),
     );
   }
-
 }

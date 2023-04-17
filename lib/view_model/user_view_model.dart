@@ -109,6 +109,10 @@ class UserViewModel extends ChangeNotifier {
         await _relationshipService.isFollowing(currentUserId, targetUserId);
   }
 
+  Future<void> setOnlineStatus(bool isOnline) async {
+    await _userService.setOnlineStatus(isOnline);
+  }
+
   @override
   void dispose() {
     _postController.close();

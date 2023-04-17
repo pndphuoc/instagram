@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -46,13 +48,18 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   AppLifecycleState? _notification;
-  CurrentUserViewModel currentUserViewModel = CurrentUserViewModel();
+  UserViewModel userViewModel = UserViewModel();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    currentUserViewModel.setOnlineStatus(true);
+    userViewModel.setOnlineStatus(true);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
   }
 
   @override
@@ -85,6 +92,11 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         ChangeNotifierProvider(create: (context) => UserViewModel())
       ],
       builder: (context, child) {
+        if (FirebaseAuth.instance.currentUser != null) {
+          Timer.periodic(const Duration(minutes: 2), (timer) {
+            userViewModel.setOnlineStatus(true);
+          });
+        }
         return MaterialApp(
             routes: routes,
             debugShowCheckedModeBanner: false,

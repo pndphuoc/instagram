@@ -98,4 +98,9 @@ class UserService implements IUserService {
     }
   }
 
+  @override
+  Stream<int> getLastOnlineTime(String userId) {
+    return _userStatusDatabaseRef.child("$userId/lastOnline").onValue.map((event) => event.snapshot.value as int);
+  }
+
 }

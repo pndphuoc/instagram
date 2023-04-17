@@ -388,8 +388,7 @@ class _ProfileScreenState extends State<ProfileScreen>
         userId: widget.userId,
         username: _userViewModel.user.username,
         avatarUrl: _userViewModel.user.avatarUrl,
-        displayName: _userViewModel.user.displayName,
-        isOnline: false);
+        displayName: _userViewModel.user.displayName,);
     Navigator.push(
       context,
       PageRouteBuilder(

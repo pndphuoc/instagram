@@ -13,5 +13,4 @@ abstract class IMessageService {
   Future<bool> isExistsConversation(List<String> userIds);
   Stream<List<String>> getConversationIds({required String userId, int pageSize = 20, DocumentSnapshot? lastDocument});
   Future<void> updateLastMessageOfConversation({required String conversationId, required String content, required DateTime timestamp, required String type});
-  Stream<bool> getOnlineStatus(String userId);
 }

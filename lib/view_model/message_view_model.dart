@@ -1,8 +1,6 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:instagram/models/conversation.dart';
 import 'package:instagram/services/message_services.dart';
@@ -90,6 +88,27 @@ class MessageViewModel extends ChangeNotifier {
     }
     _messageServices.updateLastMessageOfConversation(conversationId: conversationId, content: content, timestamp: timestamp, type: type);
   }
+
+  Stream<String> getOnlineStatus(String userId) {
+    return _userService.getLastOnlineTime(userId).transform(
+        StreamTransformer.fromHandlers(
+            handleData: (snapshot, sink) async {
+              if (snapshot.isNaN) return;
+
+              final lastOnline = DateTime.fromMillisecondsSinceEpoch(snapshot);
+              final difference = DateTime.now().difference(lastOnline);
+              String status = 'Online';
+              if (difference.inMinutes < 2) {
+                status = "Online";
+              } else {
+                status = "Online ${difference.inMinutes} minutes ago";
+              }
+              sink.add(status);
+            }
+        )
+    );
+  }
+
 
 /*  Stream<List<Conversation>> getConversations() {
     return _messageServices.getConversations(userId: FirebaseAuth.instance.currentUser!.uid).transform(

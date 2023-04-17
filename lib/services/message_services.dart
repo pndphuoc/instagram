@@ -153,8 +153,5 @@ class MessageServices implements IMessageService {
     }
   }
 
-  @override
-  Stream<bool> getOnlineStatus(String userId) {
-    return _userStatusDatabaseRef.child("${FirebaseAuth.instance.currentUser!.uid}/online").onValue.map((event) => (event.snapshot.value as bool?) ?? false);
-  }
+
 }

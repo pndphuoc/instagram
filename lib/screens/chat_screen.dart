@@ -26,7 +26,6 @@ class _ChatScreenState extends State<ChatScreen> {
       userId: "ccc",
       username: "hiii_chin",
       displayName: "Nguyễn Thùy Chin",
-      isOnline: true,
       avatarUrl:
           "https://firebasestorage.googleapis.com/v0/b/instagram-b3812.appspot.com/o/photos%2F1681318354694?alt=media&token=91d18015-746a-4a6b-a9ba-293f5f056a07");
   final searchFieldBorder =
@@ -104,9 +103,9 @@ class _ChatScreenState extends State<ChatScreen> {
       child: Column(
         children: [
           AvatarWithStatus(
+            userId: user.userId,
             radius: activeAvatarSize,
             imageUrl: user.avatarUrl,
-            isOnline: true,
           ),
           const SizedBox(
             height: 5,

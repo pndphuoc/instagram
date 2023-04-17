@@ -3,14 +3,12 @@ class ChatUser {
   String username;
   String avatarUrl;
   String displayName;
-  bool isOnline;
 
   ChatUser({
     required this.userId,
     required this.username,
     required this.avatarUrl,
     required this.displayName,
-    required this.isOnline
   });
 
   factory ChatUser.fromJson(Map<String, dynamic> json) {
@@ -18,8 +16,7 @@ class ChatUser {
       userId: json['userId'] ?? '',
       username: json['username'] ?? '',
       avatarUrl: json['avatarUrl'] ?? '',
-      displayName: json['displayName'] ?? '',
-      isOnline: json['isOnline']
+      displayName: json['displayName'] ?? ''
     );
   }
 
@@ -29,7 +26,6 @@ class ChatUser {
       'username': username,
       'avatarUrl': avatarUrl,
       'displayName': displayName,
-      'isOnline': isOnline
     };
   }
 }

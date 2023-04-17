@@ -45,8 +45,7 @@ class CurrentUserViewModel extends ChangeNotifier {
                   userId: _user!.uid,
                   username: _user!.username,
                   avatarUrl: _user!.avatarUrl,
-                  displayName: _user!.displayName,
-                  isOnline: true);
+                  displayName: _user!.displayName,);
               sink.add(user!);
             },
             handleError: (error, stackTrace, sink) {
@@ -83,9 +82,5 @@ class CurrentUserViewModel extends ChangeNotifier {
     } catch (e) {
       rethrow;
     }
-  }
-
-  Future<void> setOnlineStatus(bool isOnline) async {
-    await _userServices.setOnlineStatus(isOnline);
   }
 }

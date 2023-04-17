@@ -107,9 +107,10 @@ class _ConversationScreenState extends State<ConversationScreen> {
       title: Row(
         children: [
           AvatarWithStatus(
-              radius: avatarSize,
-              imageUrl: widget.restUser.avatarUrl,
-              isOnline: false),
+            userId: widget.restUser.userId,
+            radius: avatarSize,
+            imageUrl: widget.restUser.avatarUrl,
+          ),
           const SizedBox(
             width: 10,
           ),
@@ -129,11 +130,13 @@ class _ConversationScreenState extends State<ConversationScreen> {
                 const SizedBox(
                   height: 5,
                 ),
-                Text(
-                  widget.restUser.isOnline == null || widget.restUser.isOnline!
-                      ? "Online"
-                      : widget.restUser.username,
-                  style: Theme.of(context).textTheme.labelMedium,
+                StreamBuilder(
+                    stream: _messageViewModel.getOnlineStatus(widget.restUser.userId),
+                    builder: (context, snapshot) {
+                      return Text(snapshot.data ?? widget.restUser.username,
+                        style: Theme.of(context).textTheme.labelMedium,
+                      );
+                    }
                 )
               ],
             ),
@@ -207,12 +210,14 @@ class _ConversationScreenState extends State<ConversationScreen> {
               builder: (context, snapshot) {
                 if (snapshot.data!.trim().isEmpty) {
                   return Row(
-                    children: const [
-                      Icon(Icons.photo_outlined, color: Colors.white, size: 30),
-                      SizedBox(
+                    children: [
+                      GestureDetector(
+                          onTap: _showMediasSelector,
+                          child: const Icon(Icons.photo_outlined, color: Colors.white, size: 30)),
+                      const SizedBox(
                         width: 10,
                       ),
-                      Icon(
+                      const Icon(
                         Icons.emoji_emotions_outlined,
                         color: Colors.white,
                         size: 30,
@@ -246,4 +251,21 @@ class _ConversationScreenState extends State<ConversationScreen> {
       ),
     );
   }
+
+  _showMediasSelector() {
+    return showModalBottomSheet(context: context, builder: (context) {
+      return mediasSelector();
+    },);
+  }
+
+  Widget mediasSelector() {
+    return Column(
+      children: [
+        Text("Phuoc dep trai"),
+
+      ],
+    );
+  }
+
+
 }
