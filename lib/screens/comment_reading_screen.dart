@@ -2,12 +2,14 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:instagram/models/comment.dart';
+import 'package:instagram/provider/comment_text_field_provider.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/ultis/ultils.dart';
 import 'package:instagram/view_model/comment_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/widgets/comment_card.dart';
 import 'package:instagram/widgets/comment_shimmer.dart';
+import 'package:instagram/widgets/show_up_widget.dart';
 import 'package:instagram/widgets/uploading_comment_cart.dart';
 import 'package:provider/provider.dart';
 
@@ -32,6 +34,7 @@ class _CommentReadingScreenState extends State<CommentReadingScreen> {
   final myFocusNode = FocusNode();
   List<Comment> comments = [];
   late Future _getComments;
+  late CommentTextFieldProvider _commentTextFieldProvider;
 
   @override
   void initState() {
@@ -41,7 +44,7 @@ class _CommentReadingScreenState extends State<CommentReadingScreen> {
     _getComments = _commentViewModel.getComments(
         commentListId: widget.post.commentListId,
         userId: _currentUserViewModel.user!.uid);
-
+    _commentTextFieldProvider = context.read<CommentTextFieldProvider>();
     _scrollController.addListener(() {
       if (_commentViewModel.hasMoreToLoad &&
           _scrollController.position.pixels ==
@@ -71,12 +74,6 @@ class _CommentReadingScreenState extends State<CommentReadingScreen> {
         children: [
           GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTap: () {
-              myFocusNode.unfocus();
-            },
-            onVerticalDragDown: (_) {
-              myFocusNode.unfocus();
-            },
             child: SizedBox(
               height: MediaQuery.of(context).size.height,
               child: SingleChildScrollView(
@@ -165,10 +162,7 @@ class _CommentReadingScreenState extends State<CommentReadingScreen> {
             ),
           ),
           Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: _writeCommentBlock(context))
+              bottom: 0, left: 0, right: 0, child: _writeCommentBlock(context))
         ],
       ),
     );
@@ -201,7 +195,6 @@ class _CommentReadingScreenState extends State<CommentReadingScreen> {
                 Text(
                   widget.post.caption,
                   style: Theme.of(context).textTheme.bodyMedium,
-
                 )
               ],
             ),
@@ -222,7 +215,7 @@ class _CommentReadingScreenState extends State<CommentReadingScreen> {
   }
 
   _onPostButtonPressed() {
-    if (_commentController.text.isEmpty) {
+    if (_commentTextFieldProvider.textEditingController.text.isEmpty) {
       return;
     }
 
@@ -234,6 +227,7 @@ class _CommentReadingScreenState extends State<CommentReadingScreen> {
       content: _commentController.text,
       likedListId: '',
       likeCount: 0,
+      replyCount: 0,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );
@@ -246,62 +240,97 @@ class _CommentReadingScreenState extends State<CommentReadingScreen> {
       curve: Curves.fastOutSlowIn,
     );
 
-    _commentViewModel.addComment(
-      widget.post.uid,
-      widget.post.commentListId,
-      comment,
-    );
+    if (!_commentTextFieldProvider.isReplyingComment) {
+      _commentViewModel.addComment(
+        widget.post.commentListId,
+        comment,
+      );
+    } else {
+      _commentViewModel.addReplyComment(widget.post.commentListId,
+          _commentTextFieldProvider.commentRepliedId, comment);
+    }
 
     myFocusNode.unfocus();
     _commentController.clear();
   }
 
   Widget _writeCommentBlock(BuildContext context) {
-    return Container(
-      color: secondaryColor,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundImage: _currentUserViewModel.user!.avatarUrl.isNotEmpty
-                ? CachedNetworkImageProvider(
-                    _currentUserViewModel.user!.avatarUrl)
-                : const AssetImage('assets/default_avatar.png')
-                    as ImageProvider<Object>?,
-          ),
-          const SizedBox(
-            width: 20,
-          ),
-          Expanded(
-            child: TextField(
-              focusNode: myFocusNode,
-              controller: _commentController,
-              autofocus: true,
-              maxLines: null,
-              decoration: InputDecoration(
-                  border: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  hintText: "Comment for ${widget.post.username}",
-                  hintStyle: Theme.of(context).textTheme.bodyMedium),
+    return Column(
+      children: [
+        ShowUp(
+          delay: 0,
+          child: Container(
+            width: MediaQuery.of(context).size.width,
+            color: Colors.grey,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                  child: Text(
+                      "Answering ${_commentTextFieldProvider.username}",
+                      style: const TextStyle(color: Colors.black)),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 20),
+                  child: GestureDetector(
+                    onTap: () {},
+                    child: const Icon(Icons.close),
+                  ),
+                )
+              ],
             ),
           ),
-          const SizedBox(
-            width: 20,
+        ),
+        Container(
+          color: secondaryColor,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              CircleAvatar(
+                radius: 20,
+                backgroundImage:
+                    _currentUserViewModel.user!.avatarUrl.isNotEmpty
+                        ? CachedNetworkImageProvider(
+                            _currentUserViewModel.user!.avatarUrl)
+                        : const AssetImage('assets/default_avatar.png')
+                            as ImageProvider<Object>?,
+              ),
+              const SizedBox(
+                width: 20,
+              ),
+              Expanded(
+                child: TextField(
+                  focusNode: _commentTextFieldProvider.commentFocusNode,
+                  controller: _commentTextFieldProvider.textEditingController,
+                  autofocus: true,
+                  maxLines: null,
+                  decoration: InputDecoration(
+                      border: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      hintText: "Comment for ${widget.post.username}",
+                      hintStyle: Theme.of(context).textTheme.bodyMedium),
+                ),
+              ),
+              const SizedBox(
+                width: 20,
+              ),
+              GestureDetector(
+                onTap: _onPostButtonPressed,
+                child: SizedBox(
+                    height: 30,
+                    child: Text(
+                      "Post",
+                      style: GoogleFonts.readexPro(color: Colors.blue),
+                    )),
+              )
+            ],
           ),
-          GestureDetector(
-            onTap: _onPostButtonPressed,
-            child: SizedBox(
-                height: 30,
-                child: Text(
-                  "Post",
-                  style: GoogleFonts.readexPro(color: Colors.blue),
-                )),
-          )
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -408,11 +437,11 @@ class _CommentReadingScreenState extends State<CommentReadingScreen> {
   Future _deleteHandle(String commentListId, String commentId) async {
     await _showDeleteConfirmationDialog().then((value) async {
       if (value) {
-        await _commentViewModel.deleteComment(
-            commentListId, commentId, widget.post.uid).then((isDeleted) {
+        await _commentViewModel
+            .deleteComment(commentListId, commentId, widget.post.uid)
+            .then((isDeleted) {
           Navigator.pop(context);
           if (isDeleted) {
-
             setState(() {
               comments.removeWhere((element) => element.uid == commentId);
             });

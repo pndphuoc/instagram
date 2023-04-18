@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:instagram/screens/comment_reading_screen.dart';
+import 'package:instagram/screens/like_list_screen.dart';
 import 'package:instagram/screens/profile_screen.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/ultis/global_variables.dart';
@@ -206,9 +207,30 @@ class _PostCardState extends State<PostCard> {
               const SizedBox(
                 width: 10,
               ),
-              Text(
-                widget.post.likeCount.toString(),
-                style: Theme.of(context).textTheme.bodyMedium,
+              GestureDetector(
+                onTap: (){
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder:
+                          (context, animation, secondaryAnimation) => LikeListScreen(likeListId: widget.post.likedListId),
+                      transitionsBuilder: (context, animation,
+                          secondaryAnimation, child) {
+                        return buildSlideTransition(animation, child);
+                      },
+                      transitionDuration:
+                      const Duration(milliseconds: 150),
+                      reverseTransitionDuration:  const Duration(milliseconds: 150),
+                    ),
+                  );
+                },
+                child: Container(
+                  color: Colors.transparent,
+                  child: Text(
+                    widget.post.likeCount.toString(),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
               ),
               const SizedBox(
                 width: 10,

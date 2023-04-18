@@ -13,8 +13,17 @@ exports.updateLikeCount = functions.firestore
         const commentId = postData.commentId;
         const commentListId = postData.commentListId;
         const likedBy = postData.likedBy;
+        const replyCommentId = postData.replyCommentId;
 
-        if (postId === undefined) {
+        if (replyCommentId !== undefined) {
+            const commentRef = db.collection('commentList').doc(commentListId).collection('comments').doc(commentId).collection('replyComments').doc(replyCommentId);
+
+            await db.runTransaction(async (transaction) => {
+                const likeCount = likedBy.length;
+
+                transaction.update(commentRef, { likeCount });
+            });
+        } else if (postId === undefined) {
             const commentRef = db.collection('commentList').doc(commentListId).collection('comments').doc(commentId);
 
             await db.runTransaction(async (transaction) => {
@@ -22,7 +31,7 @@ exports.updateLikeCount = functions.firestore
 
                 transaction.update(commentRef, { likeCount });
             });
-        } else {
+        } else if (replyCommentId === undefined) {
             const postRef = db.collection('posts').doc(postId);
 
             await db.runTransaction(async (transaction) => {
@@ -48,6 +57,18 @@ exports.updateCommentCount = functions.firestore.document('commentList/{commentL
         return db.collection('posts').doc(postId).update({ commentCount });
     });
 
+exports.updateReplyCount = functions.firestore
+    .document('commentList/{commentListId}/comments/{commentId}/replyComments/{replyCommentId}')
+    .onWrite(async (change, context) => {
+        const commentListId = context.params.commentListId;
+        const commentId = context.params.commentId;
+
+        const replyCommentQuery = await db.collection('commentList').doc(commentListId).collection('comments').doc(commentId).collection('replyComments').get();
+        const replyCount = replyCommentQuery.size;
+
+        return db.collection('commentList').doc(commentListId).collection('comments').doc(commentId).update({replyCount});
+    });
+
 //Tự động tăng, giảm số lượng following của user thực hiện follow/unfollow
 exports.updateFollowingCount = functions.firestore.document('followingList/{followingListId}')
     .onWrite(async (change, context) => {
@@ -57,7 +78,6 @@ exports.updateFollowingCount = functions.firestore.document('followingList/{foll
         const userRef = db.collection('users').doc(userId);
 
         await db.runTransaction(async (transaction) => {
-            const userDoc = await transaction.get(userRef);
             const followingCount = followingIds.length;
 
             transaction.update(userRef, { followingCount });
@@ -74,10 +94,11 @@ exports.updateFollowerCount = functions.firestore.document('followerList/{follow
         const userRef = db.collection('users').doc(userId);
 
         await db.runTransaction(async (transaction) => {
-            const userDoc = await transaction.get(userRef);
             const followerCount = followerIds.length;
 
             transaction.update(userRef, { followerCount });
         })
     
     });
+    
+

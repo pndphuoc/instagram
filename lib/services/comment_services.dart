@@ -15,9 +15,9 @@ class CommentServices implements ICommentService {
     await _firestore.runTransaction((transaction) async {
       DocumentSnapshot commentListSnapshot = await transaction.get(cmtListRef);
 
-      if (!commentListSnapshot.exists) {
+/*      if (!commentListSnapshot.exists) {
         throw Exception;
-      }
+      }*/
 
       DocumentReference cmtRef = cmtListRef.collection('comments').doc();
       uid = cmtRef.id;
@@ -26,7 +26,8 @@ class CommentServices implements ICommentService {
 
       DocumentReference likeRef =
           FirebaseFirestore.instance.collection('likes').doc();
-      likeRef.set({"likedBy": [], "commentId": uid, "commentListId": commentListId});
+      likeRef.set(
+          {"likedBy": [], "commentId": uid, "commentListId": commentListId});
 
       comment.likedListId = likeRef.id;
 
@@ -34,6 +35,41 @@ class CommentServices implements ICommentService {
     });
 
     return uid ?? "";
+  }
+
+  @override
+  Future<String> addReplyComment(
+      String commentListId, String mainCommentId, Comment replyComment) async {
+    try {
+      CollectionReference replyCmtRef = _commentListCollection
+          .doc(commentListId)
+          .collection('comments')
+          .doc(mainCommentId)
+          .collection('replyComments');
+
+      DocumentReference cmtRef = replyCmtRef.doc();
+      String uid = cmtRef.id;
+
+      DocumentReference likeRef =
+          FirebaseFirestore.instance.collection('likes').doc();
+      await likeRef.set({
+        "likedBy": [],
+        "replyCommentId": uid,
+        "commentId": mainCommentId,
+        "commentListId": commentListId
+      });
+
+      replyComment.uid = uid;
+      replyComment.likedListId = likeRef.id;
+
+      await cmtRef.set(replyComment.toJson());
+
+      await updateReplyCount(commentListId, mainCommentId, true);
+
+      return uid;
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @override
@@ -60,6 +96,19 @@ class CommentServices implements ICommentService {
   }
 
   @override
+  Future<Comment> getReplyComment(
+      String commentListId, String commentId, String replyCommentId) async {
+    DocumentSnapshot snapshot = await _commentListCollection
+        .doc(commentListId)
+        .collection("comments")
+        .doc(commentId)
+        .collection("replyComments")
+        .doc(replyCommentId)
+        .get();
+    return Comment.fromJson(snapshot.data() as Map<String, dynamic>);
+  }
+
+  @override
   Future<List<DocumentSnapshot>> getComments({
     required String commentListId,
     int pageSize = 10,
@@ -73,6 +122,30 @@ class CommentServices implements ICommentService {
         .get();
     return snapshot.docs;
   }
+
+  @override
+  Future<List<DocumentSnapshot<Object?>>> getReplyComments({
+    required String commentListId,
+    required String commentId,
+    int pageSize = 5,
+    DocumentSnapshot<Object?>? lastDocument,
+  }) async {
+    Query query = _commentListCollection
+        .doc(commentListId)
+        .collection('comments')
+        .doc(commentId)
+        .collection('replyComments')
+        .orderBy('createdAt', descending: false)
+        .limit(pageSize);
+
+    if (lastDocument != null) {
+      query = query.startAfterDocument(lastDocument);
+    }
+
+    QuerySnapshot snapshot = await query.get();
+    return snapshot.docs;
+  }
+
 
   @override
   Future<List<DocumentSnapshot>> getMoreComments(
@@ -117,6 +190,23 @@ class CommentServices implements ICommentService {
           .collection('comments')
           .doc(commentId)
           .update({'likeCount': FieldValue.increment(-1)});
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> updateReplyCount(
+      String commentListId, String commentId, bool isIncrease) async {
+    try {
+      await _commentListCollection
+          .doc(commentListId)
+          .collection('comments')
+          .doc(commentId)
+          .update({
+        'replyCount':
+            isIncrease ? FieldValue.increment(1) : FieldValue.increment(-1)
+      });
     } catch (e) {
       rethrow;
     }

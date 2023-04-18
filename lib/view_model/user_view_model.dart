@@ -49,12 +49,16 @@ class UserViewModel extends ChangeNotifier {
 
   bool get isLoading => _isLoading;
 
-  Future<User> getUserDetails(
+  Future<User> getUserDetailsWithCurrentUser(
       String currentUserId, String targetUserId) async {
     _user = await _userService.getUserDetails(targetUserId);
     _followStateController.sink.add(await _relationshipService.isFollowing(currentUserId, targetUserId));
     _followerController.sink.add(_user.followerCount);
     return _user;
+  }
+
+  Future<User> getUserDetails(String userId) async {
+    return await _userService.getUserDetails(userId);
   }
 
   Future<void> getPostThumbnail() async {

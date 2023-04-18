@@ -42,7 +42,7 @@ class _ProfileScreenState extends State<ProfileScreen>
     _currentUserViewModel = context.read<CurrentUserViewModel>();
 
     getUserDetails = _userViewModel
-        .getUserDetails(_currentUserViewModel.user!.uid, widget.userId)
+        .getUserDetailsWithCurrentUser(_currentUserViewModel.user!.uid, widget.userId)
         .whenComplete(() => _userViewModel.getPosts());
     super.initState();
   }

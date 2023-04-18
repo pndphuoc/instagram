@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:instagram/config/route/routes.dart';
+import 'package:instagram/provider/comment_text_field_provider.dart';
 import 'package:instagram/provider/home_screen_provider.dart';
 import 'package:instagram/responsive/mobile_screen_layout.dart';
 import 'package:instagram/responsive/responsive_layout_screen.dart';
@@ -98,7 +99,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         ChangeNotifierProvider(create: (context) => AuthenticationViewModel()),
         ChangeNotifierProvider(create: (context) => ElasticViewModel()),
         ChangeNotifierProvider(create: (context) => UserViewModel()),
-        ChangeNotifierProvider(create: (context) => AssetMessageViewModel())
+        ChangeNotifierProvider(create: (context) => AssetMessageViewModel()),
+        ChangeNotifierProvider(create: (context) => CommentTextFieldProvider(),)
       ],
       builder: (context, child) {
         return MaterialApp(

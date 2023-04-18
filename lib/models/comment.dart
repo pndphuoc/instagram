@@ -8,6 +8,7 @@ class Comment {
   final DateTime createdAt;
   DateTime updatedAt;
   int likeCount;
+  int replyCount;
   bool isLiked = false;
   Comment({
     required this.uid,
@@ -18,7 +19,8 @@ class Comment {
     required this.likedListId,
     required this.createdAt,
     required this.updatedAt,
-    required this.likeCount
+    required this.likeCount,
+    required this.replyCount
   });
 
   factory Comment.fromJson(Map<String, dynamic> data) {
@@ -31,7 +33,8 @@ class Comment {
       likedListId: data['likedListId'],
       createdAt: data['createdAt'].toDate(),
       updatedAt: data['updatedAt'].toDate(),
-      likeCount: data['likeCount']
+      likeCount: data['likeCount'],
+      replyCount: data['replyCount'] ?? 0
     );
   }
 
@@ -45,7 +48,8 @@ class Comment {
       'likedListId': likedListId,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
-      'likeCount': likeCount
+      'likeCount': likeCount,
+      'replyCount': replyCount
     };
   }
 }

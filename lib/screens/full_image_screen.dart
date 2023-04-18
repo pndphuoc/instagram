@@ -15,14 +15,21 @@ class FullImageScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(context),
-      body: Center(
-        child: Hero(
-            tag: message.content,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
+      body: Hero(
+          tag: message.content,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: GestureDetector(
+              /*onVerticalDragEnd: (details) {
+                print("hehe");
+                if (details.velocity.pixelsPerSecond.dy > 0) {
+                  Navigator.pop(context);
+                }
+              },*/
               child: CachedNetworkImage(
                 imageUrl: message.content,
                 width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height - kToolbarHeight,
                 placeholder: (context, url) => Container(
                   decoration: BoxDecoration(
                     color: Colors.grey,
@@ -31,8 +38,8 @@ class FullImageScreen extends StatelessWidget {
                   width: MediaQuery.of(context).size.width,
                 ),
               ),
-            )),
-      ),
+            ),
+          )),
     );
   }
   
