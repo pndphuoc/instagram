@@ -2,7 +2,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:instagram/models/comment.dart';
-import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/ultis/global_variables.dart';
 import 'package:instagram/view_model/comment_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
@@ -18,12 +17,13 @@ class CommentCard extends StatefulWidget {
   final Comment cmt;
   final String commentListId;
   final Color backgroundColor;
+  final CommentViewModel commentViewModel;
 
   const CommentCard({
     Key? key,
     required this.cmt,
     required this.commentListId,
-    this.backgroundColor = Colors.transparent,
+    this.backgroundColor = Colors.transparent, required this.commentViewModel,
   }) : super(key: key);
 
   @override
@@ -36,12 +36,15 @@ class _CommentCardState extends State<CommentCard> {
   final LikeViewModel _likeViewModel = LikeViewModel();
   late CurrentUserViewModel _currentUserViewModel;
   final CommentViewModel _commentViewModel = CommentViewModel();
+  List<Comment> replyComments = [];
+  late Stream<List<Comment>> _getReplyComments;
 
   @override
   void initState() {
     super.initState();
     _currentUserViewModel = context.read<CurrentUserViewModel>();
     _commentViewModel.replyCount = widget.cmt.replyCount;
+    _getReplyComments = _commentViewModel.replyCommentsStream;
   }
 
   _toggleLike() {
@@ -116,21 +119,17 @@ class _CommentCardState extends State<CommentCard> {
                     const SizedBox(
                       height: 5,
                     ),
-                    Consumer<CommentTextFieldProvider>(
-                      builder: (context, value, child) {
-                        return GestureDetector(
-                          onTap: () {
-                            value.onReplyButtonTap(widget.cmt.username, widget.cmt.uid);
-                          },
-                          child: Text(
-                            "Reply",
-                            style: GoogleFonts.readexPro(
-                                color: Colors.grey,
-                                fontWeight: FontWeight.w300,
-                                fontSize: 12),
-                          ),
-                        );
+                    GestureDetector(
+                      onTap: () {
+                        widget.commentViewModel.onReplyButtonTap(widget.cmt.username, widget.cmt.uid, replyComments);
                       },
+                      child: Text(
+                        "Reply",
+                        style: GoogleFonts.readexPro(
+                            color: Colors.grey,
+                            fontWeight: FontWeight.w300,
+                            fontSize: 12),
+                      ),
                     )
                   ],
                 ),
@@ -172,7 +171,7 @@ class _CommentCardState extends State<CommentCard> {
             height: 15,
           ),
           StreamBuilder(
-            stream: _commentViewModel.replyCommentsStream,
+            stream: _getReplyComments,
             initialData: const [],
             builder: (context, snapshot) {
               if (!snapshot.hasData) {
@@ -180,8 +179,9 @@ class _CommentCardState extends State<CommentCard> {
               } else if (snapshot.hasError) {
                 return Text(snapshot.error.toString());
               } else {
+                replyComments.addAll(snapshot.data!.map((e) => e));
                 return ListView.separated(
-                  itemCount: snapshot.data!.length,
+                  itemCount: replyComments.length,
                   separatorBuilder: (context, index) => const SizedBox(
                     height: 15,
                   ),
@@ -191,8 +191,9 @@ class _CommentCardState extends State<CommentCard> {
                     return ReplyCommentCard(
                       commentListId: widget.commentListId,
                       commentId: widget.cmt.uid,
-                      replyComment: snapshot.data![index],
-                      usernameOfCommentIsBeingReplied: widget.cmt.username,
+                      replyComment: replyComments[index],
+                      commentViewModel: widget.commentViewModel,
+                      replyComments: replyComments,
                     );
                   },
                 );
@@ -217,38 +218,46 @@ class _CommentCardState extends State<CommentCard> {
                   const SizedBox(
                     width: 5,
                   ),
-                  StreamBuilder(
-                      stream: _commentViewModel.replyCountController.stream,
-                      initialData: _commentViewModel.replyCount,
-                      builder: (context, snapshot) {
-                        if (snapshot.data! > 0) {
-                          return GestureDetector(
-                            onTap: () {
-                              _commentViewModel.getReplyComments(
-                                  commentListId: widget.commentListId,
-                                  commentId: widget.cmt.uid,
-                                  userId: _currentUserViewModel.user!.uid);
-                            },
-                            child: Text(
-                              "See ${snapshot.data} reply comments",
-                              style: Theme.of(context).textTheme.labelMedium,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          );
-                        } else {
-                          return GestureDetector(
-                            onTap: () {
-                              _commentViewModel
-                                  .hideAllReplyComments(widget.cmt.replyCount);
-                            },
-                            child: Text(
-                              "Hide all reply comments",
-                              style: Theme.of(context).textTheme.labelMedium,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          );
-                        }
-                      }),
+                  Expanded(
+                    child: StreamBuilder(
+                        stream: _commentViewModel.replyCountController.stream,
+                        initialData: _commentViewModel.replyCount,
+                        builder: (context, snapshot) {
+                          if (snapshot.data! > 0) {
+                            return GestureDetector(
+                              onTap: (){
+                                _commentViewModel.getReplyComments(commentListId: widget.commentListId, commentId: widget.cmt.uid, userId: _currentUserViewModel.user!.uid);
+                              },
+                              child: Container(
+                                color: Colors.transparent,
+                                padding: const EdgeInsets.symmetric(vertical: 5),
+                                child: Text(
+                                  "See ${snapshot.data} reply comments",
+                                  style: Theme.of(context).textTheme.labelMedium,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            );
+                          } else {
+                            return GestureDetector(
+                              onTap: () {
+                                _commentViewModel
+                                    .hideAllReplyComments(widget.cmt.replyCount);
+                                replyComments = [];
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 5),
+                                color: Colors.transparent,
+                                child: Text(
+                                  "Hide all reply comments",
+                                  style: Theme.of(context).textTheme.labelMedium,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            );
+                          }
+                        }),
+                  ),
                 ],
               ),
             )

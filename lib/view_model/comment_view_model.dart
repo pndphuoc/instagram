@@ -7,14 +7,16 @@ import 'package:instagram/services/comment_services.dart';
 import 'package:instagram/services/like_services.dart';
 import 'package:instagram/services/post_services.dart';
 
+import '../models/chat_user.dart';
+import '../models/user.dart';
+
 class CommentViewModel extends ChangeNotifier {
   final CommentServices _commentServices = CommentServices();
   final PostService _postService = PostService();
   final LikeService _likeService = LikeService();
 
   final _commentController = StreamController<List<Comment>>();
-  final StreamController<List<Comment>> _replyCommentController =
-      StreamController<List<Comment>>();
+  final _replyCommentController = StreamController<List<Comment>>();
 
   Stream<List<Comment>> get commentsStream => _commentController.stream;
 
@@ -22,7 +24,7 @@ class CommentViewModel extends ChangeNotifier {
       _replyCommentController.stream;
 
   bool _hasMoreToLoad = false;
-  bool _isPostReplyComment = false;
+
   int _replyCount = 0;
   bool _hasMoreReplyCount = true;
 
@@ -44,37 +46,9 @@ class CommentViewModel extends ChangeNotifier {
     _replyCount = value;
   }
 
-  String? _commentRepliedId;
-
-  final StreamController<String> _usernameOfCommentReplied =
-      StreamController<String>();
-
-  StreamController<String> get usernameOfCommentReplied =>
-      _usernameOfCommentReplied;
-
-  String get commentRepliedId => _commentRepliedId ?? "";
-
-  set commentRepliedId(String value) {
-    _commentRepliedId = value;
-  }
-
-  bool get isPostReplyComment => _isPostReplyComment;
-
-  set isPostReplyComment(bool value) {
-    _isPostReplyComment = value;
-  }
-
   List<Comment> _comments = [];
 
   List<Comment> get comments => _comments;
-
-  List<Comment> _replyComments = [];
-
-  List<Comment> get replyComments => _replyComments;
-
-  set replyComments(List<Comment> value) {
-    _replyComments = value;
-  }
 
   bool get hasMoreToLoad => _hasMoreToLoad;
 
@@ -187,8 +161,8 @@ class CommentViewModel extends ChangeNotifier {
   void hideAllReplyComments(int replyCount) {
     _replyCount = replyCount;
     _lastDocument = null;
+
     _replyCommentController.sink.add([]);
-    _replyComments = [];
     replyCountController.sink.add(_replyCount);
   }
 
@@ -220,9 +194,7 @@ class CommentViewModel extends ChangeNotifier {
 
       _replyCount = _replyCount - _replyPageSize;
       replyCountController.sink.add(_replyCount);
-
-      _replyComments.addAll(comments);
-      _replyCommentController.sink.add(_replyComments);
+      _replyCommentController.sink.add(comments);
     } catch (e) {
       print('Error: $e');
     } finally {}
@@ -261,7 +233,109 @@ class CommentViewModel extends ChangeNotifier {
     }
   }
 
+  final TextEditingController _commentTextField = TextEditingController();
 
+  TextEditingController get commentTextField => _commentTextField;
+
+  final FocusNode commentFocusNode = FocusNode();
+
+  String _commentRepliedId = '';
+
+  String get commentRepliedId => _commentRepliedId;
+
+  set commentRepliedId(String value) {
+    _commentRepliedId = value;
+  }
+
+  bool _isReplyingComment = false;
+
+  bool get isReplyingComment => _isReplyingComment;
+
+  set isReplyingComment(bool value) {
+    _isReplyingComment = value;
+  }
+
+  String _usernameOfCommentIsBeingReplied = '';
+
+  String get usernameOfCommentIsBeingReplied =>
+      _usernameOfCommentIsBeingReplied;
+
+  set usernameOfCommentIsBeingReplied(String value) {
+    _usernameOfCommentIsBeingReplied = value;
+  }
+
+  final _usernameIsBeingReplied = StreamController<String>();
+
+  Stream<String> get usernameIsBeingRepliedStream =>
+      _usernameIsBeingReplied.stream;
+
+  List<Comment> replyComments = [];
+
+  void onReplyButtonTap(
+      String username, String commentId, List<Comment> displayedReplyComments) {
+    replyComments = displayedReplyComments;
+    _isReplyingComment = true;
+    if (!commentFocusNode.hasFocus) {
+      commentFocusNode.requestFocus();
+    }
+    _commentTextField.text = "@$username ";
+    usernameOfCommentIsBeingReplied = username;
+    _commentTextField.selection = TextSelection.fromPosition(
+        TextPosition(offset: _commentTextField.text.length));
+    _commentRepliedId = commentId;
+    _usernameIsBeingReplied.sink.add(username);
+  }
+
+  void onCancelReplyCommentTap() {
+    _commentRepliedId = '';
+    _isReplyingComment = false;
+    _commentTextField.text = '';
+    _usernameIsBeingReplied.sink.add('');
+  }
+
+  onPostButtonPressed(
+      String commentListId,
+      ChatUser currentUser,
+      ScrollController scrollController,
+      List<Comment> displayedComments) async {
+    if (_commentTextField.text.isEmpty) {
+      return;
+    }
+
+    final comment = Comment(
+      uid: '',
+      authorId: currentUser.userId,
+      username: currentUser.username,
+      avatarUrl: currentUser.avatarUrl,
+      content: _commentTextField.text,
+      likedListId: '',
+      likeCount: 0,
+      replyCount: 0,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+
+    commentFocusNode.unfocus();
+    _commentTextField.clear();
+
+    if (!_isReplyingComment) {
+      displayedComments.insert(0, comment);
+      scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.fastOutSlowIn,
+      );
+      await addComment(
+        commentListId,
+        comment,
+      );
+    } else {
+      replyComments.insert(0, comment);
+      await addReplyComment(commentListId, commentRepliedId, comment);
+    }
+
+    onCancelReplyCommentTap();
+  }
 
   @override
   void dispose() {

@@ -22,22 +22,6 @@ class CommentTextFieldProvider extends ChangeNotifier {
   String? username;
 
 
-  void onReplyButtonTap(
-      String username,
-      String commentId,) {
-    if (!commentFocusNode.hasFocus) {
-      commentFocusNode.requestFocus();
-    }
-    textEditingController.text = "@$username ";
-    username = username;
-    textEditingController.selection = TextSelection.fromPosition(TextPosition(offset: textEditingController.text.length));
-    _commentRepliedId = commentId;
-    _isReplyingComment = true;
-    notifyListeners();
-  }
 
-  void onCancelReplyCommentTap() {
-    _commentRepliedId = null;
-  }
 
 }

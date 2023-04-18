@@ -16,15 +16,15 @@ import 'like_animation.dart';
 class ReplyCommentCard extends StatefulWidget {
   final String commentListId;
   final String commentId;
-  final String usernameOfCommentIsBeingReplied;
+  final CommentViewModel commentViewModel;
   final Comment replyComment;
+  final List<Comment> replyComments;
 
   const ReplyCommentCard({
     Key? key,
     required this.commentListId,
     required this.commentId,
-    required this.replyComment,
-    required this.usernameOfCommentIsBeingReplied,
+    required this.replyComment, required this.commentViewModel, required this.replyComments,
   }) : super(key: key);
 
   @override
@@ -95,19 +95,16 @@ class _ReplyCommentCardState extends State<ReplyCommentCard> {
                 const SizedBox(
                   height: 5,
                 ),
-                Consumer<CommentTextFieldProvider>(
-                  builder: (context, value, child) => GestureDetector(
-                    onTap: () {
-                      value.textEditingController.text =
-                          "@${widget.replyComment.username}";
-                    },
-                    child: Text(
-                      "Reply",
-                      style: GoogleFonts.readexPro(
-                          color: Colors.grey,
-                          fontWeight: FontWeight.w300,
-                          fontSize: 12),
-                    ),
+                GestureDetector(
+                  onTap: () {
+                    widget.commentViewModel.onReplyButtonTap(widget.replyComment.username, widget.commentId, widget.replyComments );
+                  },
+                  child: Text(
+                    "Reply",
+                    style: GoogleFonts.readexPro(
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w300,
+                        fontSize: 12),
                   ),
                 )
               ],

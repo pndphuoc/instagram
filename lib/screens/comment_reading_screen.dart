@@ -2,7 +2,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:instagram/models/comment.dart';
-import 'package:instagram/provider/comment_text_field_provider.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/ultis/ultils.dart';
 import 'package:instagram/view_model/comment_view_model.dart';
@@ -34,7 +33,6 @@ class _CommentReadingScreenState extends State<CommentReadingScreen> {
   final myFocusNode = FocusNode();
   List<Comment> comments = [];
   late Future _getComments;
-  late CommentTextFieldProvider _commentTextFieldProvider;
 
   @override
   void initState() {
@@ -44,7 +42,6 @@ class _CommentReadingScreenState extends State<CommentReadingScreen> {
     _getComments = _commentViewModel.getComments(
         commentListId: widget.post.commentListId,
         userId: _currentUserViewModel.user!.uid);
-    _commentTextFieldProvider = context.read<CommentTextFieldProvider>();
     _scrollController.addListener(() {
       if (_commentViewModel.hasMoreToLoad &&
           _scrollController.position.pixels ==
@@ -135,6 +132,7 @@ class _CommentReadingScreenState extends State<CommentReadingScreen> {
                                           cmt: comments[index],
                                           commentListId:
                                               widget.post.commentListId,
+                                          commentViewModel: _commentViewModel,
                                         ),
                                       );
                                     } else {
@@ -214,74 +212,47 @@ class _CommentReadingScreenState extends State<CommentReadingScreen> {
     );
   }
 
-  _onPostButtonPressed() {
-    if (_commentTextFieldProvider.textEditingController.text.isEmpty) {
-      return;
-    }
-
-    final comment = Comment(
-      uid: '',
-      authorId: _currentUserViewModel.user!.uid,
-      username: _currentUserViewModel.user!.username,
-      avatarUrl: _currentUserViewModel.user!.avatarUrl,
-      content: _commentController.text,
-      likedListId: '',
-      likeCount: 0,
-      replyCount: 0,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    );
-
-    comments.insert(0, comment);
-
-    _scrollController.animateTo(
-      0,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.fastOutSlowIn,
-    );
-
-    if (!_commentTextFieldProvider.isReplyingComment) {
-      _commentViewModel.addComment(
-        widget.post.commentListId,
-        comment,
-      );
-    } else {
-      _commentViewModel.addReplyComment(widget.post.commentListId,
-          _commentTextFieldProvider.commentRepliedId, comment);
-    }
-
-    myFocusNode.unfocus();
-    _commentController.clear();
-  }
 
   Widget _writeCommentBlock(BuildContext context) {
     return Column(
       children: [
-        ShowUp(
-          delay: 0,
-          child: Container(
-            width: MediaQuery.of(context).size.width,
-            color: Colors.grey,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                  child: Text(
-                      "Answering ${_commentTextFieldProvider.username}",
-                      style: const TextStyle(color: Colors.black)),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 20),
-                  child: GestureDetector(
-                    onTap: () {},
-                    child: const Icon(Icons.close),
+        StreamBuilder(
+          stream: _commentViewModel.usernameIsBeingRepliedStream,
+          initialData: '',
+          builder: (context, snapshot) {
+            if (snapshot.data!.isNotEmpty) {
+              return ShowUp(
+                delay: 0,
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  color: Colors.grey,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        padding:
+                        const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                        child: Text(
+                            "Answering ${snapshot.data}",
+                            style: const TextStyle(color: Colors.black)),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(right: 20),
+                        child: GestureDetector(
+                          onTap: () {
+                            _commentViewModel.onCancelReplyCommentTap();
+                          },
+                          child: const Icon(Icons.close),
+                        ),
+                      )
+                    ],
                   ),
-                )
-              ],
-            ),
-          ),
+                ),
+              );
+            } else {
+              return Container();
+            }
+          }
         ),
         Container(
           color: secondaryColor,
@@ -303,8 +274,8 @@ class _CommentReadingScreenState extends State<CommentReadingScreen> {
               ),
               Expanded(
                 child: TextField(
-                  focusNode: _commentTextFieldProvider.commentFocusNode,
-                  controller: _commentTextFieldProvider.textEditingController,
+                  focusNode: _commentViewModel.commentFocusNode,
+                  controller: _commentViewModel.commentTextField,
                   autofocus: true,
                   maxLines: null,
                   decoration: InputDecoration(
@@ -319,7 +290,9 @@ class _CommentReadingScreenState extends State<CommentReadingScreen> {
                 width: 20,
               ),
               GestureDetector(
-                onTap: _onPostButtonPressed,
+                onTap: () {
+                  _commentViewModel.onPostButtonPressed(widget.post.commentListId, _currentUserViewModel.chatUser, _scrollController, comments);
+                },
                 child: SizedBox(
                     height: 30,
                     child: Text(
