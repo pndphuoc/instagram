@@ -6,6 +6,7 @@ import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/message_view_model.dart';
 import 'package:instagram/widgets/avatar_with_status.dart';
 import 'package:instagram/widgets/conversation_card.dart';
+import 'package:instagram/widgets/conversation_card_shimmer.dart';
 import 'package:provider/provider.dart';
 
 import '../widgets/conversation_card.dart';
@@ -29,14 +30,16 @@ class _ChatScreenState extends State<ChatScreen> {
       avatarUrl:
           "https://firebasestorage.googleapis.com/v0/b/instagram-b3812.appspot.com/o/photos%2F1681318354694?alt=media&token=91d18015-746a-4a6b-a9ba-293f5f056a07");
   final searchFieldBorder =
-  OutlineInputBorder(borderRadius: BorderRadius.circular(10));
+      OutlineInputBorder(borderRadius: BorderRadius.circular(10));
   late Conversation conversation;
   List<Conversation> conversations = [];
+
   @override
   void initState() {
     super.initState();
     _currentUserViewModel = context.read<CurrentUserViewModel>();
-    _getConversationIds = _messageViewModel.getConversationIds(userId: _currentUserViewModel.user!.uid);
+    _getConversationIds = _messageViewModel.getConversationIds(
+        userId: _currentUserViewModel.user!.uid);
   }
 
   @override
@@ -63,7 +66,9 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ),
             _buildConversationList(context),
-            const SizedBox(height: 20,)
+            const SizedBox(
+              height: 20,
+            )
           ],
         ),
       ),
@@ -144,20 +149,31 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Widget _buildConversationList(BuildContext context) {
     return StreamBuilder(
-      stream: _getConversationIds,
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Center(child: Text("No conversation"),);
-        } else if (snapshot.hasError) {
-          return Center(child: Text(snapshot.error.toString()),);
-        } else {
-          return ListView.builder(
-            physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              itemCount: snapshot.data!.length,
-              itemBuilder: (context, index) => ConversationCard(conversationId: snapshot.data![index],));
-        }
-      }
-    );
+        stream: _getConversationIds,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Column(
+              children: const [
+                ConversationCardShimmer(),
+                ConversationCardShimmer(),
+                ConversationCardShimmer(),
+              ],
+            );
+          } else if (!snapshot.hasData) {
+            return Container();
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text(snapshot.error.toString()),
+            );
+          } else {
+            return ListView.builder(
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: snapshot.data!.length,
+                itemBuilder: (context, index) => ConversationCard(
+                      conversationId: snapshot.data![index],
+                    ));
+          }
+        });
   }
 }

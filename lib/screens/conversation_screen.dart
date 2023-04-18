@@ -93,6 +93,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
                       );
                     } else {
                       return ListView.separated(
+                        cacheExtent: 1000,
                         reverse: true,
                         separatorBuilder: (context, index) => const SizedBox(
                           height: 5,

@@ -9,6 +9,7 @@ import '../screens/conversation_screen.dart';
 import '../ultis/colors.dart';
 import '../ultis/ultils.dart';
 import 'avatar_with_status.dart';
+import 'conversation_card_shimmer.dart';
 
 class ConversationCard extends StatelessWidget {
   final String conversationId;
@@ -24,7 +25,15 @@ class ConversationCard extends StatelessWidget {
         stream: messageViewModel.getConversationData(conversationId),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return const Center(child: Text("No conversation"),);
+            return Column(
+              children: const [
+                ConversationCardShimmer(),
+                ConversationCardShimmer(),
+                ConversationCardShimmer(),
+              ],
+            );
+          } else if (!snapshot.hasData) {
+            return Container();
           } else if (snapshot.hasError) {
             return Center(child: Text(snapshot.error.toString()),);
           } else {
