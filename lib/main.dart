@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -17,26 +18,30 @@ import 'package:instagram/view_model/asset_message_view_model.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
 import 'package:instagram/view_model/authentication_view_model.dart';
 import 'package:instagram/view_model/elastic_view_model.dart';
+import 'package:instagram/view_model/firebase_messaging_view_model.dart';
 import 'package:instagram/view_model/post_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/user_view_model.dart';
 import 'package:provider/provider.dart';
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
 
-  if (kIsWeb) {
-    await Firebase.initializeApp(
-      options: const FirebaseOptions(
-          apiKey: "AIzaSyC-LNRr4ya2nJ4m_j8pj-VTt0IYDZHjA1A",
-          appId: '1:264062629818:web:3ea78b16a7dfaf5dc8cf83',
-          messagingSenderId: '264062629818',
-          projectId: 'instagram-b3812',
-          storageBucket: 'instagram-b3812.appspot.com'),
-    );
-  } else {
-    await Firebase.initializeApp();
-  }
+  final FirebaseMessagingViewModel firebaseMessagingViewModel = FirebaseMessagingViewModel();
+  await firebaseMessagingViewModel.setupFirebaseMessaging();
+  await firebaseMessagingViewModel.getToken();
+
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    print('Got a message whilst in the foreground!');
+    print('Message data: ${message.data}');
+
+    if (message.notification != null) {
+      print('Message also contained a notification: ${message.notification}');
+    }
+  });
+
   runApp(const MyApp());
 }
 
@@ -49,23 +54,25 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   AppLifecycleState? _notification;
-  UserViewModel userViewModel = UserViewModel();
-
+  final UserViewModel _userViewModel = UserViewModel();
+  late Timer _timer;
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    userViewModel.setOnlineStatus(true);
-  }
+    _userViewModel.setOnlineStatus(true);
+    if (FirebaseAuth.instance.currentUser != null) {
+      _timer = Timer.periodic(const Duration(minutes: 2), (timer) {
+        _userViewModel.setOnlineStatus(true);
+      });
+    }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _timer.cancel();
     super.dispose();
   }
 
@@ -94,11 +101,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         ChangeNotifierProvider(create: (context) => AssetMessageViewModel())
       ],
       builder: (context, child) {
-        if (FirebaseAuth.instance.currentUser != null) {
-          Timer.periodic(const Duration(minutes: 2), (timer) {
-            userViewModel.setOnlineStatus(true);
-          });
-        }
         return MaterialApp(
             routes: routes,
             debugShowCheckedModeBanner: false,

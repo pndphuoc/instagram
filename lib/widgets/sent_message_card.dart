@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:instagram/models/message.dart';
 import 'package:instagram/ultis/colors.dart';
 
+import '../screens/full_image_screen.dart';
+
 class SentMessageCard extends StatefulWidget {
   final Message message;
   const SentMessageCard({Key? key, required this.message}) : super(key: key);
@@ -63,12 +65,27 @@ class _SentMessageCardState extends State<SentMessageCard> {
   }
 
   Widget _buildImageMessage(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(borderRadius),
-      child: CachedNetworkImage(
-        imageUrl: widget.message.content,
-        width: MediaQuery.of(context).size.width / 10 * 5,
-        fit: BoxFit.contain,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => FullImageScreen(message: widget.message,
+            senderName: "You"
+        ),));
+      },
+      child: Container(
+        constraints: BoxConstraints( maxWidth: MediaQuery.of(context).size.width / 10 * 6.5),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(borderRadius),
+          child: Hero(
+            tag: widget.message.content,
+            child: CachedNetworkImage(
+              imageUrl: widget.message.content,
+              fit: BoxFit.cover,
+              width: MediaQuery.of(context).size.width / 10 * 6.5,
+              height: MediaQuery.of(context).size.width / 10 * 6.5,
+              placeholder: (context, url) => Container(color: Colors.grey,),
+            ),
+          ),
+        ),
       ),
     );
   }

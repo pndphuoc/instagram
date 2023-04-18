@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/models/chat_user.dart';
+import 'package:instagram/screens/full_image_screen.dart';
 import 'package:instagram/widgets/avatar_with_status.dart';
 
 import '../models/message.dart';
@@ -60,12 +61,33 @@ class _ReceivedMessageCardState extends State<ReceivedMessageCard> {
   }
 
   Widget _buildImageMessage(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(borderRadius),
-      child: CachedNetworkImage(
-        imageUrl: widget.message.content,
-        width: MediaQuery.of(context).size.width / 10 * 4,
-        fit: BoxFit.contain,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => FullImageScreen(
+                  message: widget.message,
+                  senderName: widget.user.displayName.isEmpty
+                      ? widget.user.displayName
+                      : widget.user.username),
+            ));
+      },
+      child: Container(
+        constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width / 10 * 6.5),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(borderRadius),
+          child: Hero(
+            tag: widget.message.content,
+            child: CachedNetworkImage(
+              imageUrl: widget.message.content,
+              width: MediaQuery.of(context).size.width / 10 * 6.5,
+              height: MediaQuery.of(context).size.width / 10 * 6.5,
+              fit: BoxFit.contain,
+            ),
+          ),
+        ),
       ),
     );
   }

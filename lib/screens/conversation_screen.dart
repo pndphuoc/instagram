@@ -8,6 +8,7 @@ import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/message_view_model.dart';
 import 'package:instagram/widgets/avatar_with_status.dart';
 import 'package:instagram/widgets/received_message_card.dart';
+import 'package:instagram/widgets/sending_image_message.dart';
 import 'package:instagram/widgets/sent_message_card.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
@@ -80,39 +81,39 @@ class _ConversationScreenState extends State<ConversationScreen> {
           Expanded(
               child: StreamBuilder(
             stream: _getConversationData,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
+            builder: (context, conversationSnapshot) {
+              if (conversationSnapshot.hasData) {
                 return StreamBuilder(
                   stream: _getMessages,
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
+                  builder: (context, messageSnapshot) {
+                    if (!messageSnapshot.hasData) {
                       return Container();
-                    } else if (snapshot.hasError) {
+                    } else if (messageSnapshot.hasError) {
                       return Center(
-                        child: Text(snapshot.error.toString()),
+                        child: Text(messageSnapshot.error.toString()),
                       );
                     } else {
                       return ListView.separated(
-                        cacheExtent: 1000,
+                        cacheExtent: 2000,
                         reverse: true,
                         separatorBuilder: (context, index) => const SizedBox(
                           height: 5,
                         ),
-                        itemCount: snapshot.data!.length,
+                        itemCount: messageSnapshot.data!.length,
                         itemBuilder: (context, index) {
-                          if (!snapshot.hasData) {
+                          if (!messageSnapshot.hasData) {
                             return Container();
-                          } else if (snapshot.hasError) {
+                          } else if (messageSnapshot.hasError) {
                             return Center(
-                              child: Text(snapshot.error.toString()),
+                              child: Text(messageSnapshot.error.toString()),
                             );
-                          } else if (snapshot.data![index].senderId ==
+                          } else if (messageSnapshot.data![index].senderId ==
                               _auth.currentUser!.uid) {
                             return SentMessageCard(
-                                message: snapshot.data![index]);
+                                message: messageSnapshot.data![index]);
                           } else {
                             return ReceivedMessageCard(
-                                message: snapshot.data![index],
+                                message: messageSnapshot.data![index],
                                 user: widget.restUser);
                           }
                         },
@@ -127,6 +128,31 @@ class _ConversationScreenState extends State<ConversationScreen> {
               }
             },
           )),
+          StreamBuilder(
+            stream: _messageViewModel.sendingMessageStream,
+            builder: (context, snapshot) {
+              if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                return Align(
+                  alignment: Alignment.centerRight,
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 20),
+                    height: 30,
+                    width: MediaQuery.of(context).size.width / 2,
+                    decoration: BoxDecoration(
+                        color: Colors.grey,
+                        borderRadius: BorderRadius.circular(20)),
+                    child: Center(
+                      child: Text(
+                          "Sending (${snapshot.data!.length}) images",
+                          style: const TextStyle(color: Colors.black)),
+                    ),
+                  ),
+                );
+              } else {
+                return Container();
+              }
+            },
+          ),
           _buildWriteMessage(context)
         ],
       ),
@@ -378,7 +404,8 @@ class _ConversationScreenState extends State<ConversationScreen> {
                             index ~/ _gridViewCrossAxisCount * itemHeight,
                             curve: Curves.bounceInOut,
                             duration: const Duration(milliseconds: 200));
-                        _messageViewModel.onTapMedia(_messageViewModel.entities[index]);
+                        _messageViewModel
+                            .onTapMedia(_messageViewModel.entities[index]);
                       },
                       child: Stack(
                         children: [
@@ -436,19 +463,19 @@ class _ConversationScreenState extends State<ConversationScreen> {
                       child: SizedBox(
                         height: 50,
                         child: ElevatedButton(
-                          onPressed: (){
+                          onPressed: () {
                             _messageViewModel.onTapSendImageMessages();
                             Navigator.of(context).pop();
                           },
                           style: ElevatedButton.styleFrom(
                               shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15)
-                              )
+                                  borderRadius: BorderRadius.circular(15))),
+                          child: Text(
+                            "Send",
+                            style: Theme.of(context).textTheme.titleMedium,
                           ),
-                          child: Text("Send", style: Theme.of(context).textTheme.titleMedium,),
                         ),
                       ))
-
               ],
             );
           }),
