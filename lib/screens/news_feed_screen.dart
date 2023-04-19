@@ -30,6 +30,7 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
     super.initState();
     _currentUserViewModel = context.read<CurrentUserViewModel>();
     _getPosts = context.read<PostViewModel>().getPosts(_currentUserViewModel.user!.followingListId);
+    print(_currentUserViewModel.user!.followingListId);
   }
 
   Future<void> _refresh() async {

@@ -3,8 +3,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/screens/post_details_screen.dart';
 import 'package:instagram/ultis/colors.dart';
+import 'package:instagram/view_model/asset_message_view_model.dart';
+import 'package:instagram/view_model/asset_view_model.dart';
 import 'package:instagram/view_model/authentication_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
+import 'package:instagram/view_model/post_view_model.dart';
 import 'package:provider/provider.dart';
 import '../models/post.dart';
 import '../models/user.dart' as model;
@@ -166,8 +169,11 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
         Expanded(
           child: ElevatedButton(
               onPressed: () {
-                context.read<AuthenticationViewModel>().logout();
+                context.read<PostViewModel>().dispose();
+                context.read<AssetViewModel>().dispose();
+                context.read<AssetMessageViewModel>().dispose();
                 context.read<CurrentUserViewModel>().dispose();
+                context.read<AuthenticationViewModel>().logout();
               },
               style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(

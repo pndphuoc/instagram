@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:instagram/permision_handler.dart';
 import 'package:instagram/services/asset_services.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class AssetViewModel extends ChangeNotifier {
@@ -32,8 +34,6 @@ class AssetViewModel extends ChangeNotifier {
   bool get hasMoreToLoad => _hasMoreToLoad;
 
   bool get isAllPermissionGranted => _isAllPermissionGranted;
-
-
 
   set selectedPath(AssetPathEntity path) {
     _selectedPath = path;
@@ -73,7 +73,7 @@ class AssetViewModel extends ChangeNotifier {
     try {
       _isAllPermissionGranted = await _assetService.requestAssets();
     } catch (e) {
-        print(e.toString());
+      print(e.toString());
     }
     return _isAllPermissionGranted;
   }
@@ -91,13 +91,17 @@ class AssetViewModel extends ChangeNotifier {
 
   Future<bool> firstLoading() async {
     try {
-      await loadAssetPathList();
-      _selectedPath = _paths.first;
-      await loadAssetsOfPath();
+      if (await Permission.accessMediaLocation.isGranted && await Permission.photos.isGranted && await Permission.videos.isGranted) {
+        await loadAssetPathList();
+        _selectedPath = _paths.first;
+        await loadAssetsOfPath();
 
-      _selectedEntity = _entities.first;
-      notifyListeners();
-      return true;
+        _selectedEntity = _entities.first;
+        notifyListeners();
+        return true;
+      } else {
+        return await PermissionHandler.requestPermissions();
+      }
     } catch (err) {
       return true;
     }
@@ -114,8 +118,7 @@ class AssetViewModel extends ChangeNotifier {
             _selectedEntities.isNotEmpty ? _selectedEntities.last : entity;
       } else if (isExistInSelectedEntities && _selectedEntity != entity) {
         _selectedEntity = entity;
-      }
-      else {
+      } else {
         handleMaxSelection(entity);
       }
     } else {
@@ -135,8 +138,8 @@ class AssetViewModel extends ChangeNotifier {
     } else {
       _selectedEntities.add(entity);
 
-
-      notifyListeners(); }
+      notifyListeners();
+    }
   }
 
   void onLongPress(AssetEntity entity) {
@@ -153,7 +156,6 @@ class AssetViewModel extends ChangeNotifier {
     } else {
       handleMaxSelection(entity);
     }
-
   }
 
   void handleMaxSelection(AssetEntity entity) {
@@ -186,7 +188,7 @@ class AssetViewModel extends ChangeNotifier {
   void resetAssetViewModel() {
     _selectedEntities = [];
     _isMultiSelect = false;
-    _selectedEntity = _entities.first;
+    _selectedEntity = null;
     _entities = [];
   }
 }

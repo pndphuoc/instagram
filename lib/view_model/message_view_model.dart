@@ -42,7 +42,8 @@ class MessageViewModel extends ChangeNotifier {
 
   final _sendingMessageController = StreamController<List<AssetEntity>>();
 
-  Stream<List<AssetEntity>> get sendingMessageStream => _sendingMessageController.stream;
+  Stream<List<AssetEntity>> get sendingMessageStream =>
+      _sendingMessageController.stream;
 
   final StreamController<List<ChatUser>> _usersList =
       StreamController<List<ChatUser>>();
@@ -287,7 +288,8 @@ class MessageViewModel extends ChangeNotifier {
           content: lastMessageContent,
           type: type,
           timestamp: time);
-    }_sendingMessageController.sink.add([]);
+    }
+    _sendingMessageController.sink.add([]);
     _selectedEntities = [];
 
     //await _messageServices.sendTextMessage(conversationId: _conversationId, senderId: senderId, messageContent: messageContent, timestamp: timestamp);
@@ -304,9 +306,10 @@ class MessageViewModel extends ChangeNotifier {
 
   Future<bool> _requestPermission() async {
     final PermissionStatus status =
-    await Permission.manageExternalStorage.request();
+        await Permission.manageExternalStorage.request();
     if (status == PermissionStatus.denied) {
-      Fluttertoast.showToast(msg: "Unable to download because permission is not granted");
+      Fluttertoast.showToast(
+          msg: "Unable to download because permission is not granted");
       return false;
     } else if (status == PermissionStatus.granted) {
       return true;

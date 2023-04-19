@@ -4,12 +4,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:instagram/config/route/routes.dart';
-import 'package:instagram/provider/comment_text_field_provider.dart';
 import 'package:instagram/provider/home_screen_provider.dart';
+import 'package:instagram/permision_handler.dart';
 import 'package:instagram/responsive/mobile_screen_layout.dart';
 import 'package:instagram/responsive/responsive_layout_screen.dart';
 import 'package:instagram/responsive/web_screen_layout.dart';
@@ -33,6 +32,8 @@ void main() async {
   final FirebaseMessagingViewModel firebaseMessagingViewModel = FirebaseMessagingViewModel();
   await firebaseMessagingViewModel.setupFirebaseMessaging();
   await firebaseMessagingViewModel.getToken();
+
+  await PermissionHandler.requestPermissions();
 
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
     print('Got a message whilst in the foreground!');
@@ -61,8 +62,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _userViewModel.setOnlineStatus(true);
     if (FirebaseAuth.instance.currentUser != null) {
+      _userViewModel.setOnlineStatus(true);
       _timer = Timer.periodic(const Duration(minutes: 2), (timer) {
         _userViewModel.setOnlineStatus(true);
       });

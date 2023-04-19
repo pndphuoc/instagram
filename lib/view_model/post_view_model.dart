@@ -6,10 +6,8 @@ import 'package:instagram/services/like_services.dart';
 import 'package:instagram/services/relationship_services.dart';
 import 'package:instagram/services/user_services.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
-import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/like_view_model.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:provider/provider.dart';
 
 import '../models/post.dart';
 import '../resources/storage_methods.dart';
@@ -38,8 +36,6 @@ class PostViewModel extends ChangeNotifier {
 
   Future<void> getPosts(String followingListId) async {
     List<String> followingIds = await _relationshipService.getFollowingIds(followingListId);
-
-    print("following ids length ${followingIds.length} ");
 
     _posts = await _postService.getPosts(followingIds);
     for (var element in _posts) {
@@ -149,5 +145,12 @@ class PostViewModel extends ChangeNotifier {
     String id = await addPost(post);
     await _userService.updatePostInformation(id);
     isUploading = false;
+  }
+
+  @override
+  void dispose() {
+    _posts = [];
+    _isUploading = false;
+    super.dispose();
   }
 }

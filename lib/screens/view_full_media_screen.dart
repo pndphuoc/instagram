@@ -3,31 +3,49 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:instagram/models/message.dart';
 import 'package:instagram/view_model/message_view_model.dart';
+import 'package:video_player/video_player.dart';
 
 import '../ultis/ultils.dart';
 
-class FullImageScreen extends StatelessWidget {
+class FullMediaScreen extends StatefulWidget {
   final Message message;
   final String senderName;
-  const FullImageScreen({Key? key, required this.message, required this.senderName}) : super(key: key);
+  const FullMediaScreen({Key? key, required this.message, required this.senderName}) : super(key: key);
+
+  @override
+  State<FullMediaScreen> createState() => _FullMediaScreenState();
+}
+
+class _FullMediaScreenState extends State<FullMediaScreen> {
+  late VideoPlayerController _controller;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    if (widget.message.type == 'video') {
+      _controller = VideoPlayerController.network(
+          widget.message.content)
+        ..initialize().then((_) {
+          // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
+          setState(() {
+            isLoading = false;
+          });
+        });
+    }
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(context),
       body: Hero(
-          tag: message.content,
+          tag: widget.message.content,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(20),
             child: GestureDetector(
-              /*onVerticalDragEnd: (details) {
-                print("hehe");
-                if (details.velocity.pixelsPerSecond.dy > 0) {
-                  Navigator.pop(context);
-                }
-              },*/
-              child: CachedNetworkImage(
-                imageUrl: message.content,
+              child: widget.message.type == 'image' ? CachedNetworkImage(
+                imageUrl: widget.message.content,
                 width: MediaQuery.of(context).size.width,
                 height: MediaQuery.of(context).size.height - kToolbarHeight,
                 placeholder: (context, url) => Container(
@@ -37,12 +55,14 @@ class FullImageScreen extends StatelessWidget {
                   ),
                   width: MediaQuery.of(context).size.width,
                 ),
-              ),
+              ) : isLoading ? const Center(child: CircularProgressIndicator(),) : AspectRatio(
+                  aspectRatio: _controller.value.aspectRatio,
+                  child: VideoPlayer(_controller))
             ),
           )),
     );
   }
-  
+
   _buildAppBar(BuildContext context) {
     final MessageViewModel messageViewModel = MessageViewModel();
     return AppBar(
@@ -50,14 +70,14 @@ class FullImageScreen extends StatelessWidget {
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(senderName, style: Theme.of(context).textTheme.titleMedium,),
-          Text("${getElapsedTime(message.timestamp)} ago", style: Theme.of(context).textTheme.labelMedium,)
+          Text(widget.senderName, style: Theme.of(context).textTheme.titleMedium,),
+          Text("${getElapsedTime(widget.message.timestamp)} ago", style: Theme.of(context).textTheme.labelMedium,)
         ],
       ),
       actions: [
         InkWell(
           onTap: () async {
-            if (await messageViewModel.onDownload(message.content)) {
+            if (await messageViewModel.onDownload(widget.message.content)) {
               Fluttertoast.showToast(msg: "Photo saved successfully");
             } else {
               Fluttertoast.showToast(msg: "photo save failed");

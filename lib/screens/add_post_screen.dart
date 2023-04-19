@@ -30,7 +30,6 @@ class _AddPostScreenState extends State<AddPostScreen> {
   void initState() {
     super.initState();
     assetViewModel = Provider.of<AssetViewModel>(context, listen: false);
-    assetViewModel.requestAssets();
     _firstLoading = assetViewModel.firstLoading();
   }
 
@@ -53,16 +52,27 @@ class _AddPostScreenState extends State<AddPostScreen> {
   Widget build(BuildContext context) {
     double previewImageSize = MediaQuery.of(context).size.width;
     itemHeight = _calculateItemHeight(context);
-    return Consumer<AssetViewModel>(
-      builder: (context, value, child) => FutureBuilder(
-        future: _firstLoading,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            List<AssetEntity> entities = value.entities;
-            return Scaffold(
-              resizeToAvoidBottomInset: false,
-              appBar: _appBar(context),
-              body: Column(
+
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      appBar: _appBar(context),
+      body: Consumer<AssetViewModel>(
+        builder: (context, value, child) => FutureBuilder(
+          future: _firstLoading,
+          initialData: null,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            } else if (snapshot.data! == false) {
+              return Center(
+                child: Text("Permission is not authorized\nPlease grant permission to use the application", style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center,),
+              );
+            }
+            if (snapshot.connectionState == ConnectionState.done) {
+              List<AssetEntity> entities = value.entities;
+              return Column(
                 children: [
                   SizedBox(
                     width: previewImageSize,
@@ -75,18 +85,14 @@ class _AddPostScreenState extends State<AddPostScreen> {
                   _controllerBar(context, value),
                   Expanded(child: _mediasGrid(context, value, entities))
                 ],
-              ),
-            );
-          } else if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          } else {
-            return const Center(
-              child: Text("Error"),
-            );
-          }
-        },
+              );
+            } else {
+              return const Center(
+                child: Text("Error"),
+              );
+            }
+          },
+        ),
       ),
     );
   }
@@ -104,9 +110,13 @@ class _AddPostScreenState extends State<AddPostScreen> {
         },
       ),
       title: const Text("New post"),
-      actions: [TextButton(onPressed: () {
-        Navigator.pushNamed(context, RouteName.addCaption);
-      }, child: const Text("Post"))],
+      actions: [
+        TextButton(
+            onPressed: () {
+              Navigator.pushNamed(context, RouteName.addCaption);
+            },
+            child: const Text("Post"))
+      ],
     );
   }
 
@@ -337,5 +347,4 @@ class _AddPostScreenState extends State<AddPostScreen> {
       },
     );
   }
-
 }
