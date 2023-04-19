@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -16,6 +17,14 @@ class AssetViewModel extends ChangeNotifier {
   late int entitiesCount;
   bool _isMultiSelect = false;
   AssetEntity? _selectedEntity;
+  File? _selectedFile;
+
+  File? get selectedFile => _selectedFile;
+
+  set selectedFile(File? value) {
+    _selectedFile = value;
+  }
+
   bool _isAllPermissionGranted = false;
   AssetEntity? firstAsset;
 
@@ -91,7 +100,15 @@ class AssetViewModel extends ChangeNotifier {
 
   Future<bool> firstLoading() async {
     try {
-      if (await Permission.accessMediaLocation.isGranted && await Permission.photos.isGranted && await Permission.videos.isGranted) {
+      bool isAllGranted = false;
+      Map<Permission, PermissionStatus> statuses = await [
+        Permission.accessMediaLocation,
+        Permission.photos,
+        Permission.videos
+      ].request();
+      if (statuses[Permission.accessMediaLocation] == PermissionStatus.granted &&
+          statuses[Permission.photos] == PermissionStatus.granted &&
+          statuses[Permission.videos] == PermissionStatus.granted) {
         await loadAssetPathList();
         _selectedPath = _paths.first;
         await loadAssetsOfPath();
@@ -100,10 +117,11 @@ class AssetViewModel extends ChangeNotifier {
         notifyListeners();
         return true;
       } else {
-        return await PermissionHandler.requestPermissions();
+        isAllGranted = false;
       }
+      return isAllGranted;
     } catch (err) {
-      return true;
+      return false;
     }
   }
 

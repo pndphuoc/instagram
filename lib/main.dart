@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:camera/camera.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -17,6 +18,7 @@ import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/asset_message_view_model.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
 import 'package:instagram/view_model/authentication_view_model.dart';
+import 'package:instagram/view_model/camera_view_model.dart';
 import 'package:instagram/view_model/elastic_view_model.dart';
 import 'package:instagram/view_model/firebase_messaging_view_model.dart';
 import 'package:instagram/view_model/post_view_model.dart';
@@ -24,6 +26,7 @@ import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/user_view_model.dart';
 import 'package:provider/provider.dart';
 
+late List<CameraDescription> _cameras;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

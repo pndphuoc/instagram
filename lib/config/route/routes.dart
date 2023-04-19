@@ -2,7 +2,7 @@ import 'package:instagram/route/route_name.dart';
 import 'package:instagram/screens/post_screens/add_caption_screen.dart';
 import 'package:instagram/screens/post_screens/add_post_screen.dart';
 import 'package:instagram/screens/search_screen.dart';
-import 'package:instagram/screens/message_screens/signup_screen.dart';
+import 'package:instagram/screens/authentication_screens/signup_screen.dart';
 
 
 

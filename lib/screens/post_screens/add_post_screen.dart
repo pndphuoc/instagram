@@ -1,11 +1,15 @@
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:instagram/route/route_name.dart';
+import 'package:instagram/screens/post_screens/camera_preview_screen.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
 import 'package:instagram/widgets/image_thumbail.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
+
+import '../../ultis/ultils.dart';
 
 class AddPostScreen extends StatefulWidget {
   const AddPostScreen({Key? key}) : super(key: key);
@@ -66,10 +70,13 @@ class _AddPostScreenState extends State<AddPostScreen> {
               );
             } else if (snapshot.data! == false) {
               return Center(
-                child: Text("Permission is not authorized\nPlease grant permission to use the application", style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center,),
+                child: Text(
+                  "Permission is not authorized\nPlease grant permission to use the application",
+                  style: Theme.of(context).textTheme.titleLarge,
+                  textAlign: TextAlign.center,
+                ),
               );
-            }
-            if (snapshot.connectionState == ConnectionState.done) {
+            } else {
               List<AssetEntity> entities = value.entities;
               return Column(
                 children: [
@@ -84,10 +91,6 @@ class _AddPostScreenState extends State<AddPostScreen> {
                   _controllerBar(context, value),
                   Expanded(child: _mediasGrid(context, value, entities))
                 ],
-              );
-            } else {
-              return const Center(
-                child: Text("Error"),
               );
             }
           },
@@ -179,14 +182,28 @@ class _AddPostScreenState extends State<AddPostScreen> {
                   ),
                   InkWell(
                     borderRadius: BorderRadius.circular(35),
-                    onTap: () {
-                      Fluttertoast.showToast(
-                          msg: 'On developing',
-                          toastLength: Toast.LENGTH_SHORT,
-                          gravity: ToastGravity.CENTER,
-                          timeInSecForIosWeb: 1,
-                          textColor: Colors.white,
-                          fontSize: 10.0);
+                    onTap: () async {
+                          await availableCameras().then((cameras) {
+                            if (cameras.isEmpty) {
+                              return;
+                            }
+                        Navigator.push(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) =>
+                                    CameraPreviewScreen(cameras: cameras),
+                            transitionsBuilder: (context, animation,
+                                secondaryAnimation, child) {
+                              return buildSlideTransition(animation, child);
+                            },
+                            transitionDuration:
+                                const Duration(milliseconds: 150),
+                            reverseTransitionDuration:
+                                const Duration(milliseconds: 150),
+                          ),
+                        );
+                      });
                     },
                     child: Container(
                         height: 35,

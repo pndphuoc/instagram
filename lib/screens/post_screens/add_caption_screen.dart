@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -16,7 +16,9 @@ import 'package:provider/provider.dart';
 import '../../models/post.dart';
 
 class AddCaptionScreen extends StatefulWidget {
-  const AddCaptionScreen({Key? key}) : super(key: key);
+  final File? media;
+
+  const AddCaptionScreen({Key? key, this.media}) : super(key: key);
 
   @override
   State<AddCaptionScreen> createState() => _AddCaptionScreenState();
@@ -45,16 +47,17 @@ class _AddCaptionScreenState extends State<AddCaptionScreen> {
                 const SizedBox(
                   width: 20,
                 ),
-
-                Consumer<CurrentUserViewModel>(builder: (context, value, child) {
-                  return CircleAvatar(
-                    radius: 25,
-                    backgroundImage: value.user!.avatarUrl.isNotEmpty ? CachedNetworkImageProvider(value.user!.avatarUrl) :
-                      const AssetImage("assets/default_avatar.png") as ImageProvider
-                    ,
-                  );
-                },),
-
+                Consumer<CurrentUserViewModel>(
+                  builder: (context, value, child) {
+                    return CircleAvatar(
+                      radius: 25,
+                      backgroundImage: value.user!.avatarUrl.isNotEmpty
+                          ? CachedNetworkImageProvider(value.user!.avatarUrl)
+                          : const AssetImage("assets/default_avatar.png")
+                              as ImageProvider,
+                    );
+                  },
+                ),
                 const SizedBox(
                   width: 10,
                 ),
@@ -83,12 +86,18 @@ class _AddCaptionScreenState extends State<AddCaptionScreen> {
                   builder: (context, value, child) => SizedBox(
                     height: previewMediaSize,
                     width: previewMediaSize,
-                    child: ImageItemWidget(
-                        entity: value.selectedEntities.isEmpty
-                            ? value.selectedEntity!
-                            : value.selectedEntities.first,
-                        option: const ThumbnailOption(
-                            size: ThumbnailSize.square(100))),
+                    child: widget.media != null
+                        ? Image.file(
+                            widget.media!,
+                            height: 100,
+                            width: 100,
+                          )
+                        : ImageItemWidget(
+                            entity: value.selectedEntities.isEmpty
+                                ? value.selectedEntity!
+                                : value.selectedEntities.first,
+                            option: const ThumbnailOption(
+                                size: ThumbnailSize.square(100))),
                   ),
                 ),
                 const SizedBox(
@@ -105,10 +114,15 @@ class _AddCaptionScreenState extends State<AddCaptionScreen> {
   void _uploadNewPost(BuildContext context) {
     final user = context.read<CurrentUserViewModel>();
     final asset = context.read<AssetViewModel>();
+
     context.read<HomeScreenProvider>().currentIndex = 0;
-    asset.firstAsset = asset.selectedEntities.isEmpty
-        ? asset.selectedEntity
-        : asset.selectedEntities.first;
+
+    if (asset.selectedFile == null) {
+      asset.firstAsset = asset.selectedEntities.isEmpty
+          ? asset.selectedEntity
+          : asset.selectedEntities.first;
+    }
+
     Navigator.popUntil(context, (route) => route.isFirst);
     Post post = Post(
         caption: _controller.text,

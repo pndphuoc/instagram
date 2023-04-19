@@ -36,7 +36,6 @@ class PostViewModel extends ChangeNotifier {
 
   Future<void> getPosts(String followingListId) async {
     List<String> followingIds = await _relationshipService.getFollowingIds(followingListId);
-
     _posts = await _postService.getPosts(followingIds);
     for (var element in _posts) {
       element.isLiked = await _likeService.isLiked(element.likedListId, FirebaseAuth.instance.currentUser!.uid);
