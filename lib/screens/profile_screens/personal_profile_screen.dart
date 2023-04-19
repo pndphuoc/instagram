@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:instagram/screens/post_details_screen.dart';
+import 'package:instagram/screens/post_screens/post_details_screen.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/asset_message_view_model.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
@@ -9,10 +9,10 @@ import 'package:instagram/view_model/authentication_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/post_view_model.dart';
 import 'package:provider/provider.dart';
-import '../models/post.dart';
-import '../models/user.dart' as model;
-import '../ultis/ultils.dart';
-import '../widgets/sticky_tab_bar_delegate.dart';
+import '../../models/post.dart';
+import '../../models/user.dart' as model;
+import '../../ultis/ultils.dart';
+import '../../widgets/sticky_tab_bar_delegate.dart';
 
 class PersonalProfileScreen extends StatefulWidget {
   const PersonalProfileScreen({Key? key}) : super(key: key);

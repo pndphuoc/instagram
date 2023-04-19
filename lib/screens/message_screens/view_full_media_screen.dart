@@ -1,11 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cached_video_player/cached_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:instagram/models/message.dart';
 import 'package:instagram/view_model/message_view_model.dart';
-import 'package:video_player/video_player.dart';
 
-import '../ultis/ultils.dart';
+import '../../ultis/ultils.dart';
 
 class FullMediaScreen extends StatefulWidget {
   final Message message;
@@ -17,22 +17,31 @@ class FullMediaScreen extends StatefulWidget {
 }
 
 class _FullMediaScreenState extends State<FullMediaScreen> {
-  late VideoPlayerController _controller;
+  late CachedVideoPlayerController _controller;
   bool isLoading = true;
 
   @override
   void initState() {
     if (widget.message.type == 'video') {
-      _controller = VideoPlayerController.network(
+      _controller = CachedVideoPlayerController.network(
           widget.message.content)
         ..initialize().then((_) {
           // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
           setState(() {
             isLoading = false;
+            _controller.play();
           });
         });
     }
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    if (widget.message.type == 'video') {
+      _controller.dispose();
+    }
+    super.dispose();
   }
 
   @override
@@ -57,7 +66,7 @@ class _FullMediaScreenState extends State<FullMediaScreen> {
                 ),
               ) : isLoading ? const Center(child: CircularProgressIndicator(),) : AspectRatio(
                   aspectRatio: _controller.value.aspectRatio,
-                  child: VideoPlayer(_controller))
+                  child: CachedVideoPlayer(_controller))
             ),
           )),
     );

@@ -70,16 +70,23 @@ class FireBaseStorageService implements IStorageService {
   }
 
   @override
-  Future<bool> downloadFile(String url) async {
-    final response = await http.get(Uri.parse(url));
+  Future<bool> downloadFile(String url, {bool isVideo = false}) async {
+    try {
+      final response = await http.get(Uri.parse(url));
 
-    if (response.statusCode == 200) {
-      // Save file to device
-      final directory = await getExternalStorageDirectory();
-      print(directory!.path);
-      final file = File('/storage/emulated/0/DCIM/${DateTime.now()}.jpg');
-      await file.writeAsBytes(response.bodyBytes);
-      return true;
+      if (response.statusCode == 200) {
+        late File file;
+        final downloadPath = await getExternalStorageDirectories(type: StorageDirectory.dcim);
+        if (isVideo) {
+          file = File('$downloadPath/${DateTime.now()}.mp4');
+        } else {
+          file = File('$downloadPath/${DateTime.now()}.png');
+        }
+        await file.writeAsBytes(response.bodyBytes);
+        return true;
+      }
+    } catch (e) {
+      rethrow;
     }
     return false;
   }

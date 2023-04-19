@@ -50,11 +50,6 @@ class AuthenticationViewModel extends ChangeNotifier {
     if (email.isEmpty || password.isEmpty || username.isEmpty) {
       return "Please enter all fields";
     }
-/*    final isExists = await _elasticService.isUsernameExists(username);
-
-    if (isExists) {
-      return "Username already exists";
-    }*/
 
     String result = await _service.signUp(
         email: email,

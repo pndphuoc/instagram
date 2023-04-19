@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:instagram/services/firestorage_services.dart';
+import 'package:instagram/services/firebase_storage_services.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';

@@ -120,6 +120,8 @@ class UserViewModel extends ChangeNotifier {
   @override
   void dispose() {
     _postController.close();
+    _followerController.close();
+    _followStateController.close();
     super.dispose();
   }
 }

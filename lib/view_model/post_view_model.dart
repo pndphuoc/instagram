@@ -1,16 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import 'package:instagram/provider/home_screen_provider.dart';
-import 'package:instagram/services/firestorage_services.dart';
+import 'package:instagram/services/firebase_storage_services.dart';
 import 'package:instagram/services/like_services.dart';
 import 'package:instagram/services/relationship_services.dart';
 import 'package:instagram/services/user_services.dart';
+import 'package:instagram/ultis/global_variables.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
 import 'package:instagram/view_model/like_view_model.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 import '../models/post.dart';
-import '../resources/storage_methods.dart';
 import '../services/post_services.dart';
 
 class PostViewModel extends ChangeNotifier {
@@ -18,6 +17,7 @@ class PostViewModel extends ChangeNotifier {
   final UserService _userService = UserService();
   final LikeService _likeService = LikeService();
   final RelationshipService _relationshipService = RelationshipService();
+  final FireBaseStorageService _firebaseStorageService = FireBaseStorageService();
 
   List<Post> _posts = [];
   bool _isUploading = false;
@@ -69,7 +69,6 @@ class PostViewModel extends ChangeNotifier {
     _isUploading = true;
     notifyListeners();
 
-    final storageMethods = StorageMethods();
 
     List<String> urls = [];
     if (assetViewModel.selectedEntities.isEmpty) {
@@ -81,12 +80,13 @@ class PostViewModel extends ChangeNotifier {
       }
 
       if (entity.type == AssetType.image) {
-        String url = await storageMethods.uploadPhotoToStorage(
-            'photos', file.readAsBytesSync(), true);
+        String url = await _firebaseStorageService.uploadFile(
+            file, postsPhotosPath, isVideo: false);
         urls.add(url);
         return urls;
       } else if (entity.type == AssetType.video) {
-        String url = await storageMethods.uploadVideoToStorage(file);
+        String url = await _firebaseStorageService.uploadFile(
+            file, postsPhotosPath, isVideo: true);
         urls.add(url);
         return urls;
       }
@@ -99,11 +99,12 @@ class PostViewModel extends ChangeNotifier {
       }
 
       if (entity.type == AssetType.image) {
-        String url = await storageMethods.uploadPhotoToStorage(
-            'photos', file.readAsBytesSync(), true);
+        String url = await _firebaseStorageService.uploadFile(
+            file, postsPhotosPath, isVideo: false);
         urls.add(url);
       } else if (entity.type == AssetType.video) {
-        String url = await storageMethods.uploadVideoToStorage(file);
+        String url = await _firebaseStorageService.uploadFile(
+            file, postsPhotosPath, isVideo: true);
         urls.add(url);
       }
     }

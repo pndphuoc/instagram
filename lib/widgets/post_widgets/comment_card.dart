@@ -6,12 +6,11 @@ import 'package:instagram/ultis/global_variables.dart';
 import 'package:instagram/view_model/comment_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/like_view_model.dart';
-import 'package:instagram/widgets/like_animation.dart';
-import 'package:instagram/widgets/reply_comment_card.dart';
+import 'package:instagram/widgets/animation_widgets/like_animation.dart';
+import 'package:instagram/widgets/post_widgets/reply_comment_card.dart';
 import 'package:provider/provider.dart';
 
-import '../provider/comment_text_field_provider.dart';
-import '../ultis/ultils.dart';
+import '../../ultis/ultils.dart';
 
 class CommentCard extends StatefulWidget {
   final Comment cmt;

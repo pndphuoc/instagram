@@ -1,12 +1,12 @@
-import 'dart:typed_data';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:instagram/interface/authenticatin_interface.dart';
-import 'package:instagram/services/firestorage_services.dart';
+import 'package:instagram/services/firebase_storage_services.dart';
+import 'package:instagram/ultis/global_variables.dart';
 
-import '../resources/storage_methods.dart';
 import '../models/user.dart' as model;
 
 class AuthenticationService implements IAuthenticationService {
@@ -19,17 +19,17 @@ class AuthenticationService implements IAuthenticationService {
       FirebaseFirestore.instance.collection('followingList');
   final CollectionReference _blockedListCollection =
       FirebaseFirestore.instance.collection('blockedList');
+  final FireBaseStorageService _fireBaseStorageService = FireBaseStorageService();
 
   @override
   Future<String> completeSignInWithGoogle(
-      {required String username, String bio = "", Uint8List? file}) async {
+      {required String username, String bio = "", File? file}) async {
     try {
       final currentUser = FirebaseAuth.instance.currentUser!;
       String? photoUrl;
 
       if (file != null) {
-        photoUrl = await StorageMethods()
-            .uploadPhotoToStorage('profilePics', file, false);
+        photoUrl = await _fireBaseStorageService.uploadFile(file, profilePicturesPath, isVideo: false);
       }
 
       final userRef = _firestore.collection('users').doc(currentUser.uid);

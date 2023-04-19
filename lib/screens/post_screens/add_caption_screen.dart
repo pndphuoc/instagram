@@ -13,7 +13,7 @@ import 'package:instagram/widgets/image_thumbail.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
 
-import '../models/post.dart';
+import '../../models/post.dart';
 
 class AddCaptionScreen extends StatefulWidget {
   const AddCaptionScreen({Key? key}) : super(key: key);

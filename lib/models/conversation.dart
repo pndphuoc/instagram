@@ -1,10 +1,10 @@
-import 'package:instagram/models/chat_user.dart';
+import 'package:instagram/models/user_summary_information.dart';
 
 class Conversation {
   String uid;
   String lastMessageContent;
   DateTime lastMessageTime;
-  List<ChatUser> users;
+  List<UserSummaryInformation> users;
   bool isSeen;
 
   Conversation({
@@ -17,7 +17,7 @@ class Conversation {
 
   factory Conversation.fromJson(Map<String, dynamic> json) {
     List<dynamic> usersJson = json['users'] ?? [];
-    List<ChatUser> users = usersJson.map((userJson) => ChatUser.fromJson(userJson)).toList();
+    List<UserSummaryInformation> users = usersJson.map((userJson) => UserSummaryInformation.fromJson(userJson)).toList();
     return Conversation(
       uid: json['uid'] ?? '',
       lastMessageContent: json['lastMessageContent'] ?? '',

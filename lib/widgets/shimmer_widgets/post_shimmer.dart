@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../ultis/global_variables.dart';
+import '../../ultis/global_variables.dart';
 
 class PostShimmer extends StatelessWidget {
   const PostShimmer({Key? key}) : super(key: key);

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:instagram/route/route_name.dart';
-import 'package:instagram/screens/discover_screen.dart';
+import 'package:instagram/screens/post_screens/discover_screen.dart';
 
-import '../screens/add_post_screen.dart';
-import '../screens/news_feed_screen.dart';
-import '../screens/personal_profile_screen.dart';
+import '../screens/post_screens/add_post_screen.dart';
+import '../screens/post_screens/news_feed_screen.dart';
+import '../screens/profile_screens/personal_profile_screen.dart';
 
 class HomeScreenProvider with ChangeNotifier {
 

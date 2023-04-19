@@ -7,7 +7,7 @@ import 'package:instagram/services/comment_services.dart';
 import 'package:instagram/services/like_services.dart';
 import 'package:instagram/services/post_services.dart';
 
-import '../models/chat_user.dart';
+import '../models/user_summary_information.dart';
 import '../models/user.dart';
 
 class CommentViewModel extends ChangeNotifier {
@@ -26,6 +26,7 @@ class CommentViewModel extends ChangeNotifier {
   bool _hasMoreToLoad = false;
 
   int _replyCount = 0;
+
   bool _hasMoreReplyCount = true;
 
   bool get hasMoreReplyCount => _hasMoreReplyCount;
@@ -295,7 +296,7 @@ class CommentViewModel extends ChangeNotifier {
 
   onPostButtonPressed(
       String commentListId,
-      ChatUser currentUser,
+      UserSummaryInformation currentUser,
       ScrollController scrollController,
       List<Comment> displayedComments) async {
     if (_commentTextField.text.isEmpty) {

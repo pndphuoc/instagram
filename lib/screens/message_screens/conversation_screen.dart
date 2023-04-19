@@ -1,22 +1,22 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:instagram/models/chat_user.dart';
+import 'package:instagram/models/user_summary_information.dart';
 import 'package:instagram/models/conversation.dart';
 import 'package:instagram/models/message.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/message_view_model.dart';
 import 'package:instagram/widgets/avatar_with_status.dart';
-import 'package:instagram/widgets/received_message_card.dart';
-import 'package:instagram/widgets/sending_image_message.dart';
-import 'package:instagram/widgets/sent_message_card.dart';
+import 'package:instagram/widgets/message_widgets/received_message_card.dart';
+import 'package:instagram/widgets/message_widgets/sending_image_message.dart';
+import 'package:instagram/widgets/message_widgets/sent_message_card.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
 
-import '../widgets/image_thumbail.dart';
+import '../../widgets/image_thumbail.dart';
 
 class ConversationScreen extends StatefulWidget {
-  final ChatUser restUser;
+  final UserSummaryInformation restUser;
 
   const ConversationScreen({Key? key, required this.restUser})
       : super(key: key);
@@ -35,7 +35,6 @@ class _ConversationScreenState extends State<ConversationScreen> {
   late Stream<Conversation> _getConversationData;
   late Stream<List<Message>> _getMessages;
   final ScrollController _scrollController = ScrollController();
-  int page = 1;
 
   final double _crossAxisSpacing = 2;
   final double _mainAxisSpacing = 2;
@@ -93,30 +92,44 @@ class _ConversationScreenState extends State<ConversationScreen> {
                         child: Text(messageSnapshot.error.toString()),
                       );
                     } else {
-                      return ListView.separated(
-                        cacheExtent: 2000,
-                        reverse: true,
-                        separatorBuilder: (context, index) => const SizedBox(
-                          height: 5,
-                        ),
-                        itemCount: messageSnapshot.data!.length,
-                        itemBuilder: (context, index) {
-                          if (!messageSnapshot.hasData) {
-                            return Container();
-                          } else if (messageSnapshot.hasError) {
-                            return Center(
-                              child: Text(messageSnapshot.error.toString()),
-                            );
-                          } else if (messageSnapshot.data![index].senderId ==
-                              _auth.currentUser!.uid) {
-                            return SentMessageCard(
-                                message: messageSnapshot.data![index]);
-                          } else {
-                            return ReceivedMessageCard(
-                                message: messageSnapshot.data![index],
-                                user: widget.restUser);
+                      _messageViewModel.messages.addAll(messageSnapshot.data!);
+                      return NotificationListener<ScrollNotification>(
+                        onNotification: (scrollNotification) {
+                          const double threshold = 0.5; // 90% of the list length
+                          final double extentAfter = scrollNotification.metrics.extentAfter;
+                          final double maxScrollExtent =
+                              scrollNotification.metrics.maxScrollExtent;
+                          if (scrollNotification is ScrollEndNotification &&
+                              extentAfter / maxScrollExtent < threshold) {
+                            _messageViewModel.getMessages();
                           }
+                          return true;
                         },
+                        child: ListView.separated(
+                          cacheExtent: 2000,
+                          reverse: true,
+                          separatorBuilder: (context, index) => const SizedBox(
+                            height: 5,
+                          ),
+                          itemCount: _messageViewModel.messages.length,
+                          itemBuilder: (context, index) {
+                            if (!messageSnapshot.hasData) {
+                              return Container();
+                            } else if (messageSnapshot.hasError) {
+                              return Center(
+                                child: Text(messageSnapshot.error.toString()),
+                              );
+                            } else if (_messageViewModel.messages[index].senderId ==
+                                _auth.currentUser!.uid) {
+                              return SentMessageCard(
+                                  message: _messageViewModel.messages[index]);
+                            } else {
+                              return ReceivedMessageCard(
+                                  message: _messageViewModel.messages[index],
+                                  user: widget.restUser);
+                            }
+                          },
+                        ),
                       );
                     }
                   },
@@ -128,34 +141,39 @@ class _ConversationScreenState extends State<ConversationScreen> {
               }
             },
           )),
-          StreamBuilder(
-            stream: _messageViewModel.sendingMessageStream,
-            builder: (context, snapshot) {
-              if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                return Align(
-                  alignment: Alignment.centerRight,
-                  child: Container(
-                    margin: const EdgeInsets.only(right: 20),
-                    height: 30,
-                    width: MediaQuery.of(context).size.width / 2,
-                    decoration: BoxDecoration(
-                        color: Colors.grey,
-                        borderRadius: BorderRadius.circular(20)),
-                    child: Center(
-                      child: Text(
-                          "Sending (${snapshot.data!.length}) images",
-                          style: const TextStyle(color: Colors.black)),
-                    ),
-                  ),
-                );
-              } else {
-                return Container();
-              }
-            },
-          ),
+          _buildSendingMessage(context),
           _buildWriteMessage(context)
         ],
       ),
+    );
+  }
+
+  Widget _buildSendingMessage(BuildContext context) {
+    return StreamBuilder(
+      stream: _messageViewModel.sendingMessageStream,
+      builder: (context, snapshot) {
+        if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+          return Align(
+            alignment: Alignment.centerRight,
+            child: Container(
+              margin: const EdgeInsets.only(right: 20),
+              height: 30,
+              width: MediaQuery.of(context).size.width / 2,
+              decoration: BoxDecoration(
+                  color: Colors.grey,
+                  borderRadius: BorderRadius.circular(20)),
+              child: Center(
+                child: Text(
+                    "Sending (${snapshot.data!.length}) medias",
+                    style: const TextStyle(color: Colors.black)),
+              ),
+              //child: SendingImageMessage(image: ),
+            ),
+          );
+        } else {
+          return Container();
+        }
+      },
     );
   }
 
@@ -377,8 +395,8 @@ class _ConversationScreenState extends State<ConversationScreen> {
         if (scrollNotification is ScrollEndNotification &&
             extentAfter / maxScrollExtent < threshold &&
             _messageViewModel.hasMoreToLoad) {
-          _messageViewModel.loadAssetsOfPath(page: page);
-          page++;
+          _messageViewModel.loadAssetsOfPath();
+          _messageViewModel.page++;
         }
         return true;
       },

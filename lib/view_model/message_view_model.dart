@@ -7,14 +7,15 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:instagram/models/conversation.dart';
 import 'package:instagram/services/message_services.dart';
 import 'package:instagram/services/user_services.dart';
+import 'package:instagram/ultis/ultils.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:rxdart/rxdart.dart';
 
-import '../models/chat_user.dart';
+import '../models/user_summary_information.dart';
 import '../models/message.dart';
 import '../services/asset_services.dart';
-import '../services/firestorage_services.dart';
+import '../services/firebase_storage_services.dart';
 
 class MessageViewModel extends ChangeNotifier {
   MessageViewModel() {
@@ -29,12 +30,24 @@ class MessageViewModel extends ChangeNotifier {
 
   Stream<String> get writingMessageStream => _writingMessageController.stream;
 
+  int page = 1;
+
+  List<Message> _messages = [];
+
+  List<Message> get messages => _messages;
+
+  set messages(List<Message> value) {
+    _messages = value;
+  }
+
   late String _conversationId;
 
-  String get conversationId => _conversationId;
-  List<ChatUser> _users = [];
+  DocumentSnapshot? _lastDocument;
 
-  List<ChatUser> get users => _users;
+  String get conversationId => _conversationId;
+  List<UserSummaryInformation> _users = [];
+
+  List<UserSummaryInformation> get users => _users;
 
   final _messagesController = StreamController<List<Message>>();
 
@@ -45,10 +58,10 @@ class MessageViewModel extends ChangeNotifier {
   Stream<List<AssetEntity>> get sendingMessageStream =>
       _sendingMessageController.stream;
 
-  final StreamController<List<ChatUser>> _usersList =
-      StreamController<List<ChatUser>>();
+  final StreamController<List<UserSummaryInformation>> _usersList =
+      StreamController<List<UserSummaryInformation>>();
 
-  Stream<List<ChatUser>> get usersStream => _usersList.stream;
+  Stream<List<UserSummaryInformation>> get usersStream => _usersList.stream;
 
   final AssetService _assetService = AssetService();
   final FireBaseStorageService _fireBaseStorageService =
@@ -125,6 +138,7 @@ class MessageViewModel extends ChangeNotifier {
 
   Stream<List<Message>> getMessages(
       {int pageSize = 25, DocumentSnapshot? lastDocument}) {
+
     return _messageServices.getStreamMessages(
         conversationId: _conversationId,
         pageSize: pageSize,
@@ -185,7 +199,7 @@ class MessageViewModel extends ChangeNotifier {
       if (difference.inMinutes < 2) {
         status = "Online";
       } else {
-        status = "Online ${difference.inMinutes} minutes ago";
+        status = "Online ${getElapsedTime(lastOnline)} ago";
       }
       sink.add(status);
     }));
@@ -208,7 +222,7 @@ class MessageViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> loadAssetsOfPath({int page = 0, int sizePerPage = 50}) async {
+  Future<void> loadAssetsOfPath({int sizePerPage = 50}) async {
     _entities.addAll(await _assetService.loadAssetsOfPath(_selectedPath,
         page: page, sizePerPage: sizePerPage));
 
@@ -292,8 +306,6 @@ class MessageViewModel extends ChangeNotifier {
     _sendingMessageController.sink.add([]);
     _selectedEntities = [];
 
-    //await _messageServices.sendTextMessage(conversationId: _conversationId, senderId: senderId, messageContent: messageContent, timestamp: timestamp);
-    //await updateLastMessageOfConversation(conversationId: _conversationId, content: messageContent, type: messageType, timestamp: timestamp);
   }
 
   Future<bool> onDownload(String url) async {
@@ -317,14 +329,13 @@ class MessageViewModel extends ChangeNotifier {
     return false;
   }
 
-/*  Stream<List<Conversation>> getConversations() {
-    return _messageServices.getConversations(userId: FirebaseAuth.instance.currentUser!.uid).transform(
-      StreamTransformer<List<dynamic>, List<Conversation>>.fromHandlers(
-        handleData: (snapshot, sink) async {
-          if (snapshot.isEmpty) return;
-          sink.add(await )
-        }
-      )
-    );
-  }*/
+  @override
+  void dispose() {
+    _selectedEntitiesController.close();
+    _writingMessageController.close();
+    _messagesController.close();
+    _usersList.close();
+    _sendingMessageController.close();
+    super.dispose();
+  }
 }

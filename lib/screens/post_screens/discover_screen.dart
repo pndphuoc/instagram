@@ -1,18 +1,18 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/route/route_name.dart';
-import 'package:instagram/screens/post_details_screen.dart';
+import 'package:instagram/screens/post_screens/post_details_screen.dart';
 import 'package:instagram/screens/search_screen.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../models/post.dart';
-import '../provider/home_screen_provider.dart';
-import '../ultis/colors.dart';
-import '../view_model/elastic_view_model.dart';
-import '../view_model/post_view_model.dart';
+import '../../models/post.dart';
+import '../../provider/home_screen_provider.dart';
+import '../../ultis/colors.dart';
+import '../../view_model/elastic_view_model.dart';
+import '../../view_model/post_view_model.dart';
 
 class DiscoverScreen extends StatefulWidget {
   const DiscoverScreen({Key? key}) : super(key: key);

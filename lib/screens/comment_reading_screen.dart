@@ -6,10 +6,10 @@ import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/ultis/ultils.dart';
 import 'package:instagram/view_model/comment_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
-import 'package:instagram/widgets/comment_card.dart';
-import 'package:instagram/widgets/comment_shimmer.dart';
-import 'package:instagram/widgets/show_up_widget.dart';
-import 'package:instagram/widgets/uploading_comment_cart.dart';
+import 'package:instagram/widgets/post_widgets/comment_card.dart';
+import 'package:instagram/widgets/shimmer_widgets/comment_shimmer.dart';
+import 'package:instagram/widgets/animation_widgets/show_up_widget.dart';
+import 'package:instagram/widgets/post_widgets/uploading_comment_cart.dart';
 import 'package:provider/provider.dart';
 
 import '../models/post.dart';

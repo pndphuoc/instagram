@@ -6,7 +6,7 @@ import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/widgets/text_form_field.dart';
 import 'package:provider/provider.dart';
 
-import '../ultis/ultils.dart';
+import '../../ultis/ultils.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);

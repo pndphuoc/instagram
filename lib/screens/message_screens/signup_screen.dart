@@ -12,8 +12,8 @@ import 'package:instagram/view_model/user_view_model.dart';
 import 'package:instagram/widgets/text_form_field.dart';
 import 'package:provider/provider.dart';
 
-import '../ultis/global_variables.dart';
-import '../view_model/current_user_view_model.dart';
+import '../../ultis/global_variables.dart';
+import '../../view_model/current_user_view_model.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);

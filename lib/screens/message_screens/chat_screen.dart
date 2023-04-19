@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:instagram/models/chat_user.dart';
+import 'package:instagram/models/user_summary_information.dart';
 import 'package:instagram/models/conversation.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/message_view_model.dart';
 import 'package:instagram/widgets/avatar_with_status.dart';
-import 'package:instagram/widgets/conversation_card.dart';
-import 'package:instagram/widgets/conversation_card_shimmer.dart';
+import 'package:instagram/widgets/message_widgets/conversation_card.dart';
+import 'package:instagram/widgets/shimmer_widgets/conversation_card_shimmer.dart';
 import 'package:provider/provider.dart';
 
-import '../widgets/conversation_card.dart';
+import '../../widgets/message_widgets/conversation_card.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({Key? key}) : super(key: key);
@@ -23,7 +23,7 @@ class _ChatScreenState extends State<ChatScreen> {
   late Stream<List<String>> _getConversationIds;
   final MessageViewModel _messageViewModel = MessageViewModel();
   final double activeAvatarSize = 35;
-  final ChatUser fakeData = ChatUser(
+  final UserSummaryInformation fakeData = UserSummaryInformation(
       userId: "ccc",
       username: "hiii_chin",
       displayName: "Nguyễn Thùy Chin",
@@ -101,7 +101,7 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Widget _buildActiveUser(BuildContext context, ChatUser user) {
+  Widget _buildActiveUser(BuildContext context, UserSummaryInformation user) {
     return SizedBox(
       width: activeAvatarSize * 2,
       height: activeAvatarSize * 2 + 25,

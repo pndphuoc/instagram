@@ -5,8 +5,8 @@ import 'package:flutter_svg/svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:photo_manager/photo_manager.dart';
 
-import '../models/post.dart';
-import '../ultis/colors.dart';
+import '../../models/post.dart';
+import '../../ultis/colors.dart';
 
 class UploadingPostCard extends StatefulWidget {
   final Post post;

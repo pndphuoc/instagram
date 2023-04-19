@@ -1,17 +1,16 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:instagram/provider/comment_text_field_provider.dart';
 import 'package:instagram/view_model/comment_view_model.dart';
 import 'package:provider/provider.dart';
 
-import '../models/comment.dart';
+import '../../models/comment.dart';
 import 'package:flutter/material.dart';
 
-import '../ultis/global_variables.dart';
-import '../ultis/ultils.dart';
-import '../view_model/current_user_view_model.dart';
-import '../view_model/like_view_model.dart';
-import 'like_animation.dart';
+import '../../ultis/global_variables.dart';
+import '../../ultis/ultils.dart';
+import '../../view_model/current_user_view_model.dart';
+import '../../view_model/like_view_model.dart';
+import '../animation_widgets/like_animation.dart';
 
 class ReplyCommentCard extends StatefulWidget {
   final String commentListId;

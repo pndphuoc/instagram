@@ -1,34 +1,35 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cached_video_player/cached_video_player.dart';
 import 'package:flutter/material.dart';
-import 'package:instagram/models/message.dart';
-import 'package:instagram/ultis/colors.dart';
-import 'package:instagram/view_model/current_user_view_model.dart';
-import 'package:provider/provider.dart';
-import 'package:video_player/video_player.dart';
+import 'package:instagram/models/user_summary_information.dart';
+import 'package:instagram/screens/message_screens/view_full_media_screen.dart';
+import 'package:instagram/widgets/avatar_with_status.dart';
 
-import '../screens/view_full_media_screen.dart';
+import '../../models/message.dart';
 
-class SentMessageCard extends StatefulWidget {
+class ReceivedMessageCard extends StatefulWidget {
   final Message message;
+  final UserSummaryInformation user;
 
-  const SentMessageCard({Key? key, required this.message}) : super(key: key);
+  const ReceivedMessageCard(
+      {Key? key, required this.message, required this.user})
+      : super(key: key);
 
   @override
-  State<SentMessageCard> createState() => _SentMessageCardState();
+  State<ReceivedMessageCard> createState() => _ReceivedMessageCardState();
 }
 
-class _SentMessageCardState extends State<SentMessageCard> {
+class _ReceivedMessageCardState extends State<ReceivedMessageCard> {
   final double borderRadius = 20;
-  late VideoPlayerController _controller;
+  final double avatarSize = 15;
   bool isLoading = true;
   late double heightOfVideo;
-  late CurrentUserViewModel _currentUserViewModel;
+  late CachedVideoPlayerController _controller;
 
   @override
   void initState() {
-    _currentUserViewModel = context.read<CurrentUserViewModel>();
     if (widget.message.type == 'video') {
-      _controller = VideoPlayerController.network(widget.message.content, )
+      _controller = CachedVideoPlayerController.network(widget.message.content)
         ..initialize().then((_) {
           // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
           heightOfVideo = MediaQuery.of(context).size.width /
@@ -54,49 +55,32 @@ class _SentMessageCardState extends State<SentMessageCard> {
   Widget build(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
-      mainAxisAlignment: MainAxisAlignment.end,
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
+        const SizedBox(
+          width: 10,
+        ),
+        CircleAvatar(
+          radius: avatarSize,
+          backgroundImage: widget.user.avatarUrl.isNotEmpty
+              ? CachedNetworkImageProvider(widget.user.avatarUrl)
+              : const AssetImage('assets/default_avatar.png') as ImageProvider,
+        ),
+        const SizedBox(
+          width: 10,
+        ),
         if (widget.message.type == 'text') _buildTextMessage(context),
         if (widget.message.type == 'image') _buildImageMessage(context),
         if (widget.message.type == 'video') _buildVideoMessage(context),
-        const SizedBox(
-          width: 5,
-        ),
-        if (widget.message.status == 'sent')
-          Container(
-            alignment: Alignment.centerRight,
-            width: 13,
-            height: 13,
-            decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.fromBorderSide(
-                    BorderSide(width: 1, color: primaryColor))),
-            child: const Center(
-                child: Icon(Icons.check, color: primaryColor, size: 10)),
-          ),
-        if (widget.message.status == 'sending')
-          Container(
-            width: 12,
-            height: 12,
-            decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.fromBorderSide(
-                    BorderSide(width: 1.5, color: primaryColor))),
-          ),
-        const SizedBox(
-          width: 5,
-        )
       ],
     );
   }
 
   Widget _buildTextMessage(BuildContext context) {
     return Container(
-      constraints:
-          BoxConstraints(maxWidth: MediaQuery.of(context).size.width / 2),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
-          color: secondaryColor,
+          color: const Color.fromRGBO(55, 126, 189, 1.0),
           borderRadius: BorderRadius.circular(borderRadius)),
       child: Text(
         widget.message.content,
@@ -112,8 +96,11 @@ class _SentMessageCardState extends State<SentMessageCard> {
         Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) =>
-                  FullMediaScreen(message: widget.message, senderName: "You"),
+              builder: (context) => FullMediaScreen(
+                  message: widget.message,
+                  senderName: widget.user.displayName.isEmpty
+                      ? widget.user.displayName
+                      : widget.user.username),
             ));
       },
       child: Container(
@@ -125,12 +112,9 @@ class _SentMessageCardState extends State<SentMessageCard> {
             tag: widget.message.content,
             child: CachedNetworkImage(
               imageUrl: widget.message.content,
-              fit: BoxFit.cover,
               width: MediaQuery.of(context).size.width / 10 * 6.5,
               height: MediaQuery.of(context).size.width / 10 * 6.5,
-              placeholder: (context, url) => Container(
-                color: Colors.grey,
-              ),
+              fit: BoxFit.contain,
             ),
           ),
         ),
@@ -145,10 +129,7 @@ class _SentMessageCardState extends State<SentMessageCard> {
             context,
             MaterialPageRoute(
               builder: (context) => FullMediaScreen(
-                  message: widget.message,
-                  senderName: _currentUserViewModel.user!.displayName.isEmpty
-                      ? _currentUserViewModel.user!.username
-                      : _currentUserViewModel.user!.displayName),
+                  message: widget.message, senderName: widget.user.displayName.isNotEmpty ? widget.user.displayName : widget.user.username),
             ));
       },
       child: AnimatedContainer(
@@ -171,7 +152,7 @@ class _SentMessageCardState extends State<SentMessageCard> {
                       tag: widget.message.content,
                       child: AspectRatio(
                           aspectRatio: _controller.value.aspectRatio,
-                          child: VideoPlayer(_controller)),
+                          child: CachedVideoPlayer(_controller)),
                     ),
                   ),
                   const Positioned(

@@ -1,15 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:instagram/models/chat_user.dart';
+import 'package:instagram/models/user_summary_information.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/message_view_model.dart';
 import 'package:provider/provider.dart';
 
-import '../screens/conversation_screen.dart';
-import '../ultis/colors.dart';
-import '../ultis/ultils.dart';
-import 'avatar_with_status.dart';
-import 'conversation_card_shimmer.dart';
+import '../../screens/message_screens/conversation_screen.dart';
+import '../../ultis/colors.dart';
+import '../../ultis/ultils.dart';
+import '../avatar_with_status.dart';
+import '../shimmer_widgets/conversation_card_shimmer.dart';
 
 class ConversationCard extends StatelessWidget {
   final String conversationId;
@@ -19,7 +19,7 @@ class ConversationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final MessageViewModel messageViewModel = MessageViewModel();
     const double avatarSize = 30;
-    late ChatUser restUser;
+    late UserSummaryInformation restUser;
     return Consumer<CurrentUserViewModel>(builder: (context, value, child) {
       return StreamBuilder(
         stream: messageViewModel.getConversationData(conversationId),

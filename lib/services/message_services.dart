@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart' as realtime;
 import 'package:instagram/interface/message_interface.dart';
-import 'package:instagram/models/chat_user.dart';
+import 'package:instagram/models/user_summary_information.dart';
 import 'package:instagram/models/message.dart';
 
 class MessageServices implements IMessageService {
@@ -41,7 +41,7 @@ class MessageServices implements IMessageService {
   }
 
   @override
-  Future<void> createConversation(List<ChatUser> users, String conversationId,
+  Future<void> createConversation(List<UserSummaryInformation> users, String conversationId,
       String messageContent, DateTime messageTime) async {
     await _conversationsCollection.doc(conversationId).set({
       'users':

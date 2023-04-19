@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,5 +13,5 @@ abstract class IAuthenticationService {
   Future<void> logout();
   Future<UserCredential> signInWithGoogle();
   Future<String> completeSignInWithGoogle(
-      {required String username, String bio = "", Uint8List? file});
+      {required String username, String bio = "", File? file});
 }

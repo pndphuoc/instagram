@@ -1,20 +1,20 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:instagram/screens/conversation_screen.dart';
-import 'package:instagram/screens/personal_profile_screen.dart';
-import 'package:instagram/screens/post_details_screen.dart';
+import 'package:instagram/screens/message_screens/conversation_screen.dart';
+import 'package:instagram/screens/profile_screens/personal_profile_screen.dart';
+import 'package:instagram/screens/post_screens/post_details_screen.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/user_view_model.dart';
 import 'package:instagram/widgets/bottom_navigator_bar.dart';
-import '../models/chat_user.dart';
-import '../models/post.dart';
-import '../models/user.dart' as model;
+import '../../models/user_summary_information.dart';
+import '../../models/post.dart';
+import '../../models/user.dart' as model;
 import 'package:provider/provider.dart';
 
-import '../ultis/colors.dart';
-import '../ultis/ultils.dart';
-import '../view_model/relationship_view_model.dart';
-import '../widgets/sticky_tab_bar_delegate.dart';
+import '../../ultis/colors.dart';
+import '../../ultis/ultils.dart';
+import '../../view_model/relationship_view_model.dart';
+import '../../widgets/sticky_tab_bar_delegate.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String userId;
@@ -384,7 +384,7 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   _onMessageButtonPressed() {
-    final ChatUser restUser = ChatUser(
+    final UserSummaryInformation restUser = UserSummaryInformation(
         userId: widget.userId,
         username: _userViewModel.user.username,
         avatarUrl: _userViewModel.user.avatarUrl,

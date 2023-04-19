@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:instagram/models/search_result.dart';
 import 'package:instagram/provider/home_screen_provider.dart';
 import 'package:instagram/route/route_name.dart';
-import 'package:instagram/screens/profile_screen.dart';
+import 'package:instagram/screens/profile_screens/profile_screen.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/elastic_view_model.dart';
 import 'package:instagram/view_model/post_view_model.dart';

@@ -1,18 +1,18 @@
-class ChatUser {
+class UserSummaryInformation {
   String userId;
   String username;
   String avatarUrl;
   String displayName;
 
-  ChatUser({
+  UserSummaryInformation({
     required this.userId,
     required this.username,
     required this.avatarUrl,
     required this.displayName,
   });
 
-  factory ChatUser.fromJson(Map<String, dynamic> json) {
-    return ChatUser(
+  factory UserSummaryInformation.fromJson(Map<String, dynamic> json) {
+    return UserSummaryInformation(
       userId: json['userId'] ?? '',
       username: json['username'] ?? '',
       avatarUrl: json['avatarUrl'] ?? '',

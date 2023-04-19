@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
-import 'package:instagram/services/firestorage_services.dart';
+import 'package:instagram/services/firebase_storage_services.dart';
 
 class FirestoreViewModel extends ChangeNotifier {
   final FireBaseStorageService _firestoreService = FireBaseStorageService();

@@ -6,18 +6,18 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:instagram/screens/comment_reading_screen.dart';
 import 'package:instagram/screens/like_list_screen.dart';
-import 'package:instagram/screens/profile_screen.dart';
+import 'package:instagram/screens/profile_screens/profile_screen.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/ultis/global_variables.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/like_view_model.dart';
 import 'package:instagram/view_model/post_view_model.dart';
-import 'package:instagram/widgets/like_animation.dart';
+import 'package:instagram/widgets/animation_widgets/like_animation.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../models/post.dart';
-import '../ultis/ultils.dart';
+import '../../models/post.dart';
+import '../../ultis/ultils.dart';
 
 class PostCard extends StatefulWidget {
   final Post post;

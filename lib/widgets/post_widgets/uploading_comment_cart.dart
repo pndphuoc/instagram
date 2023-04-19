@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:instagram/models/comment.dart';
 import 'package:instagram/ultis/colors.dart';
 
-import '../ultis/ultils.dart';
+import '../../ultis/ultils.dart';
 
 class UploadingCommentCard extends StatelessWidget {
   final Comment cmt;

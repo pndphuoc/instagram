@@ -5,14 +5,14 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:instagram/config/route/routes.dart';
 import 'package:instagram/provider/home_screen_provider.dart';
 import 'package:instagram/permision_handler.dart';
 import 'package:instagram/responsive/mobile_screen_layout.dart';
 import 'package:instagram/responsive/responsive_layout_screen.dart';
 import 'package:instagram/responsive/web_screen_layout.dart';
-import 'package:instagram/screens/login_screen.dart';
+import 'package:instagram/screens/authentication_screens/login_screen.dart';
+import 'package:instagram/theme.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/asset_message_view_model.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
@@ -107,35 +107,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             routes: routes,
             debugShowCheckedModeBanner: false,
             title: 'Instagram Clone',
-            theme: ThemeData.dark().copyWith(
-              scaffoldBackgroundColor: mobileBackgroundColor,
-              textTheme: GoogleFonts.readexProTextTheme().copyWith(
-                bodyLarge: const TextStyle(
-                    color: onBackground,
-                    fontSize: 20,
-                    fontWeight: FontWeight.normal),
-                bodyMedium: const TextStyle(
-                  color: onBackgroundSecondary,
-                ),
-                bodySmall: const TextStyle(color: onBackground),
-                labelLarge: const TextStyle(
-                    color: Colors.grey, fontWeight: FontWeight.w300),
-                displayLarge: const TextStyle(color: onBackground),
-                displayMedium: const TextStyle(color: onBackground),
-                displaySmall: const TextStyle(color: onBackground),
-                headlineMedium: const TextStyle(color: onBackground),
-                headlineSmall: const TextStyle(color: onBackground),
-                titleLarge: const TextStyle(color: onBackground),
-                labelSmall: const TextStyle(color: onBackground),
-                labelMedium: const TextStyle(color: onBackground),
-                titleMedium: const TextStyle(color: onBackground),
-                titleSmall: const TextStyle(color: onBackground),
-              ),
-            ),
-            /*   home: const ResponsiveLayout(
-          mobileScreenLayout: MobileScreenLayout(),
-          webScreenLayout: WebScreenLayout(),
-        ),*/
+            theme: theme,
             home: Consumer<CurrentUserViewModel>(
               builder: (context, value, child) {
                 return StreamBuilder(
