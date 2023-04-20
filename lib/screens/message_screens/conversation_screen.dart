@@ -92,7 +92,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
                         child: Text(messageSnapshot.error.toString()),
                       );
                     } else {
-                      _messageViewModel.messages.addAll(messageSnapshot.data!);
+                      //_messageViewModel.messages.addAll(messageSnapshot.data!);
                       return NotificationListener<ScrollNotification>(
                         onNotification: (scrollNotification) {
                           const double threshold = 0.5; // 90% of the list length
@@ -111,21 +111,15 @@ class _ConversationScreenState extends State<ConversationScreen> {
                           separatorBuilder: (context, index) => const SizedBox(
                             height: 5,
                           ),
-                          itemCount: _messageViewModel.messages.length,
+                          itemCount: messageSnapshot.data!.length,
                           itemBuilder: (context, index) {
-                            if (!messageSnapshot.hasData) {
-                              return Container();
-                            } else if (messageSnapshot.hasError) {
-                              return Center(
-                                child: Text(messageSnapshot.error.toString()),
-                              );
-                            } else if (_messageViewModel.messages[index].senderId ==
+                            if (messageSnapshot.data![index].senderId ==
                                 _auth.currentUser!.uid) {
                               return SentMessageCard(
-                                  message: _messageViewModel.messages[index]);
+                                  message: messageSnapshot.data![index]);
                             } else {
                               return ReceivedMessageCard(
-                                  message: _messageViewModel.messages[index],
+                                  message: messageSnapshot.data![index],
                                   user: widget.restUser);
                             }
                           },
