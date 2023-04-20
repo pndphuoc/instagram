@@ -1,6 +1,7 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/screens/post_screens/editing_photo_screen.dart';
+import 'package:instagram/screens/post_screens/video_preview_screen.dart';
 import 'package:instagram/view_model/camera_view_model.dart';
 
 import '../../ultis/ultils.dart';
@@ -19,11 +20,14 @@ class _CameraPreviewScreenState extends State<CameraPreviewScreen> {
   late CameraController _controller;
   late CameraViewModel _cameraViewModel;
   late Future<void> _initializeControllerFuture;
+  int selectedCamera = 0;
+  double _zoomLevel = 1;
 
   @override
   void initState() {
     super.initState();
-    _controller = CameraController(widget.cameras[1], ResolutionPreset.max);
+    _controller =
+        CameraController(widget.cameras[selectedCamera], ResolutionPreset.max);
     _initializeControllerFuture = _controller.initialize();
 
     _cameraViewModel = CameraViewModel(_controller);
@@ -45,10 +49,8 @@ class _CameraPreviewScreenState extends State<CameraPreviewScreen> {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             } else if (snapshot.connectionState == ConnectionState.done) {
-              // If the Future is complete, display the preview.
               return _buildPreviewCamera(context);
             } else {
-              // Otherwise, display a loading indicator.
               return const Center(child: CircularProgressIndicator());
             }
           },
@@ -67,103 +69,254 @@ class _CameraPreviewScreenState extends State<CameraPreviewScreen> {
                 child: CameraPreview(_controller)),
             Positioned.fill(
                 child: Align(
-              alignment: Alignment.center,
-              child: Column(
-                children: [
-                  Expanded(
-                      child: Container(
-                    color: Colors.black54,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: const [
-                          Icon(
-                            Icons.settings_rounded,
-                            size: 35,
-                          ),
-                          Icon(
-                            Icons.flash_auto,
-                            size: 35,
-                          ),
-                          Icon(
-                            Icons.close,
-                            size: 35,
-                          )
-                        ],
+                  alignment: Alignment.center,
+                  child: Column(
+                    children: [
+                      Expanded(
+                          child: Container(
+                            color: Colors.black54,
+                            child: Padding(
+                              padding:
+                              const EdgeInsets.only(
+                                  left: 10, right: 10, top: 10),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment
+                                    .spaceBetween,
+                                children: const [
+                                  Icon(
+                                    Icons.settings_rounded,
+                                    size: 30,
+                                  ),
+                                  Icon(
+                                    Icons.flash_auto,
+                                    size: 30,
+                                  ),
+                                  Icon(
+                                    Icons.close,
+                                    size: 30,
+                                  )
+                                ],
+                              ),
+                            ),
+                          )),
+                      SizedBox(
+                        width: MediaQuery
+                            .of(context)
+                            .size
+                            .width,
+                        height: MediaQuery
+                            .of(context)
+                            .size
+                            .width,
+                        child: GridView.count(
+                          crossAxisCount: 3, // số cột
+                          physics: const NeverScrollableScrollPhysics(),
+                          children: List.generate(9, (index) {
+                            return Container(
+                              decoration: BoxDecoration(
+                                  color: Colors.transparent,
+                                  border:
+                                  Border.all(color: Colors.white, width: 0.5)),
+                            );
+                          }),
+                        ),
                       ),
-                    ),
-                  )),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.width,
-                    child: GridView.count(
-                      crossAxisCount: 3, // số cột
-                      children: List.generate(9, (index) {
-                        return Container(
-                          decoration: BoxDecoration(
-                              color: Colors.transparent,
-                              border: Border.all(color: Colors.white, width: 0.5)),
-                        );
-                      }),
-                    ),
+                      Expanded(
+                          child: Container(
+                            color: Colors.black54,
+                          )),
+                    ],
                   ),
-                  Expanded(
-                      child: Container(
-                    color: Colors.black54,
-                  )),
-                ],
-              ),
-            )),
+                )),
             Positioned(
                 bottom: 20,
                 left: 0,
                 right: 0,
-                child: SizedBox(
-                  height: 80,
-                  width: 80,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      _cameraViewModel.takePicture().then((photo) {
-                        Navigator.push(
-                          context,
-                          PageRouteBuilder(
-                            pageBuilder:
-                                (context, animation, secondaryAnimation) =>
-                                EditingPhotoScreen(photo: photo),
-                            transitionsBuilder: (context, animation,
-                                secondaryAnimation, child) {
-                              return buildSlideTransition(animation, child);
-                            },
-                            transitionDuration:
-                            const Duration(milliseconds: 150),
-                            reverseTransitionDuration:
-                            const Duration(milliseconds: 150),
+                child: StreamBuilder(
+                  stream: _cameraViewModel.videoStream,
+                  initialData: 'stop',
+                  builder: (context, snapshot) {
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Expanded(child: Container()),
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    if (snapshot.data! == 'stop') {
+                                      _cameraViewModel.startRecording();
+                                    } else if (snapshot.data! == 'recording') {
+                                      _cameraViewModel.pauseRecording();
+                                    } else if (snapshot.data! == 'pause') {
+                                      _cameraViewModel.resumeRecording();
+                                    }
+
+                                  },
+                                  child: AnimatedContainer(
+                                    alignment: Alignment.centerRight,
+                                    width: 50,
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: snapshot.data! != 'stop'
+                                          ? Colors.white
+                                          : Colors.red,
+                                    ),
+                                    duration:
+                                    const Duration(milliseconds: 250),
+                                    child: snapshot.data! == 'recording'
+                                        ? _buildPauseRecordingButton(context)
+                                        : snapshot.data! == 'stop' ? Container() : _buildResumeRecordingButton(context)                                    ,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        );
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      shape: const CircleBorder(),
-                      backgroundColor: Colors.white,
-                    ),
-                    child: Container(),
-                  ),
-                ))
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            if (snapshot.data! == 'recording' || snapshot.data! == 'pause') {
+                              _cameraViewModel.stopRecording().then((video) {
+                                Navigator.push(
+                                  context,
+                                  PageRouteBuilder(
+                                    pageBuilder: (context, animation,
+                                        secondaryAnimation) =>
+                                        VideoPreviewScreen(video: video),
+                                    transitionsBuilder: (context,
+                                        animation,
+                                        secondaryAnimation,
+                                        child) {
+                                      return buildSlideTransition(
+                                          animation, child);
+                                    },
+                                    transitionDuration:
+                                    const Duration(milliseconds: 150),
+                                    reverseTransitionDuration:
+                                    const Duration(milliseconds: 150),
+                                  ),
+                                );
+                              });
+                            } else if (snapshot.data! == 'stop') {
+                              _cameraViewModel
+                                  .takePicture()
+                                  .then((photo) {
+                                Navigator.push(
+                                  context,
+                                  PageRouteBuilder(
+                                    pageBuilder: (context, animation,
+                                        secondaryAnimation) =>
+                                        EditingPhotoScreen(photo: photo),
+                                    transitionsBuilder: (context,
+                                        animation,
+                                        secondaryAnimation,
+                                        child) {
+                                      return buildSlideTransition(
+                                          animation, child);
+                                    },
+                                    transitionDuration:
+                                    const Duration(milliseconds: 150),
+                                    reverseTransitionDuration:
+                                    const Duration(milliseconds: 150),
+                                  ),
+                                );
+                              });
+                            }
+                          },
+                          child: AnimatedContainer(
+                            width: 80,
+                            height: 80,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                            ),
+                            duration: const Duration(milliseconds: 250),
+                            child: snapshot.data! == 'recording' || snapshot.data! == 'pause'
+                                ? _buildStopRecordingButton(context)
+                                : Container(),
+                          ),
+                        ),
+                        Expanded(child: Container()),
+                      ],
+                    );
+                  }
+                )),
           ],
         ),
         Padding(
           padding: const EdgeInsets.only(right: 20, left: 20, top: 10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              Icon(Icons.image_outlined, size: 35,),
-              Icon(Icons.flip_camera_android_rounded, size: 35,)
+            children: [
+              const Icon(
+                Icons.image_outlined,
+                size: 35,
+              ),
+              GestureDetector(
+                  onTap: _onSwitchCamera,
+                  child: const Icon(
+                    Icons.flip_camera_android_rounded,
+                    size: 35,
+                  ))
             ],
           ),
-        )
+        ),
       ],
     );
+  }
+
+  Widget _buildStartRecordingButton(BuildContext context) {
+    return Container();
+  }
+
+  Widget _buildCapturePictureButton(BuildContext context) {
+    return Container();
+  }
+
+  Widget _buildPauseRecordingButton(BuildContext context) {
+    return const Center(
+      child: Icon(
+        Icons.pause,
+        color: Colors.black,
+      ),
+    )
+    ;
+  }
+
+  Widget _buildResumeRecordingButton(BuildContext context) {
+    return const Center(
+      child: Icon(
+        Icons.play_arrow_rounded,
+        color: Colors.black,
+      ),
+    )
+    ;
+  }
+
+  Widget _buildStopRecordingButton(BuildContext context) {
+    return const Center(
+      child: Icon(
+        Icons.stop,
+        size: 40,
+        color: Colors.red,
+      ),
+    )
+    ;
+  }
+
+  _onSwitchCamera() {
+    setState(() {
+      selectedCamera = selectedCamera == 0 ? 1 : 0;
+    });
+
+    _controller =
+        CameraController(widget.cameras[selectedCamera], ResolutionPreset.max);
+
+    _initializeControllerFuture = _controller.initialize();
+
+    _cameraViewModel = CameraViewModel(_controller);
   }
 }

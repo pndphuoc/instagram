@@ -4,7 +4,7 @@ import 'package:expandable_text/expandable_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:instagram/screens/comment_reading_screen.dart';
+import 'package:instagram/screens/post_screens/comment_reading_screen.dart';
 import 'package:instagram/screens/like_list_screen.dart';
 import 'package:instagram/screens/profile_screens/profile_screen.dart';
 import 'package:instagram/ultis/colors.dart';

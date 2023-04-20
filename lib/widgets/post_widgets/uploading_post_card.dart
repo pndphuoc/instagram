@@ -10,7 +10,7 @@ import '../../ultis/colors.dart';
 
 class UploadingPostCard extends StatefulWidget {
   final Post post;
-  final AssetEntity asset;
+  final AssetEntity? asset;
 
   const UploadingPostCard({Key? key, required this.post, required this.asset})
       : super(key: key);
@@ -84,11 +84,14 @@ class _UploadingPostCardState extends State<UploadingPostCard> {
                 padding: const EdgeInsets.only(left: 15, right: 15),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(25),
-                  child: AssetEntityImage(
-                    widget.asset,
+                  child: widget.asset != null ? AssetEntityImage(
+                    widget.asset!,
                     height: imageWidth,
                     width: imageWidth,
                     fit: BoxFit.cover,
+                  ) : Container( height: imageWidth,
+                    width: imageWidth,
+                    color: secondaryColor,
                   ),
                 ),
               ),

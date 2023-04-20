@@ -30,7 +30,7 @@ class FireBaseStorageService implements IStorageService {
       compressedFile = await VideoCompress.compressVideo(
         file.absolute.path,
         quality: VideoQuality.MediumQuality,
-        deleteOrigin: false,
+        deleteOrigin: true,
       );
 
       task = ref.putFile(File(compressedFile.path), metadata);

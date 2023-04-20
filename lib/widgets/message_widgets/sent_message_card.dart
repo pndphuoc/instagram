@@ -1,11 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cached_video_player/cached_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:instagram/models/message.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:provider/provider.dart';
+import 'package:video_player/video_player.dart';
 
 import '../../screens/message_screens/view_full_media_screen.dart';
 
@@ -20,7 +20,7 @@ class SentMessageCard extends StatefulWidget {
 
 class _SentMessageCardState extends State<SentMessageCard> {
   final double borderRadius = 20;
-  late CachedVideoPlayerController _controller;
+  late VideoPlayerController _controller;
   bool isLoading = true;
   late double heightOfVideo;
   late CurrentUserViewModel _currentUserViewModel;
@@ -29,7 +29,7 @@ class _SentMessageCardState extends State<SentMessageCard> {
   void initState() {
     _currentUserViewModel = context.read<CurrentUserViewModel>();
     if (widget.message.type == 'video') {
-      _controller = CachedVideoPlayerController.network(widget.message.content, )
+      _controller = VideoPlayerController.network(widget.message.content, )
         ..initialize().then((_) {
           // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
           heightOfVideo = MediaQuery.of(context).size.width /
@@ -172,7 +172,7 @@ class _SentMessageCardState extends State<SentMessageCard> {
                       tag: widget.message.content,
                       child: AspectRatio(
                           aspectRatio: _controller.value.aspectRatio,
-                          child: CachedVideoPlayer(_controller)),
+                          child: VideoPlayer(_controller)),
                     ),
                   ),
                   const Positioned(

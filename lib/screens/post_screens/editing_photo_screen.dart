@@ -56,13 +56,6 @@ class _EditingPhotoScreenState extends State<EditingPhotoScreen> {
   AppBar _buildAppBar(BuildContext context) {
     return AppBar(
       backgroundColor: mobileBackgroundColor,
-      leading: IconButton(
-        icon: const Icon(
-          Icons.close,
-          size: 30,
-        ),
-        onPressed: () {},
-      ),
       actions: [
         IconButton(
             onPressed: () {

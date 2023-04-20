@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -5,9 +6,20 @@ import 'package:image/image.dart' as img;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:instagram/ultis/colors.dart';
 
+enum VideoRecordingState {recording, paused, stop, resume}
+
 class CameraViewModel extends ChangeNotifier {
   final CameraController _controller;
+
+  CameraController get controller => _controller;
+
   CameraViewModel(this._controller);
+
+
+
+  final _videoController = StreamController<String>();
+  Stream<String> get videoStream => _videoController.stream;
+
   Future<File> takePicture() async {
     try {
       final capturedImage = await _controller.takePicture();
@@ -15,6 +27,7 @@ class CameraViewModel extends ChangeNotifier {
 /*      final img.Image capturedImage = img.decodeImage(await File(image.path).readAsBytes())!;
       final img.Image orientedImage = img.bakeOrientation(capturedImage);
       return await File(image.path).writeAsBytes(img.encodeJpg(orientedImage));*/
+
 
     } catch (e) {
       rethrow;
@@ -52,17 +65,53 @@ class CameraViewModel extends ChangeNotifier {
 
   void startRecording() async {
     try {
+      _videoController.sink.add('recording');
       await _controller.startVideoRecording();
     } catch (e) {
       print(e);
     }
   }
 
-  void stopRecording() async {
+  Future<XFile> stopRecording() async {
     try {
-      await _controller.stopVideoRecording();
+      _videoController.sink.add('stop');
+      return await _controller.stopVideoRecording();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  void pauseRecording() async {
+    try {
+      _videoController.sink.add('pause');
+      await _controller.pauseVideoRecording();
     } catch (e) {
       print(e);
     }
+  }
+
+  void resumeRecording() async {
+    try {
+      _videoController.sink.add('recording');
+      await _controller.resumeVideoRecording();
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  double calculatePercentage(int elapsedSeconds) {
+    if (elapsedSeconds >= 60) {
+      return 1.0;
+    } else {
+      return elapsedSeconds / 60.0;
+    }
+  }
+
+
+  @override
+  void dispose() {
+    _videoController.close();
+    _controller.dispose();
+    super.dispose();
   }
 }

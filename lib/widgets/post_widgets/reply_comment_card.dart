@@ -32,12 +32,13 @@ class ReplyCommentCard extends StatefulWidget {
 
 class _ReplyCommentCardState extends State<ReplyCommentCard> {
   final LikeViewModel _likeViewModel = LikeViewModel();
-  final CommentViewModel _commentViewModel = CommentViewModel();
+  late CommentViewModel _commentViewModel;
   late CurrentUserViewModel _currentUserViewModel;
 
   @override
   void initState() {
     super.initState();
+    _commentViewModel = CommentViewModel(widget.commentListId, widget.commentId);
     _currentUserViewModel = context.read<CurrentUserViewModel>();
   }
 

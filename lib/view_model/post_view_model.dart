@@ -7,8 +7,11 @@ import 'package:instagram/services/user_services.dart';
 import 'package:instagram/ultis/global_variables.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
 import 'package:instagram/view_model/like_view_model.dart';
+import 'package:mime/mime.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'dart:io';
 
+import '../models/user.dart' as user;
 import '../models/post.dart';
 import '../services/post_services.dart';
 
@@ -67,9 +70,32 @@ class PostViewModel extends ChangeNotifier {
   Future uploadMediasOfPost(AssetViewModel assetViewModel) async {
     _isUploading = true;
     notifyListeners();
-
-
     List<String> urls = [];
+
+    if (assetViewModel.file != null) {
+      String filePath = assetViewModel.file!.path; // đường dẫn đến file cần xác định
+
+      String? mimeType = lookupMimeType(filePath);
+
+      if (mimeType != null) {
+        if (mimeType.startsWith('image/')) {
+          String url = await _firebaseStorageService.uploadFile(
+              assetViewModel.file!, postsPhotosPath, isVideo: false);
+          urls.add(url);
+        } else if (mimeType.startsWith('video/')) {
+          String url = await _firebaseStorageService.uploadFile(
+              assetViewModel.file!, postVideosPath, isVideo: true);
+          urls.add(url);
+        } else {
+          print('Unsupported format');
+        }
+      } else {
+        print('File type cannot be determined');
+      }
+      return urls;
+    }
+
+
     if (assetViewModel.selectedEntities.isEmpty) {
       final entity = assetViewModel.selectedEntity!;
       final file = await entity.fileWithSubtype;
@@ -145,6 +171,27 @@ class PostViewModel extends ChangeNotifier {
     String id = await addPost(post);
     await _userService.updatePostInformation(id);
     isUploading = false;
+  }
+
+  void onUploadButtonTap(String caption, user.User user, AssetViewModel assetViewModel) {
+    Post post = Post(
+        caption: caption,
+        userId: user.uid,
+        username: user.username,
+        avatarUrl: user.avatarUrl,
+        likeCount: 0,
+        commentCount: 0,
+        createAt: DateTime.now(),
+        mediaUrls: [],
+        uid: '',
+        commentListId: '',
+        isDeleted: false,
+        likedListId: '',
+        updateAt: DateTime.now(),
+        viewedListId: '');
+
+    handleUploadNewPost(post, assetViewModel);
+
   }
 
   @override

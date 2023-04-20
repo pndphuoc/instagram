@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:instagram/models/comment.dart';
 import 'package:instagram/services/comment_services.dart';
@@ -8,15 +9,23 @@ import 'package:instagram/services/like_services.dart';
 import 'package:instagram/services/post_services.dart';
 
 import '../models/user_summary_information.dart';
-import '../models/user.dart';
 
 class CommentViewModel extends ChangeNotifier {
+  final String commentListId;
+  final String commentId;
+  late String userId;
+  CommentViewModel(this.commentListId, this.commentId) {
+    userId = FirebaseAuth.instance.currentUser!.uid;
+  }
   final CommentServices _commentServices = CommentServices();
   final PostService _postService = PostService();
   final LikeService _likeService = LikeService();
 
   final _commentController = StreamController<List<Comment>>();
   final _replyCommentController = StreamController<List<Comment>>();
+  final _selectingCommentController = StreamController<bool>();
+
+  Stream<bool> get selectingCommentStream => _selectingCommentController.stream;
 
   Stream<List<Comment>> get commentsStream => _commentController.stream;
 
@@ -59,19 +68,18 @@ class CommentViewModel extends ChangeNotifier {
 
   DocumentSnapshot? _lastDocument;
 
-  Future<String> addComment(String commentListId, Comment comment) async {
+  Future<String> addComment(Comment comment) async {
     String uid = await _commentServices.addComment(commentListId, comment);
     //await _postService.addComment(postId);
 
     comment = await _commentServices.getComment(commentListId, uid);
-
+    _comments.insert(0, comment);
     _commentController.sink.add([]);
 
     return uid;
   }
 
-  Future<String> addReplyComment(
-      String commentListId, String commentId, Comment replyComment) async {
+  Future<String> addReplyComment(Comment replyComment) async {
     String uid = await _commentServices.addReplyComment(
         commentListId, commentId, replyComment);
 
@@ -84,8 +92,6 @@ class CommentViewModel extends ChangeNotifier {
   }
 
   Future<void> getComments({
-    required String commentListId,
-    required userId,
     int pageSize = 10,
   }) async {
     try {
@@ -117,17 +123,15 @@ class CommentViewModel extends ChangeNotifier {
           },
         ),
       );
+      _comments.addAll(comments);
 
-      _commentController.sink.add(comments);
+      _commentController.sink.add([]);
     } catch (e) {
       print('Error: $e');
     }
   }
 
   Future<void> getMoreComments({
-    required String commentListId,
-    required String likeListId,
-    required String userId,
     int pageSize = 10,
   }) async {
     if (!_hasMoreToLoad) {
@@ -154,8 +158,9 @@ class CommentViewModel extends ChangeNotifier {
       comment.isLiked = await _likeService.isLiked(comment.likedListId, userId);
       return comment;
     }));
+    _comments.addAll(comments);
 
-    _commentController.sink.add(comments);
+    _commentController.sink.add([]);
     notifyListeners();
   }
 
@@ -168,9 +173,6 @@ class CommentViewModel extends ChangeNotifier {
   }
 
   Future<void> getReplyComments({
-    required String commentListId,
-    required String commentId,
-    required userId,
     int pageSize = 5,
   }) async {
     try {
@@ -187,7 +189,7 @@ class CommentViewModel extends ChangeNotifier {
       _lastDocument = docs.last;
       _hasMoreToLoad = docs.length == pageSize;
 
-      final comments = await _getCommentListWithLikedCheck(docs, userId);
+      final comments = await _getCommentListWithLikedCheck(docs);
 
       if (comments.length < _replyPageSize) {
         _hasMoreToLoad = false;
@@ -202,7 +204,7 @@ class CommentViewModel extends ChangeNotifier {
   }
 
   Future<List<Comment>> _getCommentListWithLikedCheck(
-      List<DocumentSnapshot<Object?>> docs, String userId) async {
+      List<DocumentSnapshot<Object?>> docs) async {
     return Future.wait(
       docs.map(
         (data) async {
@@ -228,6 +230,8 @@ class CommentViewModel extends ChangeNotifier {
     try {
       await _commentServices.deleteComment(commentListId, commentId);
       await _postService.deleteComment(postId);
+      _comments.removeWhere((element) => element.uid == commentId);
+      _commentController.sink.add([]);
       return true;
     } catch (e) {
       return false;
@@ -326,16 +330,21 @@ class CommentViewModel extends ChangeNotifier {
         duration: const Duration(milliseconds: 300),
         curve: Curves.fastOutSlowIn,
       );
-      await addComment(
-        commentListId,
-        comment,
-      );
+      await addComment(comment);
     } else {
       replyComments.insert(0, comment);
-      await addReplyComment(commentListId, commentRepliedId, comment);
+      await addReplyComment(comment);
     }
 
     onCancelReplyCommentTap();
+  }
+
+  void onCommentLongPress(Comment cmt) {
+    _selectingCommentController.sink.add(true);
+  }
+
+  void cancelCommentLongPress() {
+    _selectingCommentController.sink.add(false);
   }
 
   @override
@@ -343,5 +352,6 @@ class CommentViewModel extends ChangeNotifier {
     super.dispose();
     _commentController.close();
     _replyCommentController.close();
+    _selectingCommentController.close();
   }
 }

@@ -1,10 +1,16 @@
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:instagram/services/like_services.dart';
 import 'package:instagram/services/post_services.dart';
 
+import '../models/comment.dart';
+
 class LikeViewModel extends ChangeNotifier {
   final LikeService _likeService = LikeService();
   final PostService _postService = PostService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   List<String> _likedBy = [];
   bool _isLikeAnimating = false;
@@ -14,6 +20,9 @@ class LikeViewModel extends ChangeNotifier {
   set isLikeAnimating(bool value) {
     _isLikeAnimating = value;
   }
+
+  final _likeController = StreamController<bool>();
+  Stream<bool> get likeStream => _likeController.stream;
 
   List<String> get likeBy => _likedBy;
 
@@ -36,4 +45,19 @@ class LikeViewModel extends ChangeNotifier {
     _isLikeAnimating = !_isLikeAnimating;
     notifyListeners();
   }
+
+  toggleLike(Comment cmt) {
+    if (cmt.isLiked) {
+     unlike(
+          cmt.likedListId, _auth.currentUser!.uid);
+      cmt.likeCount--;
+    } else {
+      like(
+          cmt.likedListId, _auth.currentUser!.uid);
+      cmt.likeCount++;
+    }
+
+    _likeController.sink.add(!cmt.isLiked);
+  }
+
 }

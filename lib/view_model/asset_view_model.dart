@@ -25,6 +25,14 @@ class AssetViewModel extends ChangeNotifier {
     _selectedFile = value;
   }
 
+  File? _file;
+
+  File? get file => _file;
+
+  set file(File? value) {
+    _file = value;
+  }
+
   bool _isAllPermissionGranted = false;
   AssetEntity? firstAsset;
 
@@ -106,7 +114,8 @@ class AssetViewModel extends ChangeNotifier {
         Permission.photos,
         Permission.videos
       ].request();
-      if (statuses[Permission.accessMediaLocation] == PermissionStatus.granted &&
+      if (statuses[Permission.accessMediaLocation] ==
+              PermissionStatus.granted &&
           statuses[Permission.photos] == PermissionStatus.granted &&
           statuses[Permission.videos] == PermissionStatus.granted) {
         await loadAssetPathList();
@@ -201,6 +210,15 @@ class AssetViewModel extends ChangeNotifier {
       return true;
     }
     return false;
+  }
+
+  void onUploadButtonTap({File? file}) {
+    if (file != null) {
+      _file = file;
+    } else if (selectedFile == null) {
+      firstAsset =
+          selectedEntities.isEmpty ? selectedEntity : selectedEntities.first;
+    }
   }
 
   void resetAssetViewModel() {
