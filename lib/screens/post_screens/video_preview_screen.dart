@@ -94,17 +94,17 @@ class _VideoPreviewScreenState extends State<VideoPreviewScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildActionButton(icon: const Icon(Icons.arrow_back_ios_new_rounded), onTap: (){}),
+        _buildActionButton(icon: const Icon(Icons.arrow_back_ios_new_rounded), onTap: (){
+          Navigator.pop(context);
+        }),
         _buildActionButton(icon: const Icon(Icons.download_rounded), onTap: (){}),
       ],
     );
   }
 
-  Widget _buildActionButton({required Icon icon, required Function onTap}) {
+  Widget _buildActionButton({required Icon icon, required void Function()? onTap}) {
     return InkWell(
-      onTap: () {
-        onTap;
-      },
+      onTap: onTap,
       child: Container(
         width: 40,
         height: 40,
@@ -118,6 +118,7 @@ class _VideoPreviewScreenState extends State<VideoPreviewScreen> {
   }
 
   _onNextButtonTap() {
+    _controller.pause();
     Navigator.push(
       context,
       PageRouteBuilder(
@@ -136,6 +137,6 @@ class _VideoPreviewScreenState extends State<VideoPreviewScreen> {
         reverseTransitionDuration:
         const Duration(milliseconds: 150),
       ),
-    );
+    ).then((value) => _controller.play());
   }
 }

@@ -84,7 +84,7 @@ class _AddCaptionScreenState extends State<AddCaptionScreen> {
                       alignment: Alignment.center,
                       child: GestureDetector(
                           onTap: (){},
-                          child: const Icon(Icons.play_circle_outline_outlined, color: Colors.black45,)),
+                          child: const Icon(Icons.play_circle_outline_outlined, color: Colors.black54, size: 40,)),
                     ))
                   ],
                 ),

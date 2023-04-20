@@ -1,6 +1,7 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:image_crop/image_crop.dart';
 import 'package:instagram/route/route_name.dart';
 import 'package:instagram/screens/post_screens/camera_preview_screen.dart';
 import 'package:instagram/ultis/colors.dart';
@@ -8,6 +9,7 @@ import 'package:instagram/view_model/asset_view_model.dart';
 import 'package:instagram/widgets/image_thumbail.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
+import 'dart:io';
 
 import '../../ultis/ultils.dart';
 
@@ -28,12 +30,17 @@ class _AddPostScreenState extends State<AddPostScreen> {
   final double _crossAxisSpacing = 2;
   final double _mainAxisSpacing = 2;
   final double _childAspectRatio = 1;
+  final cropKey = GlobalKey<CropState>();
+  File? _sample;
+  File? _lastCropped;
 
   @override
   void initState() {
     super.initState();
     assetViewModel = Provider.of<AssetViewModel>(context, listen: false);
     _firstLoading = assetViewModel.firstLoading();
+    _sample?.delete();
+    _lastCropped?.delete();
   }
 
   @override
@@ -83,12 +90,27 @@ class _AddPostScreenState extends State<AddPostScreen> {
                   SizedBox(
                     width: previewImageSize,
                     height: previewImageSize,
+                    child: FutureBuilder(
+                      future: value.assetEntityToFile(value.selectedEntity!),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(child: CircularProgressIndicator(),);
+                        } else {
+                          return _buildCropImage(snapshot.data!);
+                        }
+                      },),
+                  ),
+
+                 /* SizedBox(
+                    width: previewImageSize,
+                    height: previewImageSize,
                     child: ImageItemWidget(
                         entity: value.selectedEntity!,
                         option: const ThumbnailOption(
                             size: ThumbnailSize.square(1000), quality: 80)),
-                  ),
+                  ),*/
                   _controllerBar(context, value),
+
                   Expanded(child: _mediasGrid(context, value, entities))
                 ],
               );
@@ -319,6 +341,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
   Future _showBottomModalOfPaths(BuildContext context, AssetViewModel value) {
     return showModalBottomSheet(
       elevation: 0,
+      useSafeArea: true,
       isDismissible: true,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
@@ -362,5 +385,45 @@ class _AddPostScreenState extends State<AddPostScreen> {
         );
       },
     );
+  }
+
+  Widget _buildCropImage(File imageFile) {
+    return Container(
+      color: Colors.black,
+      padding: const EdgeInsets.all(20.0),
+      child: Crop.file(
+        imageFile,
+        key: cropKey,
+        aspectRatio: 1,
+      ),
+    );
+  }
+
+  Future<void> _cropImage(File image) async {
+    final scale = cropKey.currentState!.scale;
+    final area = cropKey.currentState!.area;
+    if (area == null) {
+      // cannot crop, widget is not setup
+      return;
+    }
+
+    // scale up to use maximum possible number of pixels
+    // this will sample image in higher resolution to make cropped image larger
+    final sample = await ImageCrop.sampleImage(
+      file: image,
+      preferredSize: (2000 / scale).round(),
+    );
+
+    final file = await ImageCrop.cropImage(
+      file: sample,
+      area: area,
+    );
+
+    sample.delete();
+
+    _lastCropped?.delete();
+    _lastCropped = file;
+
+    debugPrint('$file');
   }
 }

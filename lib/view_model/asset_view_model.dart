@@ -3,10 +3,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:instagram/permision_handler.dart';
 import 'package:instagram/services/asset_services.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
+
+import '../ultis/colors.dart';
 
 class AssetViewModel extends ChangeNotifier {
   final AssetService _assetService = AssetService();
@@ -227,4 +230,43 @@ class AssetViewModel extends ChangeNotifier {
     _selectedEntity = null;
     _entities = [];
   }
+
+  Future<File> cropImage(AssetEntity image) async {
+    try {
+      final file = File(image.relativePath!);
+      final croppedImage = await ImageCropper().cropImage(sourcePath: file.path,
+          aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+          cropStyle: CropStyle.rectangle,
+          compressFormat: ImageCompressFormat.png,
+          compressQuality: 80,
+          uiSettings: [
+            AndroidUiSettings(
+                toolbarTitle: 'Crop and resize',
+                toolbarColor: mobileBackgroundColor,
+                toolbarWidgetColor: Colors.white,
+                initAspectRatio: CropAspectRatioPreset.original,
+                backgroundColor: mobileBackgroundColor,
+                activeControlsWidgetColor: primaryColor,
+                statusBarColor: mobileBackgroundColor,
+                lockAspectRatio: true),
+            IOSUiSettings(
+              title: 'Edit photo',
+            ),
+          ]
+      );
+
+      return File(croppedImage!.path);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<File?> assetEntityToFile(AssetEntity entity) async {
+    try {
+      return await entity.file;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
 }

@@ -67,6 +67,7 @@ dependencies:
   image_cropper: ^3.0.2
   mime: ^1.0.4
   video_player:
+  image_crop: ^0.4.1
 
 
 dev_dependencies:
