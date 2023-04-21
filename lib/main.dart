@@ -22,6 +22,7 @@ import 'package:instagram/view_model/camera_view_model.dart';
 import 'package:instagram/view_model/conversation_view_model.dart';
 import 'package:instagram/view_model/elastic_view_model.dart';
 import 'package:instagram/view_model/firebase_messaging_view_model.dart';
+import 'package:instagram/view_model/notification_controller.dart';
 import 'package:instagram/view_model/post_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/user_view_model.dart';
@@ -46,11 +47,19 @@ void main() async {
     }
   });
 
+  await NotificationController.initializeLocalNotifications(debug: true);
+  await NotificationController.initializeRemoteNotifications(debug: true);
+  await NotificationController.getInitialNotificationAction();
+
   runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  static final GlobalKey<NavigatorState> navigatorKey =
+  GlobalKey<NavigatorState>();
+
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -63,6 +72,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    NotificationController.startListeningNotificationEvents();
+    NotificationController.requestFirebaseToken();
     WidgetsBinding.instance.addObserver(this);
     if (FirebaseAuth.instance.currentUser != null) {
       _userViewModel.setOnlineStatus(true);

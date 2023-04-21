@@ -12,6 +12,7 @@ import 'package:instagram/widgets/post_widgets/uploading_post_card.dart';
 import 'package:provider/provider.dart';
 
 import '../../ultis/ultils.dart';
+import '../../view_model/notification_controller.dart';
 
 class NewsFeedScreen extends StatefulWidget {
   const NewsFeedScreen({Key? key}) : super(key: key);
@@ -28,6 +29,7 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
   @override
   void initState() {
     super.initState();
+    NotificationController().addListener(() => setState(() {}));
     _currentUserViewModel = context.read<CurrentUserViewModel>();
     _getPosts = context.read<PostViewModel>().getPosts(_currentUserViewModel.user!.followingListId);
     print(_currentUserViewModel.user!.followingListId);

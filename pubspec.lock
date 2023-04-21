@@ -26,7 +26,7 @@ packages:
     source: hosted
     version: "2.10.0"
   awesome_notifications:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: awesome_notifications
       sha256: "2b430c75cc879d6cfd52bb6eb2b5c1591ed425347816408cdcbd3f6916bba14c"
