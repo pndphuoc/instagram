@@ -2,6 +2,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_crop/image_crop.dart';
+import 'package:instagram/permision_handler.dart';
 import 'package:instagram/route/route_name.dart';
 import 'package:instagram/screens/post_screens/camera_preview_screen.dart';
 import 'package:instagram/ultis/colors.dart';
@@ -23,14 +24,15 @@ class AddPostScreen extends StatefulWidget {
 class _AddPostScreenState extends State<AddPostScreen> {
   final ScrollController _scrollController = ScrollController();
   final _gridViewCrossAxisCount = 4;
-  late Future<bool> _firstLoading;
+  late Future<bool> _loadAssetPathsAndAssets;
   late AssetViewModel assetViewModel;
   late double itemHeight;
   int page = 1;
   final double _crossAxisSpacing = 2;
   final double _mainAxisSpacing = 2;
   final double _childAspectRatio = 1;
-  final cropKey = GlobalKey<CropState>();
+  //final cropKey = GlobalKey<CropState>();
+  List<GlobalKey<CropState>> cropKeys = List.generate(10, (index) => GlobalKey<CropState>());
   File? _sample;
   File? _lastCropped;
 
@@ -38,7 +40,14 @@ class _AddPostScreenState extends State<AddPostScreen> {
   void initState() {
     super.initState();
     assetViewModel = Provider.of<AssetViewModel>(context, listen: false);
-    _firstLoading = assetViewModel.firstLoading();
+    _loadAssetPathsAndAssets = PermissionHandler.requestMediasPermissions().then((isAllGranted) {
+      if (isAllGranted) {
+        return assetViewModel.loadAssetPathsAndAssets();
+      } else {
+        return false;
+      }
+    });
+
     _sample?.delete();
     _lastCropped?.delete();
   }
@@ -68,8 +77,8 @@ class _AddPostScreenState extends State<AddPostScreen> {
       appBar: _appBar(context),
       body: Consumer<AssetViewModel>(
         builder: (context, value, child) => FutureBuilder(
-          future: _firstLoading,
-          initialData: null,
+          future: _loadAssetPathsAndAssets,
+          initialData: false,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(
@@ -393,13 +402,13 @@ class _AddPostScreenState extends State<AddPostScreen> {
       padding: const EdgeInsets.all(20.0),
       child: Crop.file(
         imageFile,
-        key: cropKey,
+        key: cropKeys.first,
         aspectRatio: 1,
       ),
     );
   }
 
-  Future<void> _cropImage(File image) async {
+  /*Future<void> _cropImage(File image) async {
     final scale = cropKey.currentState!.scale;
     final area = cropKey.currentState!.area;
     if (area == null) {
@@ -425,5 +434,5 @@ class _AddPostScreenState extends State<AddPostScreen> {
     _lastCropped = file;
 
     debugPrint('$file');
-  }
+  }*/
 }

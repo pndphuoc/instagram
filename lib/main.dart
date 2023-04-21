@@ -36,8 +36,6 @@ void main() async {
   await firebaseMessagingViewModel.setupFirebaseMessaging();
   await firebaseMessagingViewModel.getToken();
 
-  await PermissionHandler.requestPermissions();
-
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
     print('Got a message whilst in the foreground!');
     print('Message data: ${message.data}');

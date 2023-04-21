@@ -21,7 +21,6 @@ class _CameraPreviewScreenState extends State<CameraPreviewScreen> {
   late CameraViewModel _cameraViewModel;
   late Future<void> _initializeControllerFuture;
   int selectedCamera = 0;
-  double _zoomLevel = 1;
 
   @override
   void initState() {

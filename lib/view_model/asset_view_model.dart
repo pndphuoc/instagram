@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:image_crop/image_crop.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:instagram/permision_handler.dart';
 import 'package:instagram/services/asset_services.dart';
@@ -21,6 +22,7 @@ class AssetViewModel extends ChangeNotifier {
   bool _isMultiSelect = false;
   AssetEntity? _selectedEntity;
   File? _selectedFile;
+  List<GlobalKey<CropState>> cropKeys = [];
 
   File? get selectedFile => _selectedFile;
 
@@ -36,7 +38,6 @@ class AssetViewModel extends ChangeNotifier {
     _file = value;
   }
 
-  bool _isAllPermissionGranted = false;
   AssetEntity? firstAsset;
 
   List<AssetPathEntity> get paths => _paths;
@@ -52,8 +53,6 @@ class AssetViewModel extends ChangeNotifier {
   bool get getIsMultiSelect => _isMultiSelect;
 
   bool get hasMoreToLoad => _hasMoreToLoad;
-
-  bool get isAllPermissionGranted => _isAllPermissionGranted;
 
   set selectedPath(AssetPathEntity path) {
     _selectedPath = path;
@@ -89,15 +88,6 @@ class AssetViewModel extends ChangeNotifier {
     }
   }
 
-  Future<bool> requestAssets() async {
-    try {
-      _isAllPermissionGranted = await _assetService.requestAssets();
-    } catch (e) {
-      print(e.toString());
-    }
-    return _isAllPermissionGranted;
-  }
-
   Future<void> loadAssetsOfPath({int page = 0, int sizePerPage = 50}) async {
     _entities.addAll(await _assetService.loadAssetsOfPath(_selectedPath,
         page: page, sizePerPage: sizePerPage));
@@ -109,29 +99,15 @@ class AssetViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> firstLoading() async {
+  Future<bool> loadAssetPathsAndAssets() async {
     try {
-      bool isAllGranted = false;
-      Map<Permission, PermissionStatus> statuses = await [
-        Permission.accessMediaLocation,
-        Permission.photos,
-        Permission.videos
-      ].request();
-      if (statuses[Permission.accessMediaLocation] ==
-              PermissionStatus.granted &&
-          statuses[Permission.photos] == PermissionStatus.granted &&
-          statuses[Permission.videos] == PermissionStatus.granted) {
-        await loadAssetPathList();
-        _selectedPath = _paths.first;
-        await loadAssetsOfPath();
+      await loadAssetPathList();
+      _selectedPath = _paths.first;
+      await loadAssetsOfPath();
 
-        _selectedEntity = _entities.first;
-        notifyListeners();
-        return true;
-      } else {
-        isAllGranted = false;
-      }
-      return isAllGranted;
+      _selectedEntity = _entities.first;
+      notifyListeners();
+      return true;
     } catch (err) {
       return false;
     }
@@ -158,7 +134,7 @@ class AssetViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void onTapEntityInMessage(AssetEntity entity) {
+/*  void onTapEntityInMessage(AssetEntity entity) {
     _isMultiSelect = true;
 
     bool isExistInSelectedEntities = _selectedEntities.contains(entity);
@@ -170,7 +146,7 @@ class AssetViewModel extends ChangeNotifier {
 
       notifyListeners();
     }
-  }
+  }*/
 
   void onLongPress(AssetEntity entity) {
     if (!_isMultiSelect) {
@@ -234,7 +210,8 @@ class AssetViewModel extends ChangeNotifier {
   Future<File> cropImage(AssetEntity image) async {
     try {
       final file = File(image.relativePath!);
-      final croppedImage = await ImageCropper().cropImage(sourcePath: file.path,
+      final croppedImage = await ImageCropper().cropImage(
+          sourcePath: file.path,
           aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
           cropStyle: CropStyle.rectangle,
           compressFormat: ImageCompressFormat.png,
@@ -252,8 +229,7 @@ class AssetViewModel extends ChangeNotifier {
             IOSUiSettings(
               title: 'Edit photo',
             ),
-          ]
-      );
+          ]);
 
       return File(croppedImage!.path);
     } catch (e) {
@@ -268,5 +244,4 @@ class AssetViewModel extends ChangeNotifier {
       rethrow;
     }
   }
-
 }

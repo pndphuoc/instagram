@@ -19,6 +19,7 @@ import '../../models/post.dart';
 
 class AddCaptionScreen extends StatefulWidget {
   final File? media;
+
   const AddCaptionScreen({Key? key, this.media}) : super(key: key);
 
   @override
@@ -31,6 +32,7 @@ class _AddCaptionScreenState extends State<AddCaptionScreen> {
   late String? mimeType;
   late VideoPlayerController _videoController;
   bool _isVideoFromCamera = false;
+
   @override
   void initState() {
     if (widget.media != null) {
@@ -80,16 +82,23 @@ class _AddCaptionScreenState extends State<AddCaptionScreen> {
                         child: VideoPlayer(_videoController),
                       ),
                     ),
-                    Positioned.fill(child: Align(
+                    Positioned.fill(
+                        child: Align(
                       alignment: Alignment.center,
                       child: GestureDetector(
-                          onTap: (){},
-                          child: const Icon(Icons.play_circle_outline_outlined, color: Colors.black54, size: 40,)),
+                          onTap: () {},
+                          child: const Icon(
+                            Icons.play_circle_outline_outlined,
+                            color: Colors.black54,
+                            size: 40,
+                          )),
                     ))
                   ],
                 ),
               ),
-            const SizedBox(height: 20,),
+            const SizedBox(
+              height: 20,
+            ),
             Row(
               children: [
                 const SizedBox(
@@ -109,7 +118,6 @@ class _AddCaptionScreenState extends State<AddCaptionScreen> {
                 const SizedBox(
                   width: 10,
                 ),
-                
                 Expanded(
                   child: TextField(
                     controller: _controller,
@@ -138,16 +146,16 @@ class _AddCaptionScreenState extends State<AddCaptionScreen> {
                       width: previewMediaSize,
                       child: widget.media != null
                           ? Image.file(
-                        widget.media!,
-                        height: 100,
-                        width: 100,
-                      )
+                              widget.media!,
+                              height: 100,
+                              width: 100,
+                            )
                           : ImageItemWidget(
-                          entity: value.selectedEntities.isEmpty
-                              ? value.selectedEntity!
-                              : value.selectedEntities.first,
-                          option: const ThumbnailOption(
-                              size: ThumbnailSize.square(100))),
+                              entity: value.selectedEntities.isEmpty
+                                  ? value.selectedEntity!
+                                  : value.selectedEntities.first,
+                              option: const ThumbnailOption(
+                                  size: ThumbnailSize.square(100))),
                     ),
                   ),
                 const SizedBox(
@@ -170,7 +178,9 @@ class _AddCaptionScreenState extends State<AddCaptionScreen> {
     asset.onUploadButtonTap(file: widget.media);
     Navigator.popUntil(context, (route) => route.isFirst);
 
-    context.read<PostViewModel>().onUploadButtonTap(_controller.text, user.user!, asset);
+    context
+        .read<PostViewModel>()
+        .onUploadButtonTap(_controller.text, user.user!, asset);
   }
 
   AppBar _appBar(BuildContext context) {

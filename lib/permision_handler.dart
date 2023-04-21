@@ -1,29 +1,31 @@
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:io';
 
 class PermissionHandler with ChangeNotifier {
-  static Future<bool> requestPermissions() async {
+  static Future<bool> requestMediasPermissions() async {
     List<Permission> permissionsToRequest = [];
 
-/*    // Kiểm tra quyền thông báo
-    if (await Permission.notification.status != PermissionStatus.granted) {
-      permissionsToRequest.add(Permission.notification);
-    }*/
+    if (Platform.isAndroid) {
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      if (androidInfo.version.sdkInt <= 32) {
+        if (await Permission.storage.status != PermissionStatus.granted) {
+          permissionsToRequest.add(Permission.storage);
+        }
+        if (await Permission.accessMediaLocation.status != PermissionStatus.granted) {
+          permissionsToRequest.add(Permission.storage);
+        }
+      }  else {
+        if (await Permission.photos.status != PermissionStatus.granted) {
+          permissionsToRequest.add(Permission.photos);
+        }
 
-/*    // Kiểm tra quyền truy cập vị trí
-    if (await Permission.accessMediaLocation.status != PermissionStatus.granted) {
-      permissionsToRequest.add(Permission.accessMediaLocation);
-    }*/
-
-    // Kiểm tra quyền truy cập ảnh và video
-    if (await Permission.photos.status != PermissionStatus.granted) {
-      permissionsToRequest.add(Permission.photos);
-    }
-
-    // Kiểm tra quyền truy cập bộ nhớ
-    if (await Permission.storage.status != PermissionStatus.granted) {
-      permissionsToRequest.add(Permission.storage);
+        if (await Permission.videos.status != PermissionStatus.granted) {
+          permissionsToRequest.add(Permission.photos);
+        }
+      }
     }
 
     if (permissionsToRequest.isNotEmpty) {
