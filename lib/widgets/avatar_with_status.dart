@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/message_view_model.dart';
+import 'package:instagram/view_model/user_view_model.dart';
 import 'package:provider/provider.dart';
 
 class AvatarWithStatus extends StatelessWidget {
@@ -20,7 +21,7 @@ class AvatarWithStatus extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    MessageViewModel messageViewModel = MessageViewModel();
+    UserViewModel userViewModel = UserViewModel();
     return Stack(
       children: [
         CircleAvatar(
@@ -30,7 +31,7 @@ class AvatarWithStatus extends StatelessWidget {
               : const AssetImage('assets/default_avatar.png') as ImageProvider,
         ),
         StreamBuilder(
-          stream: messageViewModel.getOnlineStatus(userId),
+          stream: userViewModel.getOnlineStatus(userId),
           builder: (context, snapshot) {
             if (snapshot.data == 'Online') {
               return Positioned(

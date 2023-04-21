@@ -34,6 +34,9 @@ class UserViewModel extends ChangeNotifier {
 
   User get user => _user;
 
+  Stream<String> getOnlineStatus(String userId) {
+    return _userService.getOnlineStatus(userId);
+  }
 
   final _followStateController = StreamController<bool>();
   final StreamController<List<Post>> _postController = BehaviorSubject();

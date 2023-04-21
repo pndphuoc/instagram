@@ -11,4 +11,5 @@ abstract class IMessageService {
 
   Stream<List<Message>> getStreamMessages(
       {required String conversationId, int pageSize = 10, DocumentSnapshot? lastDocument});
+  Stream<Message?> getNewMessage({required String conversationId, required DateTime? lastMessageTimestamp});
  }

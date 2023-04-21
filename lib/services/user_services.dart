@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:instagram/interface/user_interface.dart';
 import 'package:instagram/models/user.dart' as model;
+
+import '../ultis/ultils.dart';
 
 class UserService implements IUserService {
   final FirebaseAuth auth = FirebaseAuth.instance;
@@ -27,6 +31,23 @@ class UserService implements IUserService {
     } catch (e) {
       rethrow;
     }
+  }
+  @override
+  Stream<String> getOnlineStatus(String userId) {
+    return getLastOnlineTime(userId).transform(
+        StreamTransformer.fromHandlers(handleData: (snapshot, sink) async {
+          if (snapshot.isNaN) return;
+
+          final lastOnline = DateTime.fromMillisecondsSinceEpoch(snapshot);
+          final difference = DateTime.now().difference(lastOnline);
+          String status = 'Online';
+          if (difference.inMinutes < 2) {
+            status = "Online";
+          } else {
+            status = "Online ${getElapsedTime(lastOnline)} ago";
+          }
+          sink.add(status);
+        }));
   }
 
   @override

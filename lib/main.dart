@@ -35,7 +35,7 @@ void main() async {
 
   final FirebaseMessagingViewModel firebaseMessagingViewModel = FirebaseMessagingViewModel();
   await firebaseMessagingViewModel.setupFirebaseMessaging();
-  await firebaseMessagingViewModel.getToken();
+  print(await firebaseMessagingViewModel.getToken());
 
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
     print('Got a message whilst in the foreground!');

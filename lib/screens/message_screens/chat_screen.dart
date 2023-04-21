@@ -22,7 +22,6 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   late CurrentUserViewModel _currentUserViewModel;
   late Stream<List<String>> _getConversationIds;
-  final MessageViewModel _messageViewModel = MessageViewModel();
   final ConversationViewModel _conversationViewModel = ConversationViewModel();
   final double activeAvatarSize = 35;
   final UserSummaryInformation fakeData = UserSummaryInformation(

@@ -19,11 +19,12 @@ import '../services/asset_services.dart';
 import '../services/firebase_storage_services.dart';
 
 class MessageViewModel extends ChangeNotifier {
-  MessageViewModel() {
+  MessageViewModel(List<UserSummaryInformation> users) {
+    _users = users;
     createConversationIdFromUsers();
+    loadOldMessages().whenComplete(() => listenToMessages());
   }
 
-  final UserService _userService = UserService();
   final ConversationService _conversationService = ConversationService();
   final MessageServices _messageServices = MessageServices();
   final StreamController<String> _writingMessageController =
@@ -46,13 +47,16 @@ class MessageViewModel extends ChangeNotifier {
   DocumentSnapshot? _lastDocument;
 
   String get conversationId => _conversationId;
+
   List<UserSummaryInformation> _users = [];
 
   List<UserSummaryInformation> get users => _users;
 
-  final _messagesController = StreamController<List<Message>>();
+  set users(List<UserSummaryInformation> value) {
+    _users = value;
+  } //final _messagesController = StreamController<List<Message>>();
 
-  Stream<List<Message>> get messagesStream => _messagesController.stream;
+  //Stream<List<Message>> get messagesStream => _messagesController.stream;
 
   final _sendingMessageController = StreamController<List<AssetEntity>>();
 
@@ -140,30 +144,59 @@ class MessageViewModel extends ChangeNotifier {
         timestamp: timestamp);
   }
 
-  Stream<List<Message>> getMessages(
-      {int pageSize = 25, DocumentSnapshot? lastDocument}) {
-    return _messageServices.getStreamMessages(
-        conversationId: _conversationId,
-        pageSize: pageSize,
-        lastDocument: lastDocument);
-  }
+  //-----------------------------------------------
+  final _messageController = StreamController<List<Message>>.broadcast();
+  Stream<List<Message>> get messagesStream => _messageController.stream;
+  late StreamSubscription<Message?> _messagesSubscription;
+  final ScrollController _scrollController = ScrollController();
 
-  Stream<String> getOnlineStatus(String userId) {
-    return _userService.getLastOnlineTime(userId).transform(
-        StreamTransformer.fromHandlers(handleData: (snapshot, sink) async {
-      if (snapshot.isNaN) return;
+  ScrollController get scrollController => _scrollController;
+  bool _hasMoreMessages = false;
+  bool _loadingOldMessages = false;
+  DateTime? _oldestMessageTimestamp;
 
-      final lastOnline = DateTime.fromMillisecondsSinceEpoch(snapshot);
-      final difference = DateTime.now().difference(lastOnline);
-      String status = 'Online';
-      if (difference.inMinutes < 2) {
-        status = "Online";
-      } else {
-        status = "Online ${getElapsedTime(lastOnline)} ago";
+  void listenToMessages() {
+    _messagesSubscription = _messageServices.getNewMessage(conversationId: _conversationId, lastMessageTimestamp: _messages.first.timestamp).listen((message) {
+      if (message == null) {
+        _messageController.sink.add([]);
+        return;
       }
-      sink.add(status);
-    }));
+      _messages.insert(0, message);
+        _messageController.sink.add([]);
+    });
+
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels / _scrollController.position.maxScrollExtent < 0.8) {
+        loadOldMessages();
+      }
+    });
   }
+
+  Future<void> loadOldMessages() async {
+    if (_hasMoreMessages || _loadingOldMessages) {
+      return;
+    }
+
+    _loadingOldMessages = true;
+
+    if (_messages.isNotEmpty) {
+      _oldestMessageTimestamp = _messages.last.timestamp;
+    } else {
+      _oldestMessageTimestamp = null;
+    }
+
+    final oldMessages = await _messageServices.getOldMessages(conversationId: _conversationId, lastMessageTimestamp: _oldestMessageTimestamp, limit: 20);
+
+    if (oldMessages.isNotEmpty) {
+      _messages.addAll(oldMessages);
+      _messageController.sink.add([]);
+    } else {
+      _hasMoreMessages = false;
+    }
+
+    _loadingOldMessages = false;
+  }
+
 
   final StreamController<List<AssetEntity>> _selectedEntitiesController =
       BehaviorSubject();
@@ -294,7 +327,9 @@ class MessageViewModel extends ChangeNotifier {
   void dispose() {
     _selectedEntitiesController.close();
     _writingMessageController.close();
-    _messagesController.close();
+    _scrollController.dispose();
+    _messagesSubscription.cancel();
+    //_messagesController.close();
     _usersList.close();
     _sendingMessageController.close();
     super.dispose();

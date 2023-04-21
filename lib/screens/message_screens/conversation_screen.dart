@@ -7,6 +7,7 @@ import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/conversation_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/message_view_model.dart';
+import 'package:instagram/view_model/user_view_model.dart';
 import 'package:instagram/widgets/avatar_with_status.dart';
 import 'package:instagram/widgets/message_widgets/received_message_card.dart';
 import 'package:instagram/widgets/message_widgets/sending_image_message.dart';
@@ -29,9 +30,10 @@ class ConversationScreen extends StatefulWidget {
 class _ConversationScreenState extends State<ConversationScreen> {
   final double avatarSize = 20;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final MessageViewModel _messageViewModel = MessageViewModel();
+  late MessageViewModel _messageViewModel;
   final ConversationViewModel _conversationViewModel = ConversationViewModel();
   final TextEditingController _messageController = TextEditingController();
+  final UserViewModel _userViewModel = UserViewModel();
   late CurrentUserViewModel _currentUserViewModel;
   late String conversationId;
   late Stream<Conversation> _getConversationData;
@@ -53,13 +55,16 @@ class _ConversationScreenState extends State<ConversationScreen> {
   @override
   void initState() {
     _currentUserViewModel = context.read<CurrentUserViewModel>();
-    _messageViewModel.users
-        .addAll([widget.restUser, _currentUserViewModel.chatUser]);
-    _messageViewModel.createConversationIdFromUsers();
+
+    _messageViewModel = MessageViewModel([widget.restUser, _currentUserViewModel.chatUser]);
+
     _getConversationData =
         _conversationViewModel.getConversationData(_messageViewModel.conversationId);
-    _getMessages = _messageViewModel.getMessages();
+
+    //_getMessages = _messageViewModel.getMessages();
+
     _messageViewModel.firstLoading();
+
     super.initState();
   }
 
@@ -85,9 +90,11 @@ class _ConversationScreenState extends State<ConversationScreen> {
             builder: (context, conversationSnapshot) {
               if (conversationSnapshot.hasData) {
                 return StreamBuilder(
-                  stream: _getMessages,
+                  stream: _messageViewModel.messagesStream,
                   builder: (context, messageSnapshot) {
-                    if (!messageSnapshot.hasData) {
+                    if (messageSnapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator(),);
+                    } else if (!messageSnapshot.hasData) {
                       return Container();
                     } else if (messageSnapshot.hasError) {
                       return Center(
@@ -95,37 +102,25 @@ class _ConversationScreenState extends State<ConversationScreen> {
                       );
                     } else {
                       //_messageViewModel.messages.addAll(messageSnapshot.data!);
-                      return NotificationListener<ScrollNotification>(
-                        onNotification: (scrollNotification) {
-                          const double threshold = 0.5; // 90% of the list length
-                          final double extentAfter = scrollNotification.metrics.extentAfter;
-                          final double maxScrollExtent =
-                              scrollNotification.metrics.maxScrollExtent;
-                          if (scrollNotification is ScrollEndNotification &&
-                              extentAfter / maxScrollExtent < threshold) {
-                            _messageViewModel.getMessages();
-                          }
-                          return true;
-                        },
-                        child: ListView.separated(
-                          cacheExtent: 2000,
-                          reverse: true,
-                          separatorBuilder: (context, index) => const SizedBox(
-                            height: 5,
-                          ),
-                          itemCount: messageSnapshot.data!.length,
-                          itemBuilder: (context, index) {
-                            if (messageSnapshot.data![index].senderId ==
-                                _auth.currentUser!.uid) {
-                              return SentMessageCard(
-                                  message: messageSnapshot.data![index]);
-                            } else {
-                              return ReceivedMessageCard(
-                                  message: messageSnapshot.data![index],
-                                  user: widget.restUser);
-                            }
-                          },
+                      return ListView.separated(
+                        controller: _messageViewModel.scrollController,
+                        cacheExtent: 2000,
+                        reverse: true,
+                        separatorBuilder: (context, index) => const SizedBox(
+                          height: 5,
                         ),
+                        itemCount: _messageViewModel.messages.length,
+                        itemBuilder: (context, index) {
+                          if (_messageViewModel.messages[index].senderId ==
+                              _auth.currentUser!.uid) {
+                            return SentMessageCard(
+                                message: _messageViewModel.messages[index]);
+                          } else {
+                            return ReceivedMessageCard(
+                                message: _messageViewModel.messages[index],
+                                user: widget.restUser);
+                          }
+                        },
                       );
                     }
                   },
@@ -203,8 +198,8 @@ class _ConversationScreenState extends State<ConversationScreen> {
                   height: 5,
                 ),
                 StreamBuilder(
-                    stream: _messageViewModel
-                        .getOnlineStatus(widget.restUser.userId),
+                    stream:
+                    _userViewModel.getOnlineStatus(widget.restUser.userId),
                     builder: (context, snapshot) {
                       return Text(
                         snapshot.data ?? widget.restUser.username,

@@ -17,4 +17,5 @@ abstract class IUserService {
 
   Future<void> setOnlineStatus(bool isOnline);
   Stream<int> getLastOnlineTime(String userId);
+  Stream<String> getOnlineStatus(String userId);
 }

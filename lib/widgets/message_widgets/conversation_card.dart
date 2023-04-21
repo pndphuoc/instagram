@@ -4,6 +4,7 @@ import 'package:instagram/models/user_summary_information.dart';
 import 'package:instagram/view_model/conversation_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/message_view_model.dart';
+import 'package:instagram/view_model/user_view_model.dart';
 import 'package:provider/provider.dart';
 
 import '../../screens/message_screens/conversation_screen.dart';
@@ -19,7 +20,7 @@ class ConversationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ConversationViewModel conversationViewModel = ConversationViewModel();
-    final MessageViewModel messageViewModel = MessageViewModel();
+    final UserViewModel userViewModel = UserViewModel();
     const double avatarSize = 30;
     late UserSummaryInformation restUser;
     return Consumer<CurrentUserViewModel>(builder: (context, value, child) {
@@ -65,7 +66,7 @@ class ConversationCard extends StatelessWidget {
                 child: Row(
                   children: [
                     StreamBuilder(
-                      stream: messageViewModel.getOnlineStatus(restUser.userId),
+                      stream: userViewModel.getOnlineStatus(restUser.userId),
                       builder: (context, snapshot) {
                         return AvatarWithStatus(
                           userId: restUser.userId,

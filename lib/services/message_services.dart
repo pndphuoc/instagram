@@ -8,7 +8,8 @@ class MessageServices implements IMessageService {
       FirebaseFirestore.instance.collection('conversations');
   final CollectionReference _usersCollection =
       FirebaseFirestore.instance.collection('users');
-  final _userStatusDatabaseRef = realtime.FirebaseDatabase.instance.ref().child('userStatus');
+  final _userStatusDatabaseRef =
+      realtime.FirebaseDatabase.instance.ref().child('userStatus');
 
   @override
   Stream<List<Message>> getStreamMessages(
@@ -31,6 +32,57 @@ class MessageServices implements IMessageService {
     return query.snapshots().map((snapshot) => snapshot.docs
         .map((doc) => Message.fromJson(doc.data() as Map<String, dynamic>))
         .toList());
+  }
+
+  @override
+  Stream<Message?> getNewMessage({required String conversationId, required DateTime? lastMessageTimestamp}) {
+    CollectionReference messagesCollection = FirebaseFirestore.instance
+        .collection('conversations')
+        .doc(conversationId)
+        .collection('messages');
+
+    Query query = messagesCollection
+        .orderBy('timestamp', descending: true);
+
+    if (lastMessageTimestamp != null) {
+      query = query.endBefore([lastMessageTimestamp]).limit(1);
+    } else {
+      query = query.limit(1);
+    }
+
+    return query.snapshots().map((snapshot) {
+      if (snapshot.docs.isEmpty) {
+        return null;
+      }
+        Map<String, dynamic> data = snapshot.docs.first.data() as Map<String, dynamic>;
+      return Message.fromJson(data);
+    });
+  }
+
+  Future<List<Message>> getOldMessages(
+      {required String conversationId, required DateTime? lastMessageTimestamp, required limit}) async {
+    Query query = FirebaseFirestore.instance
+        .collection('conversations')
+        .doc(conversationId)
+        .collection('messages')
+        .orderBy('timestamp', descending: true);
+
+    if (lastMessageTimestamp != null) {
+      query = query.startAfter([lastMessageTimestamp]);
+    } else {
+      query = query.limit(limit);
+    }
+
+    QuerySnapshot querySnapshot = await query.get();
+    List<Message> messages = querySnapshot.docs
+        .map((doc) => Message.fromJson(doc.data() as Map<String, dynamic>))
+        .toList();
+
+    if (messages.isNotEmpty) {
+      lastMessageTimestamp = messages.last.timestamp!;
+    }
+
+    return messages;
   }
 
 
@@ -64,7 +116,11 @@ class MessageServices implements IMessageService {
   }
 
   @override
-  Future<void> sendImageMessage({required String conversationId, required String senderId, required String messageContent, required DateTime timestamp}) async {
+  Future<void> sendImageMessage(
+      {required String conversationId,
+      required String senderId,
+      required String messageContent,
+      required DateTime timestamp}) async {
     try {
       final messageRef = _conversationsCollection
           .doc(conversationId)
@@ -89,7 +145,11 @@ class MessageServices implements IMessageService {
   }
 
   @override
-  Future<void> sendVideoMessage({required String conversationId, required String senderId, required String messageContent, required DateTime timestamp}) async {
+  Future<void> sendVideoMessage(
+      {required String conversationId,
+      required String senderId,
+      required String messageContent,
+      required DateTime timestamp}) async {
     try {
       final messageRef = _conversationsCollection
           .doc(conversationId)
@@ -112,6 +172,4 @@ class MessageServices implements IMessageService {
       print('Error sending message: $error');
     }
   }
-
-
 }

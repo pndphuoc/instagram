@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:instagram/models/message.dart';
 import 'package:instagram/view_model/message_view_model.dart';
+import 'package:instagram/view_model/user_view_model.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../ultis/ultils.dart';
@@ -73,7 +74,7 @@ class _FullMediaScreenState extends State<FullMediaScreen> {
   }
 
   _buildAppBar(BuildContext context) {
-    final MessageViewModel messageViewModel = MessageViewModel();
+    final UserViewModel userViewModel = UserViewModel();
     return AppBar(
       backgroundColor: Colors.transparent,
       title: Column(
@@ -86,11 +87,11 @@ class _FullMediaScreenState extends State<FullMediaScreen> {
       actions: [
         InkWell(
           onTap: () async {
-            if (await messageViewModel.onDownload(widget.message.content)) {
+            /*if (await widget.messageViewModel.onDownload(widget.message.content)) {
               Fluttertoast.showToast(msg: "Photo saved successfully");
             } else {
               Fluttertoast.showToast(msg: "photo save failed");
-            }
+            }*/
           },
           child: const Icon(Icons.download, size: 25,),
         ),
