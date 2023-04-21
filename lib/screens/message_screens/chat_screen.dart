@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:instagram/models/user_summary_information.dart';
 import 'package:instagram/models/conversation.dart';
 import 'package:instagram/ultis/colors.dart';
+import 'package:instagram/view_model/conversation_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/message_view_model.dart';
 import 'package:instagram/widgets/avatar_with_status.dart';
@@ -22,6 +23,7 @@ class _ChatScreenState extends State<ChatScreen> {
   late CurrentUserViewModel _currentUserViewModel;
   late Stream<List<String>> _getConversationIds;
   final MessageViewModel _messageViewModel = MessageViewModel();
+  final ConversationViewModel _conversationViewModel = ConversationViewModel();
   final double activeAvatarSize = 35;
   final UserSummaryInformation fakeData = UserSummaryInformation(
       userId: "ccc",
@@ -38,7 +40,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     _currentUserViewModel = context.read<CurrentUserViewModel>();
-    _getConversationIds = _messageViewModel.getConversationIds(
+    _getConversationIds = _conversationViewModel.getConversationIds(
         userId: _currentUserViewModel.user!.uid);
   }
 

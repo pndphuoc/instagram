@@ -11,9 +11,4 @@ abstract class IMessageService {
 
   Stream<List<Message>> getStreamMessages(
       {required String conversationId, int pageSize = 10, DocumentSnapshot? lastDocument});
-  Stream<DocumentSnapshot> getStreamConversationData(String conversationId);
-  Future<void> createConversation(List<UserSummaryInformation> users, String conversationId, String messageContent, DateTime messageTime);
-  Future<bool> isExistsConversation(List<String> userIds);
-  Stream<List<String>> getConversationIds({required String userId, int pageSize = 20, DocumentSnapshot? lastDocument});
-  Future<void> updateLastMessageOfConversation({required String conversationId, required String content, required DateTime timestamp, required String type});
-}
+ }

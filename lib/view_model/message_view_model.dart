@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:instagram/models/conversation.dart';
+import 'package:instagram/services/conversation_services.dart';
 import 'package:instagram/services/message_services.dart';
 import 'package:instagram/services/user_services.dart';
 import 'package:instagram/ultis/ultils.dart';
@@ -23,7 +24,7 @@ class MessageViewModel extends ChangeNotifier {
   }
 
   final UserService _userService = UserService();
-
+  final ConversationService _conversationService = ConversationService();
   final MessageServices _messageServices = MessageServices();
   final StreamController<String> _writingMessageController =
       StreamController<String>();
@@ -118,18 +119,21 @@ class MessageViewModel extends ChangeNotifier {
       required String messageType,
       required String messageContent,
       required DateTime timestamp}) async {
-    if (await _messageServices
+    if (await _conversationService
             .isExistsConversation(_users.map((e) => e.userId).toList()) ==
         false) {
-      await _messageServices.createConversation(
-          _users, _conversationId, messageContent, timestamp);
+      await _conversationService.createConversation(
+          users: _users,
+          conversationId: _conversationId,
+          messageContent: messageContent,
+          messageTime: timestamp);
     }
     await _messageServices.sendTextMessage(
         conversationId: _conversationId,
         senderId: senderId,
         messageContent: messageContent,
         timestamp: timestamp);
-    await updateLastMessageOfConversation(
+    await _conversationService.updateLastMessageOfConversation(
         conversationId: _conversationId,
         content: messageContent,
         type: messageType,
@@ -138,54 +142,10 @@ class MessageViewModel extends ChangeNotifier {
 
   Stream<List<Message>> getMessages(
       {int pageSize = 25, DocumentSnapshot? lastDocument}) {
-
     return _messageServices.getStreamMessages(
         conversationId: _conversationId,
         pageSize: pageSize,
         lastDocument: lastDocument);
-  }
-
-  Stream<Conversation> getConversationData(String conversationId) {
-    return _messageServices.getStreamConversationData(conversationId).transform(
-          StreamTransformer<DocumentSnapshot<Map<String, dynamic>>,
-              Conversation>.fromHandlers(
-            handleData: (snapshot, sink) async {
-              if (snapshot.data() == null) {
-                return;
-              }
-
-              sink.add(Conversation.fromJson(snapshot.data()!));
-            },
-            handleError: (error, stackTrace, sink) {
-              // Xử lý lỗi nếu có
-              print('Error: $error');
-            },
-          ),
-        );
-  }
-
-  Stream<List<String>> getConversationIds(
-      {required String userId,
-      int pageSize = 20,
-      DocumentSnapshot<Object?>? lastDocument}) {
-    return _messageServices.getConversationIds(userId: userId);
-  }
-
-  Future<void> updateLastMessageOfConversation(
-      {required String conversationId,
-      required String content,
-      required DateTime timestamp,
-      required String type}) async {
-    if (type == 'image') {
-      content = 'Sent a image';
-    } else if (type == 'video') {
-      content = 'Sent a video';
-    }
-    _messageServices.updateLastMessageOfConversation(
-        conversationId: conversationId,
-        content: content,
-        timestamp: timestamp,
-        type: type);
   }
 
   Stream<String> getOnlineStatus(String userId) {
@@ -217,7 +177,7 @@ class MessageViewModel extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      print(e.toString());
+      debugPrint(e.toString());
       _paths = [];
     }
   }
@@ -254,11 +214,13 @@ class MessageViewModel extends ChangeNotifier {
   }
 
   void onTapSendImageMessages() async {
-    if (await _messageServices
+    if (await _conversationService
             .isExistsConversation(_users.map((e) => e.userId).toList()) ==
         false) {
-      await _messageServices.createConversation(
-          _users, _conversationId, '', DateTime.now());
+      await _conversationService.createConversation( users: _users,
+          conversationId: _conversationId,
+          messageContent: '',
+          messageTime: DateTime.now());
     }
     _sendingMessageController.sink.add(_selectedEntities);
     for (final entity in _selectedEntities) {
@@ -297,7 +259,7 @@ class MessageViewModel extends ChangeNotifier {
             messageContent: url,
             timestamp: time);
       }
-      updateLastMessageOfConversation(
+      _conversationService.updateLastMessageOfConversation(
           conversationId: _conversationId,
           content: lastMessageContent,
           type: type,
@@ -305,7 +267,6 @@ class MessageViewModel extends ChangeNotifier {
     }
     _sendingMessageController.sink.add([]);
     _selectedEntities = [];
-
   }
 
   Future<bool> onDownload(String url) async {

@@ -4,6 +4,7 @@ import 'package:instagram/models/user_summary_information.dart';
 import 'package:instagram/models/conversation.dart';
 import 'package:instagram/models/message.dart';
 import 'package:instagram/ultis/colors.dart';
+import 'package:instagram/view_model/conversation_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/message_view_model.dart';
 import 'package:instagram/widgets/avatar_with_status.dart';
@@ -29,6 +30,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
   final double avatarSize = 20;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final MessageViewModel _messageViewModel = MessageViewModel();
+  final ConversationViewModel _conversationViewModel = ConversationViewModel();
   final TextEditingController _messageController = TextEditingController();
   late CurrentUserViewModel _currentUserViewModel;
   late String conversationId;
@@ -55,7 +57,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
         .addAll([widget.restUser, _currentUserViewModel.chatUser]);
     _messageViewModel.createConversationIdFromUsers();
     _getConversationData =
-        _messageViewModel.getConversationData(_messageViewModel.conversationId);
+        _conversationViewModel.getConversationData(_messageViewModel.conversationId);
     _getMessages = _messageViewModel.getMessages();
     _messageViewModel.firstLoading();
     super.initState();
