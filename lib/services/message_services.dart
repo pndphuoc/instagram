@@ -10,6 +10,8 @@ class MessageServices implements IMessageService {
       FirebaseFirestore.instance.collection('users');
   final _userStatusDatabaseRef =
       realtime.FirebaseDatabase.instance.ref().child('userStatus');
+  final _lastSeenMessageDatabaseRef =
+      realtime.FirebaseDatabase.instance.ref().child('lastSeenMessage');
 
   @override
   Stream<List<Message>> getStreamMessages(
@@ -35,14 +37,15 @@ class MessageServices implements IMessageService {
   }
 
   @override
-  Stream<Message?> getNewMessage({required String conversationId, required DateTime? lastMessageTimestamp}) {
+  Stream<Message?> getNewMessage(
+      {required String conversationId,
+      required DateTime? lastMessageTimestamp}) {
     CollectionReference messagesCollection = FirebaseFirestore.instance
         .collection('conversations')
         .doc(conversationId)
         .collection('messages');
 
-    Query query = messagesCollection
-        .orderBy('timestamp', descending: true);
+    Query query = messagesCollection.orderBy('timestamp', descending: true);
 
     if (lastMessageTimestamp != null) {
       query = query.endBefore([lastMessageTimestamp]).limit(1);
@@ -54,13 +57,16 @@ class MessageServices implements IMessageService {
       if (snapshot.docs.isEmpty) {
         return null;
       }
-        Map<String, dynamic> data = snapshot.docs.first.data() as Map<String, dynamic>;
+      Map<String, dynamic> data =
+          snapshot.docs.first.data() as Map<String, dynamic>;
       return Message.fromJson(data);
     });
   }
 
   Future<List<Message>> getOldMessages(
-      {required String conversationId, required DateTime? lastMessageTimestamp, required limit}) async {
+      {required String conversationId,
+      required DateTime? lastMessageTimestamp,
+      required limit}) async {
     Query query = FirebaseFirestore.instance
         .collection('conversations')
         .doc(conversationId)
@@ -84,7 +90,6 @@ class MessageServices implements IMessageService {
 
     return messages;
   }
-
 
   @override
   Future<void> sendTextMessage(
@@ -171,5 +176,37 @@ class MessageServices implements IMessageService {
       // Xử lý lỗi nếu có
       print('Error sending message: $error');
     }
+  }
+
+  @override
+  Stream<DateTime> fetchLastSeenMessageTimeStream(
+      {required String conversationId, required userId}) {
+    return _lastSeenMessageDatabaseRef
+        .child("$conversationId/$userId/lastSeenMessageTime")
+        .onValue
+        .map((event) {
+      return DateTime.parse(event.snapshot.value as String);
+    });
+  }
+
+  @override
+  Future<void> setLastSeenMessage(
+      {required String conversationId,
+      required userId,
+      required String lastSeenMessageTime}) async {
+    _lastSeenMessageDatabaseRef
+        .child(conversationId)
+        .child(userId)
+        .set({'lastSeenMessageTime': lastSeenMessageTime});
+  }
+
+  @override
+  Future<DateTime> getLastSeenMessageTime({required String conversationId, required userId}) async {
+    final snapshot = await _lastSeenMessageDatabaseRef
+        .child(conversationId)
+        .child(userId)
+        .child('lastSeenMessageTime').get();
+    String? lastSeenMessageTimeString = snapshot.value as String;
+    return DateTime.parse(lastSeenMessageTimeString);
   }
 }

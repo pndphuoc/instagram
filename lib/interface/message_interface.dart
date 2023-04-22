@@ -12,4 +12,7 @@ abstract class IMessageService {
   Stream<List<Message>> getStreamMessages(
       {required String conversationId, int pageSize = 10, DocumentSnapshot? lastDocument});
   Stream<Message?> getNewMessage({required String conversationId, required DateTime? lastMessageTimestamp});
+  Future<void> setLastSeenMessage({required String conversationId, required userId, required String lastSeenMessageTime});
+  Stream<DateTime> fetchLastSeenMessageTimeStream({required String conversationId, required String userId});
+  Future<DateTime?> getLastSeenMessageTime({required String conversationId, required String userId});
  }

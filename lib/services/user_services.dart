@@ -12,42 +12,50 @@ class UserService implements IUserService {
   final FirebaseAuth auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final CollectionReference _followerListCollection =
-  FirebaseFirestore.instance.collection('followerList');
+      FirebaseFirestore.instance.collection('followerList');
   final CollectionReference _followingListCollection =
-  FirebaseFirestore.instance.collection('followingList');
+      FirebaseFirestore.instance.collection('followingList');
   final CollectionReference _blockedListCollection =
-  FirebaseFirestore.instance.collection('blockedList');
+      FirebaseFirestore.instance.collection('blockedList');
   final CollectionReference _usersListCollection =
-  FirebaseFirestore.instance.collection('users');
-  final _userStatusDatabaseRef = FirebaseDatabase.instance.ref().child('userStatus');
+      FirebaseFirestore.instance.collection('users');
+  final _userStatusDatabaseRef =
+      FirebaseDatabase.instance.ref().child('userStatus');
 
   @override
   Future<model.User> getUserDetails(String userId) async {
     try {
-      DocumentSnapshot snap =
-      await FirebaseFirestore.instance.collection('users').doc(userId).get();
+      DocumentSnapshot snap = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
 
       return model.User.fromJson(snap.data() as Map<String, dynamic>);
     } catch (e) {
       rethrow;
     }
   }
+
   @override
   Stream<String> getOnlineStatus(String userId) {
-    return getLastOnlineTime(userId).transform(
-        StreamTransformer.fromHandlers(handleData: (snapshot, sink) async {
-          if (snapshot.isNaN) return;
+    return _userStatusDatabaseRef
+        .child("$userId/lastOnline")
+        .onValue
+        .map((event) => event.snapshot.value as int)
+        .transform(
+            StreamTransformer.fromHandlers(handleData: (snapshot, sink) async {
+      if (snapshot.isNaN) return;
 
-          final lastOnline = DateTime.fromMillisecondsSinceEpoch(snapshot);
-          final difference = DateTime.now().difference(lastOnline);
-          String status = 'Online';
-          if (difference.inMinutes < 2) {
-            status = "Online";
-          } else {
-            status = "Online ${getElapsedTime(lastOnline)} ago";
-          }
-          sink.add(status);
-        }));
+      final lastOnline = DateTime.fromMillisecondsSinceEpoch(snapshot);
+      final difference = DateTime.now().difference(lastOnline);
+      String status = 'Online';
+      if (difference.inMinutes < 2) {
+        status = "Online";
+      } else {
+        status = "Online ${getElapsedTime(lastOnline)} ago";
+      }
+      sink.add(status);
+    }));
   }
 
   @override
@@ -70,11 +78,10 @@ class UserService implements IUserService {
   Future<String> addNewUser(
       {required String email,
       required String username,
-        required String uid,
+      required String uid,
       String displayName = '',
       String bio = '',
       String avatarUrl = ''}) async {
-
     try {
       DocumentReference followerListRef = _followerListCollection.doc();
       followerListRef.set({"followerIds": [], "userId": uid});
@@ -103,8 +110,7 @@ class UserService implements IUserService {
         postIds: [],
         createdAt: DateTime.now(),
       );
-      await newUserRef
-          .set(user.toJson());
+      await newUserRef.set(user.toJson());
       return newUserRef.id;
     } catch (e) {
       rethrow;
@@ -114,14 +120,17 @@ class UserService implements IUserService {
   @override
   Future<void> setOnlineStatus(bool isOnline) async {
     if (isOnline) {
-      _userStatusDatabaseRef.child(FirebaseAuth.instance.currentUser!.uid).set(
-          {'online': isOnline, 'lastOnline': ServerValue.timestamp});
+      _userStatusDatabaseRef
+          .child(FirebaseAuth.instance.currentUser!.uid)
+          .set({'online': isOnline, 'lastOnline': ServerValue.timestamp});
     }
   }
 
   @override
   Stream<int> getLastOnlineTime(String userId) {
-    return _userStatusDatabaseRef.child("$userId/lastOnline").onValue.map((event) => event.snapshot.value as int);
+    return _userStatusDatabaseRef
+        .child("$userId/lastOnline")
+        .onValue
+        .map((event) => event.snapshot.value as int);
   }
-
 }

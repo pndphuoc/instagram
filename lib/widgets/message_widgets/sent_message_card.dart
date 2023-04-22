@@ -11,8 +11,15 @@ import '../../screens/message_screens/view_full_media_screen.dart';
 
 class SentMessageCard extends StatefulWidget {
   final Message message;
+  final DateTime? lastSeenMessageTimeOfRestUser;
+  final String restUserAvatarUrl;
 
-  const SentMessageCard({Key? key, required this.message}) : super(key: key);
+  const SentMessageCard(
+      {Key? key,
+      required this.message,
+      this.lastSeenMessageTimeOfRestUser,
+      required this.restUserAvatarUrl})
+      : super(key: key);
 
   @override
   State<SentMessageCard> createState() => _SentMessageCardState();
@@ -29,8 +36,9 @@ class _SentMessageCardState extends State<SentMessageCard> {
   void initState() {
     _currentUserViewModel = context.read<CurrentUserViewModel>();
     if (widget.message.type == 'video') {
-      _controller = VideoPlayerController.network(widget.message.content, )
-        ..initialize().then((_) {
+      _controller = VideoPlayerController.network(
+        widget.message.content,
+      )..initialize().then((_) {
           // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
           heightOfVideo = MediaQuery.of(context).size.width /
               2 /
@@ -63,32 +71,72 @@ class _SentMessageCardState extends State<SentMessageCard> {
         const SizedBox(
           width: 5,
         ),
-        if (widget.message.status == 'sent')
-          Container(
-            alignment: Alignment.centerRight,
-            width: 13,
-            height: 13,
-            decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.fromBorderSide(
-                    BorderSide(width: 1, color: primaryColor))),
-            child: const Center(
-                child: Icon(Icons.check, color: primaryColor, size: 10)),
-          ),
-        if (widget.message.status == 'sending')
-          Container(
-            width: 12,
-            height: 12,
-            decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.fromBorderSide(
-                    BorderSide(width: 1.5, color: primaryColor))),
-          ),
+        _messageStatusDetector(),
         const SizedBox(
           width: 5,
         )
       ],
     );
+  }
+
+  Widget _buildSentStatusMessage(BuildContext context) {
+    return Container(
+      alignment: Alignment.centerRight,
+      width: 13,
+      height: 13,
+      decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          border:
+              Border.fromBorderSide(BorderSide(width: 1, color: primaryColor))),
+      child:
+          const Center(child: Icon(Icons.check, color: primaryColor, size: 10)),
+    );
+  }
+
+  Widget _buildSendingStatusMessage(BuildContext context) {
+    return Container(
+      width: 12,
+      height: 12,
+      decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.fromBorderSide(
+              BorderSide(width: 1.5, color: primaryColor))),
+    );
+  }
+
+  Widget _buildLastSeenStatusMessage(BuildContext context) {
+    return Container(
+      alignment: Alignment.centerRight,
+      width: 13,
+      height: 13,
+      decoration: BoxDecoration(
+          image: DecorationImage(
+              image: CachedNetworkImageProvider(widget.restUserAvatarUrl!)),
+          shape: BoxShape.circle,
+          border: const Border.fromBorderSide(
+              BorderSide(width: 1, color: primaryColor))),
+    );
+  }
+
+  Widget _buildSeenStatusMessage(BuildContext context) {
+    return Container();
+  }
+
+  _messageStatusDetector() {
+    if (widget.lastSeenMessageTimeOfRestUser != null) {
+      if (widget.lastSeenMessageTimeOfRestUser == widget.message.timestamp) {
+        return _buildLastSeenStatusMessage(context);
+      } else {
+        return _buildSeenStatusMessage(context);
+      }
+    } else if (widget.message.status == 'sent') {
+      print("sentttt");
+      return _buildSentStatusMessage(context);
+    } else if (widget.message.status == 'sending') {
+      return _buildSendingStatusMessage(context);
+    } else if (widget.lastSeenMessageTimeOfRestUser == null) {
+      return _buildSentStatusMessage(context);
+    }
   }
 
   Widget _buildTextMessage(BuildContext context) {

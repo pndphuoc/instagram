@@ -22,7 +22,11 @@ class MessageViewModel extends ChangeNotifier {
   MessageViewModel(List<UserSummaryInformation> users) {
     _users = users;
     createConversationIdFromUsers();
-    loadOldMessages().whenComplete(() => listenToMessages());
+    getLastSeenMessageTime();
+    fetchLastSeenMessageTimeStream();
+    loadOldMessages().whenComplete(() {
+      listenToMessages();
+    });
   }
 
   final ConversationService _conversationService = ConversationService();
@@ -106,8 +110,35 @@ class MessageViewModel extends ChangeNotifier {
     _hasMoreToLoad = value;
   }
 
+  final _lastSeenMessageTimeController = StreamController<DateTime?>.broadcast();
+  Stream<DateTime?> get lastSeenMessageTimeStream => _lastSeenMessageTimeController.stream;
+
   void onChange(String value) {
     _writingMessageController.sink.add(value);
+  }
+
+  Future<void> setLastSeenMessageTime(DateTime lastSeenMessageTime) async {
+    await _messageServices.setLastSeenMessage(
+        conversationId: _conversationId,
+        userId: FirebaseAuth.instance.currentUser!.uid,
+        lastSeenMessageTime: lastSeenMessageTime.toIso8601String());
+  }
+
+  Future<DateTime?> getLastSeenMessageTime() async {
+    final userId = _users.where((user) => user.userId != FirebaseAuth.instance.currentUser!.uid).first.userId;
+    return await _messageServices.getLastSeenMessageTime(conversationId: _conversationId, userId: userId);
+  }
+
+  late StreamSubscription<DateTime?> _lastSeenMessageTimeSubscription;
+
+  void fetchLastSeenMessageTimeStream() {
+    print("fetchLastSeenMessageTimeStream");
+    final userId = _users.where((user) => user.userId != FirebaseAuth.instance.currentUser!.uid).first.userId;
+    _lastSeenMessageTimeSubscription = _messageServices.fetchLastSeenMessageTimeStream(
+        conversationId: _conversationId,
+        userId: userId).listen((time) {
+          _lastSeenMessageTimeController.sink.add(time);
+    });
   }
 
   void createConversationIdFromUsers() {
@@ -144,8 +175,8 @@ class MessageViewModel extends ChangeNotifier {
         timestamp: timestamp);
   }
 
-  //-----------------------------------------------
   final _messageController = StreamController<List<Message>>.broadcast();
+
   Stream<List<Message>> get messagesStream => _messageController.stream;
   late StreamSubscription<Message?> _messagesSubscription;
   final ScrollController _scrollController = ScrollController();
@@ -156,17 +187,26 @@ class MessageViewModel extends ChangeNotifier {
   DateTime? _oldestMessageTimestamp;
 
   void listenToMessages() {
-    _messagesSubscription = _messageServices.getNewMessage(conversationId: _conversationId, lastMessageTimestamp: _messages.first.timestamp).listen((message) {
+    _messagesSubscription = _messageServices
+        .getNewMessage(
+            conversationId: _conversationId,
+            lastMessageTimestamp: _messages.first.timestamp)
+        .listen((message) {
       if (message == null) {
         _messageController.sink.add([]);
         return;
       }
       _messages.insert(0, message);
-        _messageController.sink.add([]);
+      if (message.senderId != FirebaseAuth.instance.currentUser!.uid) {
+        setLastSeenMessageTime(message.timestamp);
+      }
+      _messageController.sink.add([]);
     });
 
     _scrollController.addListener(() {
-      if (_scrollController.position.pixels / _scrollController.position.maxScrollExtent < 0.8) {
+      if (_scrollController.position.pixels /
+              _scrollController.position.maxScrollExtent <
+          0.8) {
         loadOldMessages();
       }
     });
@@ -185,7 +225,10 @@ class MessageViewModel extends ChangeNotifier {
       _oldestMessageTimestamp = null;
     }
 
-    final oldMessages = await _messageServices.getOldMessages(conversationId: _conversationId, lastMessageTimestamp: _oldestMessageTimestamp, limit: 20);
+    final oldMessages = await _messageServices.getOldMessages(
+        conversationId: _conversationId,
+        lastMessageTimestamp: _oldestMessageTimestamp,
+        limit: 20);
 
     if (oldMessages.isNotEmpty) {
       _messages.addAll(oldMessages);
@@ -196,7 +239,6 @@ class MessageViewModel extends ChangeNotifier {
 
     _loadingOldMessages = false;
   }
-
 
   final StreamController<List<AssetEntity>> _selectedEntitiesController =
       BehaviorSubject();
@@ -250,7 +292,8 @@ class MessageViewModel extends ChangeNotifier {
     if (await _conversationService
             .isExistsConversation(_users.map((e) => e.userId).toList()) ==
         false) {
-      await _conversationService.createConversation( users: _users,
+      await _conversationService.createConversation(
+          users: _users,
           conversationId: _conversationId,
           messageContent: '',
           messageTime: DateTime.now());
@@ -329,6 +372,8 @@ class MessageViewModel extends ChangeNotifier {
     _writingMessageController.close();
     _scrollController.dispose();
     _messagesSubscription.cancel();
+    _lastSeenMessageTimeController.close();
+    _lastSeenMessageTimeSubscription.cancel();
     //_messagesController.close();
     _usersList.close();
     _sendingMessageController.close();

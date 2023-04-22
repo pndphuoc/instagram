@@ -12,6 +12,7 @@ import 'package:instagram/widgets/avatar_with_status.dart';
 import 'package:instagram/widgets/message_widgets/received_message_card.dart';
 import 'package:instagram/widgets/message_widgets/sending_image_message.dart';
 import 'package:instagram/widgets/message_widgets/sent_message_card.dart';
+import 'package:instagram/widgets/shimmer_widgets/message_shimmer.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
 
@@ -37,9 +38,9 @@ class _ConversationScreenState extends State<ConversationScreen> {
   late CurrentUserViewModel _currentUserViewModel;
   late String conversationId;
   late Stream<Conversation> _getConversationData;
-  late Stream<List<Message>> _getMessages;
   final ScrollController _scrollController = ScrollController();
-
+  late Stream<DateTime?> _lastSeenMessageTimeStream;
+  late Future<DateTime?> _getLastSeenMessageTime;
   final double _crossAxisSpacing = 2;
   final double _mainAxisSpacing = 2;
   final double _childAspectRatio = 1;
@@ -49,6 +50,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
   void dispose() {
     _messageController.dispose();
     _scrollController.dispose();
+    _messageViewModel.dispose();
     super.dispose();
   }
 
@@ -56,10 +58,15 @@ class _ConversationScreenState extends State<ConversationScreen> {
   void initState() {
     _currentUserViewModel = context.read<CurrentUserViewModel>();
 
-    _messageViewModel = MessageViewModel([widget.restUser, _currentUserViewModel.chatUser]);
+    _messageViewModel =
+        MessageViewModel([widget.restUser, _currentUserViewModel.chatUser]);
 
-    _getConversationData =
-        _conversationViewModel.getConversationData(_messageViewModel.conversationId);
+    _lastSeenMessageTimeStream = _messageViewModel.lastSeenMessageTimeStream;
+
+    _getLastSeenMessageTime = _messageViewModel.getLastSeenMessageTime();
+
+    _getConversationData = _conversationViewModel
+        .getConversationData(_messageViewModel.conversationId);
 
     //_getMessages = _messageViewModel.getMessages();
 
@@ -92,8 +99,11 @@ class _ConversationScreenState extends State<ConversationScreen> {
                 return StreamBuilder(
                   stream: _messageViewModel.messagesStream,
                   builder: (context, messageSnapshot) {
-                    if (messageSnapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator(),);
+                    if (messageSnapshot.connectionState ==
+                        ConnectionState.waiting) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
                     } else if (!messageSnapshot.hasData) {
                       return Container();
                     } else if (messageSnapshot.hasError) {
@@ -113,8 +123,43 @@ class _ConversationScreenState extends State<ConversationScreen> {
                         itemBuilder: (context, index) {
                           if (_messageViewModel.messages[index].senderId ==
                               _auth.currentUser!.uid) {
-                            return SentMessageCard(
-                                message: _messageViewModel.messages[index]);
+                            return FutureBuilder(
+                                future: _getLastSeenMessageTime,
+                                builder: (context, lastSeenSnapshot) {
+                                  if (lastSeenSnapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const MessageShimmer(isOwnMessage: true);
+                                  } else if (lastSeenSnapshot.hasData) {
+                                    return StreamBuilder(
+                                        stream: _messageViewModel.lastSeenMessageTimeStream,
+                                        initialData: lastSeenSnapshot.data!,
+                                        builder: (context, snapshot) {
+                                          print("heheheh ${snapshot.data!}");
+                                          if (snapshot.data == null) {
+                                            return SentMessageCard(
+                                              message: _messageViewModel
+                                                  .messages[index],
+                                              restUserAvatarUrl:
+                                                  widget.restUser.avatarUrl,
+                                            );
+                                          } else if (snapshot.hasError) {
+                                            return Text(
+                                                snapshot.error.toString());
+                                          } else {
+                                            return SentMessageCard(
+                                              message: _messageViewModel
+                                                  .messages[index],
+                                              lastSeenMessageTimeOfRestUser:
+                                                  snapshot.data!,
+                                              restUserAvatarUrl:
+                                                  widget.restUser.avatarUrl,
+                                            );
+                                          }
+                                        });
+                                  } else {
+                                    return Container();
+                                  }
+                                });
                           } else {
                             return ReceivedMessageCard(
                                 message: _messageViewModel.messages[index],
@@ -151,11 +196,9 @@ class _ConversationScreenState extends State<ConversationScreen> {
               height: 30,
               width: MediaQuery.of(context).size.width / 2,
               decoration: BoxDecoration(
-                  color: Colors.grey,
-                  borderRadius: BorderRadius.circular(20)),
+                  color: Colors.grey, borderRadius: BorderRadius.circular(20)),
               child: Center(
-                child: Text(
-                    "Sending (${snapshot.data!.length}) medias",
+                child: Text("Sending (${snapshot.data!.length}) medias",
                     style: const TextStyle(color: Colors.black)),
               ),
               //child: SendingImageMessage(image: ),
@@ -199,7 +242,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
                 ),
                 StreamBuilder(
                     stream:
-                    _userViewModel.getOnlineStatus(widget.restUser.userId),
+                        _userViewModel.getOnlineStatus(widget.restUser.userId),
                     builder: (context, snapshot) {
                       return Text(
                         snapshot.data ?? widget.restUser.username,
