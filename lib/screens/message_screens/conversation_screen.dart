@@ -32,24 +32,19 @@ class _ConversationScreenState extends State<ConversationScreen> {
   final double avatarSize = 20;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   late MessageViewModel _messageViewModel;
-  final ConversationViewModel _conversationViewModel = ConversationViewModel();
   final TextEditingController _messageController = TextEditingController();
   final UserViewModel _userViewModel = UserViewModel();
   late CurrentUserViewModel _currentUserViewModel;
   late String conversationId;
-  late Stream<Conversation> _getConversationData;
-  final ScrollController _scrollController = ScrollController();
-  late Stream<DateTime?> _lastSeenMessageTimeStream;
-  late Future<DateTime?> _getLastSeenMessageTime;
   final double _crossAxisSpacing = 2;
   final double _mainAxisSpacing = 2;
   final double _childAspectRatio = 1;
   final _gridViewCrossAxisCount = 3;
+  late Stream _messageStream;
 
   @override
   void dispose() {
     _messageController.dispose();
-    _scrollController.dispose();
     _messageViewModel.dispose();
     super.dispose();
   }
@@ -61,16 +56,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
     _messageViewModel =
         MessageViewModel([widget.restUser, _currentUserViewModel.chatUser]);
 
-    _lastSeenMessageTimeStream = _messageViewModel.lastSeenMessageTimeStream;
-
-    _getLastSeenMessageTime = _messageViewModel.getLastSeenMessageTime();
-
-    _getConversationData = _conversationViewModel
-        .getConversationData(_messageViewModel.conversationId);
-
-    //_getMessages = _messageViewModel.getMessages();
-
-    _messageViewModel.firstLoading();
+    _messageStream = _messageViewModel.messagesStream;
 
     super.initState();
   }
@@ -93,90 +79,77 @@ class _ConversationScreenState extends State<ConversationScreen> {
         children: [
           Expanded(
               child: StreamBuilder(
-            stream: _getConversationData,
-            builder: (context, conversationSnapshot) {
-              if (conversationSnapshot.hasData) {
-                return StreamBuilder(
-                  stream: _messageViewModel.messagesStream,
-                  builder: (context, messageSnapshot) {
-                    if (messageSnapshot.connectionState ==
-                        ConnectionState.waiting) {
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    } else if (!messageSnapshot.hasData) {
-                      return Container();
-                    } else if (messageSnapshot.hasError) {
-                      return Center(
-                        child: Text(messageSnapshot.error.toString()),
-                      );
-                    } else {
-                      //_messageViewModel.messages.addAll(messageSnapshot.data!);
-                      return ListView.separated(
-                        controller: _messageViewModel.scrollController,
-                        cacheExtent: 2000,
-                        reverse: true,
-                        separatorBuilder: (context, index) => const SizedBox(
-                          height: 5,
-                        ),
-                        itemCount: _messageViewModel.messages.length,
-                        itemBuilder: (context, index) {
-                          if (_messageViewModel.messages[index].senderId ==
-                              _auth.currentUser!.uid) {
-                            return FutureBuilder(
-                                future: _getLastSeenMessageTime,
-                                builder: (context, lastSeenSnapshot) {
-                                  if (lastSeenSnapshot.connectionState ==
-                                      ConnectionState.waiting) {
-                                    return const MessageShimmer(isOwnMessage: true);
-                                  } else if (lastSeenSnapshot.hasData) {
-                                    return StreamBuilder(
-                                        stream: _messageViewModel.lastSeenMessageTimeStream,
-                                        initialData: lastSeenSnapshot.data!,
-                                        builder: (context, snapshot) {
-                                          print("heheheh ${snapshot.data!}");
-                                          if (snapshot.data == null) {
-                                            return SentMessageCard(
-                                              message: _messageViewModel
-                                                  .messages[index],
-                                              restUserAvatarUrl:
-                                                  widget.restUser.avatarUrl,
-                                            );
-                                          } else if (snapshot.hasError) {
-                                            return Text(
-                                                snapshot.error.toString());
-                                          } else {
-                                            return SentMessageCard(
-                                              message: _messageViewModel
-                                                  .messages[index],
-                                              lastSeenMessageTimeOfRestUser:
-                                                  snapshot.data!,
-                                              restUserAvatarUrl:
-                                                  widget.restUser.avatarUrl,
-                                            );
-                                          }
-                                        });
-                                  } else {
-                                    return Container();
-                                  }
-                                });
-                          } else {
-                            return ReceivedMessageCard(
-                                message: _messageViewModel.messages[index],
-                                user: widget.restUser);
-                          }
-                        },
-                      );
-                    }
-                  },
-                );
-              } else {
-                return const Center(
-                  child: Text("Let's chat to each other"),
-                );
-              }
-            },
-          )),
+                stream: _messageStream,
+                builder: (context, messageSnapshot) {
+                  if (messageSnapshot.connectionState ==
+                      ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  } else if (!messageSnapshot.hasData) {
+                    return Container();
+                  } else if (messageSnapshot.hasError) {
+                    return Center(
+                      child: Text(messageSnapshot.error.toString()),
+                    );
+                  } else {
+                    //_messageViewModel.messages.addAll(messageSnapshot.data!);
+                    return ListView.builder(
+                      controller: _messageViewModel.scrollController,
+                      cacheExtent: 2000,
+                      reverse: true,
+                      itemCount: _messageViewModel.messages.length,
+                      itemBuilder: (context, index) {
+                        if (_messageViewModel.messages[index].senderId ==
+                            _auth.currentUser!.uid) {
+                          if (_messageViewModel.firstMessageInGroup.contains(_messageViewModel
+                              .messages[index].id) && _messageViewModel.lastMessageInGroup.contains(_messageViewModel
+                              .messages[index].id)) {
+                            return SentMessageCard.singleMessage(
+                                conversationId: _messageViewModel.conversationId,
+                                message: _messageViewModel
+                                    .messages[index],
+                                restUserAvatarUrl:
+                                widget.restUser.avatarUrl,
+                                isLastSeenMessage: index == _messageViewModel.messages.indexWhere((element) => element.status == 'seen'));
+
+                          } else if (_messageViewModel.firstMessageInGroup.contains(_messageViewModel
+                              .messages[index].id)) {
+                            return SentMessageCard.firstMessage(
+                                conversationId: _messageViewModel.conversationId,
+                                message: _messageViewModel
+                                    .messages[index],
+                                restUserAvatarUrl:
+                                widget.restUser.avatarUrl,
+                                isLastSeenMessage: index == _messageViewModel.messages.indexWhere((element) => element.status == 'seen'));
+                          } else if (_messageViewModel.lastMessageInGroup.contains(_messageViewModel
+                                .messages[index].id)) {
+                            return SentMessageCard.lastMessage(
+                                conversationId: _messageViewModel.conversationId,
+                                message: _messageViewModel
+                                    .messages[index],
+                                restUserAvatarUrl:
+                                widget.restUser.avatarUrl,
+                                isLastSeenMessage: index == _messageViewModel.messages.indexWhere((element) => element.status == 'seen'));
+                            }
+                          return SentMessageCard(
+                            conversationId: _messageViewModel.conversationId,
+                            message: _messageViewModel
+                                .messages[index],
+                            restUserAvatarUrl:
+                            widget.restUser.avatarUrl,
+                            isLastSeenMessage: index == _messageViewModel.messages.indexWhere((element) => element.status == 'seen'),
+                          );
+                        } else {
+                          return ReceivedMessageCard(
+                              message: _messageViewModel.messages[index],
+                              user: widget.restUser);
+                        }
+                      },
+                    );
+                  }
+                },
+              )),
           _buildSendingMessage(context),
           _buildWriteMessage(context)
         ],

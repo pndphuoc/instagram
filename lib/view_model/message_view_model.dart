@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:instagram/models/conversation.dart';
 import 'package:instagram/services/conversation_services.dart';
+import 'package:instagram/services/message_details_services.dart';
 import 'package:instagram/services/message_services.dart';
 import 'package:instagram/services/user_services.dart';
 import 'package:instagram/ultis/ultils.dart';
@@ -20,10 +21,16 @@ import '../services/firebase_storage_services.dart';
 
 class MessageViewModel extends ChangeNotifier {
   MessageViewModel(List<UserSummaryInformation> users) {
+    getAssets();
     _users = users;
     createConversationIdFromUsers();
-    getLastSeenMessageTime();
-    fetchLastSeenMessageTimeStream();
+    _messageDetailsService.updateStatus(
+        conversationId: _conversationId,
+        senderId: _users
+            .where((element) =>
+        element.userId != FirebaseAuth.instance.currentUser!.uid)
+            .first
+            .userId);
     loadOldMessages().whenComplete(() {
       listenToMessages();
     });
@@ -31,6 +38,7 @@ class MessageViewModel extends ChangeNotifier {
 
   final ConversationService _conversationService = ConversationService();
   final MessageServices _messageServices = MessageServices();
+  final MessageDetailsService _messageDetailsService = MessageDetailsService();
   final StreamController<String> _writingMessageController =
       StreamController<String>();
 
@@ -48,8 +56,6 @@ class MessageViewModel extends ChangeNotifier {
 
   late String _conversationId;
 
-  DocumentSnapshot? _lastDocument;
-
   String get conversationId => _conversationId;
 
   List<UserSummaryInformation> _users = [];
@@ -58,9 +64,7 @@ class MessageViewModel extends ChangeNotifier {
 
   set users(List<UserSummaryInformation> value) {
     _users = value;
-  } //final _messagesController = StreamController<List<Message>>();
-
-  //Stream<List<Message>> get messagesStream => _messagesController.stream;
+  }
 
   final _sendingMessageController = StreamController<List<AssetEntity>>();
 
@@ -110,35 +114,36 @@ class MessageViewModel extends ChangeNotifier {
     _hasMoreToLoad = value;
   }
 
-  final _lastSeenMessageTimeController = StreamController<DateTime?>.broadcast();
-  Stream<DateTime?> get lastSeenMessageTimeStream => _lastSeenMessageTimeController.stream;
+  List<String> firstMessageInGroup = [];
+  List<String> lastMessageInGroup = [];
+
+  void groupMessage() {
+    firstMessageInGroup = [];
+    lastMessageInGroup = [];
+    lastMessageInGroup.add(_messages[0].id);
+    firstMessageInGroup.add(_messages.last.id);
+
+    for (int index = 0; index < _messages.length - 1; index++) {
+      bool isDifferentSender = _messages[index].senderId != _messages[index + 1].senderId;
+      bool isMoreThan30s = _messages[index].timestamp.difference(_messages[index + 1].timestamp).inSeconds >= 30;
+
+      if (isDifferentSender) {
+        lastMessageInGroup.add(_messages[index + 1].id);
+        firstMessageInGroup.add(_messages[index].id);
+      } else if (isMoreThan30s) {
+        lastMessageInGroup.add(_messages[index + 1].id);
+        firstMessageInGroup.add(_messages[index].id);
+
+        if (index == 0) {
+          lastMessageInGroup.add(_messages[index].id);
+        }
+      }
+    }
+  }
+
 
   void onChange(String value) {
     _writingMessageController.sink.add(value);
-  }
-
-  Future<void> setLastSeenMessageTime(DateTime lastSeenMessageTime) async {
-    await _messageServices.setLastSeenMessage(
-        conversationId: _conversationId,
-        userId: FirebaseAuth.instance.currentUser!.uid,
-        lastSeenMessageTime: lastSeenMessageTime.toIso8601String());
-  }
-
-  Future<DateTime?> getLastSeenMessageTime() async {
-    final userId = _users.where((user) => user.userId != FirebaseAuth.instance.currentUser!.uid).first.userId;
-    return await _messageServices.getLastSeenMessageTime(conversationId: _conversationId, userId: userId);
-  }
-
-  late StreamSubscription<DateTime?> _lastSeenMessageTimeSubscription;
-
-  void fetchLastSeenMessageTimeStream() {
-    print("fetchLastSeenMessageTimeStream");
-    final userId = _users.where((user) => user.userId != FirebaseAuth.instance.currentUser!.uid).first.userId;
-    _lastSeenMessageTimeSubscription = _messageServices.fetchLastSeenMessageTimeStream(
-        conversationId: _conversationId,
-        userId: userId).listen((time) {
-          _lastSeenMessageTimeController.sink.add(time);
-    });
   }
 
   void createConversationIdFromUsers() {
@@ -178,7 +183,8 @@ class MessageViewModel extends ChangeNotifier {
   final _messageController = StreamController<List<Message>>.broadcast();
 
   Stream<List<Message>> get messagesStream => _messageController.stream;
-  late StreamSubscription<Message?> _messagesSubscription;
+  late StreamSubscription<List<Message>?> _messagesSubscription;
+
   final ScrollController _scrollController = ScrollController();
 
   ScrollController get scrollController => _scrollController;
@@ -187,30 +193,45 @@ class MessageViewModel extends ChangeNotifier {
   DateTime? _oldestMessageTimestamp;
 
   void listenToMessages() {
-    _messagesSubscription = _messageServices
-        .getNewMessage(
-            conversationId: _conversationId,
-            lastMessageTimestamp: _messages.first.timestamp)
-        .listen((message) {
-      if (message == null) {
+    _messagesSubscription = _messageServices.getNewMessage(
+        conversationId: _conversationId,
+        lastMessageTimestamp: _messages.first.timestamp)
+        .listen((List<Message>? messages) {
+      if (messages == null) {
         _messageController.sink.add([]);
         return;
       }
-      _messages.insert(0, message);
-      if (message.senderId != FirebaseAuth.instance.currentUser!.uid) {
-        setLastSeenMessageTime(message.timestamp);
+
+      for (Message message in messages) {
+        final index = _messages.indexWhere((element) => element.id == message.id);
+        if (index == -1) {
+          _messages.insert(0, message);
+          groupMessage();
+        } else {
+          _messages[index] = message;
+        }
       }
+
+
+      UserSummaryInformation recipient = _users.firstWhere((user) => user.userId != FirebaseAuth.instance.currentUser!.uid);
+
+      _messageDetailsService.updateStatus(
+          conversationId: _conversationId,
+          senderId: recipient.userId);
+
+
       _messageController.sink.add([]);
     });
 
     _scrollController.addListener(() {
       if (_scrollController.position.pixels /
-              _scrollController.position.maxScrollExtent <
+          _scrollController.position.maxScrollExtent <
           0.8) {
         loadOldMessages();
       }
     });
   }
+
 
   Future<void> loadOldMessages() async {
     if (_hasMoreMessages || _loadingOldMessages) {
@@ -232,6 +253,7 @@ class MessageViewModel extends ChangeNotifier {
 
     if (oldMessages.isNotEmpty) {
       _messages.addAll(oldMessages);
+      groupMessage();
       _messageController.sink.add([]);
     } else {
       _hasMoreMessages = false;
@@ -266,7 +288,7 @@ class MessageViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> firstLoading() async {
+  Future<bool> getAssets() async {
     try {
       await loadAssetPathList();
       _selectedPath = _paths.first;
@@ -372,9 +394,6 @@ class MessageViewModel extends ChangeNotifier {
     _writingMessageController.close();
     _scrollController.dispose();
     _messagesSubscription.cancel();
-    _lastSeenMessageTimeController.close();
-    _lastSeenMessageTimeSubscription.cancel();
-    //_messagesController.close();
     _usersList.close();
     _sendingMessageController.close();
     super.dispose();

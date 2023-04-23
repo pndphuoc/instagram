@@ -4,7 +4,7 @@ class Message {
   final String type;
   final DateTime timestamp;
   final String content;
-  final String status;
+  String status;
 
   Message({
     required this.id,
@@ -14,6 +14,10 @@ class Message {
     required this.content,
     required this.status
   });
+
+  void setStatus(String status) {
+    this.status = status;
+  }
 
   Message.fromJson(Map<String, dynamic> json)
       : id = json['id'],
