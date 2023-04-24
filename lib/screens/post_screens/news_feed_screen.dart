@@ -78,7 +78,7 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
                         if (value.isUploading && index == 0) {
                           return UploadingPostCard(
                               post: value.posts.first,
-                              asset: assetProvider.firstAsset!);
+                              asset: assetProvider.firstAsset);
                         }
                         return PostCard(post: value.posts[index]);
                       },

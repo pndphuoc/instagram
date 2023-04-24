@@ -137,7 +137,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             Navigator.push(context, MaterialPageRoute(builder: (context) => PostDetailsScreen(posts: posts, index: index),));
           },
           child: CachedNetworkImage(
-            imageUrl: posts[index].mediaUrls.first,
+            imageUrl: posts[index].medias.first.url,
             fit: BoxFit.cover,
             fadeInDuration: const Duration(milliseconds: 200),
           ),

@@ -1,3 +1,5 @@
+import 'package:instagram/models/media.dart';
+
 class Post {
   String uid;
   String caption;
@@ -6,7 +8,7 @@ class Post {
   String likedListId;
   int likeCount;
   String viewedListId;
-  List<String> mediaUrls;
+  List<Media> medias;
   String userId;
   String username;
   String avatarUrl;
@@ -22,7 +24,7 @@ class Post {
     required this.likedListId,
     required this.likeCount,
     required this.viewedListId,
-    required this.mediaUrls,
+    required this.medias,
     required this.userId,
     required this.username,
     required this.avatarUrl,
@@ -40,7 +42,9 @@ class Post {
       likedListId: json['likedListId'] as String,
       likeCount: json['likeCount'] as int,
       viewedListId: json['viewedListId'] as String,
-      mediaUrls: List<String>.from(json['mediaUrls'] as List),
+      medias: (json['mediaUrls'] as List<dynamic>)
+          .map((url) => Media.fromJson(url))
+          .toList(),
       userId: json['userId'] as String,
       username: json['username'] as String,
       avatarUrl: json['avatarUrl'] as String,
@@ -49,6 +53,7 @@ class Post {
       isDeleted: json['idDeleted'] as bool,
     );
   }
+
 
   Map<String, dynamic> toJson() {
     return {
@@ -59,7 +64,7 @@ class Post {
       'likedListId': likedListId,
       'likeCount': likeCount,
       'viewedListId': viewedListId,
-      'mediaUrls': mediaUrls,
+      'mediaUrls': medias.map((mediaUrl) => mediaUrl.toJson()).toList(),
       'userId': userId,
       'username': username,
       'avatarUrl': avatarUrl,

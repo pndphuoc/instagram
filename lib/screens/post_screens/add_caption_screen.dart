@@ -4,7 +4,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/provider/home_screen_provider.dart';
-import 'package:instagram/route/route_name.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
 import 'package:instagram/view_model/post_view_model.dart';
@@ -32,7 +31,6 @@ class _AddCaptionScreenState extends State<AddCaptionScreen> {
   late String? mimeType;
   late VideoPlayerController _videoController;
   bool _isVideoFromCamera = false;
-
   @override
   void initState() {
     if (widget.media != null) {
@@ -50,7 +48,9 @@ class _AddCaptionScreenState extends State<AddCaptionScreen> {
 
   @override
   void dispose() {
-    _videoController.dispose();
+    if (_videoController.value.isInitialized) {
+      _videoController.dispose();
+    }
     _controller.dispose();
     super.dispose();
   }

@@ -8,6 +8,7 @@ import 'package:instagram/view_model/asset_view_model.dart';
 import 'package:instagram/view_model/authentication_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/post_view_model.dart';
+import 'package:instagram/widgets/post_widgets/video_player_widget.dart';
 import 'package:provider/provider.dart';
 import '../../models/post.dart';
 import '../../models/user.dart' as model;
@@ -314,10 +315,30 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
                       ),
                     );
                   },
-                  child: CachedNetworkImage(
-                    imageUrl: posts[index].mediaUrls.first,
-                    fit: BoxFit.cover,
-                    fadeInDuration: const Duration(milliseconds: 100),
+                  child: Stack(
+                    children: [
+                      if (posts[index].medias.first.type == 'image')
+                        CachedNetworkImage(
+                          imageUrl: posts[index].medias.first.url,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
+                          fadeInDuration: const Duration(milliseconds: 100),
+                        )
+                      else
+                        Positioned.fill(child: VideoPlayerWidget.network(url: posts[index].medias.first.url, isPlay: false,),),
+
+                      if (posts[index].medias.length > 1)
+                        const Positioned(
+                            top: 5,
+                            right: 5,
+                            child: Icon(Icons.layers_rounded, color: Colors.white,))
+                      else if (posts[index].medias.first.type == 'video')
+                        const Positioned(
+                            top: 5,
+                            right: 5,
+                            child: Icon(Icons.slow_motion_video_rounded, color: Colors.white,))
+                    ],
                   ),
                 );
               },

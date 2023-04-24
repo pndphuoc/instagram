@@ -14,6 +14,7 @@ import 'package:provider/provider.dart';
 import '../../ultis/colors.dart';
 import '../../ultis/ultils.dart';
 import '../../view_model/relationship_view_model.dart';
+import '../../widgets/post_widgets/video_player_widget.dart';
 import '../../widgets/sticky_tab_bar_delegate.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -231,11 +232,31 @@ class _ProfileScreenState extends State<ProfileScreen>
                     ),
                   );
                 },
-                child: CachedNetworkImage(
-                  imageUrl: posts[index].mediaUrls.first,
-                  fit: BoxFit.cover,
-                  fadeInDuration: const Duration(milliseconds: 200),
-                ),
+                child: Stack(
+                  children: [
+                    if (posts[index].medias.first.type == 'image')
+                      CachedNetworkImage(
+                        imageUrl: posts[index].medias.first.url,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                        fadeInDuration: const Duration(milliseconds: 100),
+                      )
+                    else
+                      Positioned.fill(child: VideoPlayerWidget.network(url: posts[index].medias.first.url, isPlay: false,),),
+
+                    if (posts[index].medias.length > 1)
+                      const Positioned(
+                          top: 5,
+                          right: 5,
+                          child: Icon(Icons.layers_rounded, color: Colors.white,))
+                    else if (posts[index].medias.first.type == 'video')
+                      const Positioned(
+                          top: 5,
+                          right: 5,
+                          child: Icon(Icons.slow_motion_video_rounded, color: Colors.white,))
+                  ],
+                )
               );
             },
           );

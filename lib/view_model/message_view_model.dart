@@ -133,10 +133,6 @@ class MessageViewModel extends ChangeNotifier {
       } else if (isMoreThan30s) {
         lastMessageInGroup.add(_messages[index + 1].id);
         firstMessageInGroup.add(_messages[index].id);
-
-        if (index == 0) {
-          lastMessageInGroup.add(_messages[index].id);
-        }
       }
     }
   }

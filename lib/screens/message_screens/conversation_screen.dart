@@ -79,77 +79,57 @@ class _ConversationScreenState extends State<ConversationScreen> {
         children: [
           Expanded(
               child: StreamBuilder(
-                stream: _messageStream,
-                builder: (context, messageSnapshot) {
-                  if (messageSnapshot.connectionState ==
-                      ConnectionState.waiting) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  } else if (!messageSnapshot.hasData) {
-                    return Container();
-                  } else if (messageSnapshot.hasError) {
-                    return Center(
-                      child: Text(messageSnapshot.error.toString()),
-                    );
-                  } else {
-                    //_messageViewModel.messages.addAll(messageSnapshot.data!);
-                    return ListView.builder(
-                      controller: _messageViewModel.scrollController,
-                      cacheExtent: 2000,
-                      reverse: true,
-                      itemCount: _messageViewModel.messages.length,
-                      itemBuilder: (context, index) {
-                        if (_messageViewModel.messages[index].senderId ==
-                            _auth.currentUser!.uid) {
-                          if (_messageViewModel.firstMessageInGroup.contains(_messageViewModel
-                              .messages[index].id) && _messageViewModel.lastMessageInGroup.contains(_messageViewModel
-                              .messages[index].id)) {
-                            return SentMessageCard.singleMessage(
-                                conversationId: _messageViewModel.conversationId,
-                                message: _messageViewModel
-                                    .messages[index],
-                                restUserAvatarUrl:
-                                widget.restUser.avatarUrl,
-                                isLastSeenMessage: index == _messageViewModel.messages.indexWhere((element) => element.status == 'seen'));
+            stream: _messageStream,
+            builder: (context, messageSnapshot) {
+              if (messageSnapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              } else if (!messageSnapshot.hasData) {
+                return Container();
+              } else if (messageSnapshot.hasError) {
+                return Center(
+                  child: Text(messageSnapshot.error.toString()),
+                );
+              } else {
+                //_messageViewModel.messages.addAll(messageSnapshot.data!);
+                return ListView.builder(
+                  controller: _messageViewModel.scrollController,
+                  cacheExtent: 2000,
+                  reverse: true,
+                  itemCount: _messageViewModel.messages.length,
+                  itemBuilder: (context, index) {
 
-                          } else if (_messageViewModel.firstMessageInGroup.contains(_messageViewModel
-                              .messages[index].id)) {
-                            return SentMessageCard.firstMessage(
-                                conversationId: _messageViewModel.conversationId,
-                                message: _messageViewModel
-                                    .messages[index],
-                                restUserAvatarUrl:
-                                widget.restUser.avatarUrl,
-                                isLastSeenMessage: index == _messageViewModel.messages.indexWhere((element) => element.status == 'seen'));
-                          } else if (_messageViewModel.lastMessageInGroup.contains(_messageViewModel
-                                .messages[index].id)) {
-                            return SentMessageCard.lastMessage(
-                                conversationId: _messageViewModel.conversationId,
-                                message: _messageViewModel
-                                    .messages[index],
-                                restUserAvatarUrl:
-                                widget.restUser.avatarUrl,
-                                isLastSeenMessage: index == _messageViewModel.messages.indexWhere((element) => element.status == 'seen'));
-                            }
-                          return SentMessageCard(
-                            conversationId: _messageViewModel.conversationId,
-                            message: _messageViewModel
-                                .messages[index],
-                            restUserAvatarUrl:
-                            widget.restUser.avatarUrl,
-                            isLastSeenMessage: index == _messageViewModel.messages.indexWhere((element) => element.status == 'seen'),
-                          );
-                        } else {
-                          return ReceivedMessageCard(
-                              message: _messageViewModel.messages[index],
-                              user: widget.restUser);
-                        }
-                      },
-                    );
-                  }
-                },
-              )),
+                    bool isLastSeenMessage = index ==
+                        _messageViewModel.messages.indexWhere(
+                                (element) => element.status == 'seen');
+                    bool isFirstMessage = _messageViewModel.firstMessageInGroup
+                        .contains(_messageViewModel.messages[index].id);
+                    bool isLastMessage =  _messageViewModel.lastMessageInGroup
+                        .contains(_messageViewModel.messages[index].id);
+
+                    if (_messageViewModel.messages[index].senderId ==
+                        _auth.currentUser!.uid) {
+                      return SentMessageCard(
+                        conversationId: _messageViewModel.conversationId,
+                        message: _messageViewModel.messages[index],
+                        restUserAvatarUrl: widget.restUser.avatarUrl,
+                        isFirstInGroup: isFirstMessage,
+                        isLastInGroup: isLastMessage,
+                        isLastSeenMessage: isLastSeenMessage,
+                      );
+                    } else {
+                        return ReceivedMessageCard(
+                            message: _messageViewModel.messages[index],
+                            isLastInGroup: isLastMessage,
+                            isFirstInGroup: isFirstMessage,
+                            user: widget.restUser);
+                    }
+                  },
+                );
+              }
+            },
+          )),
           _buildSendingMessage(context),
           _buildWriteMessage(context)
         ],

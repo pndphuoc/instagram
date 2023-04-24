@@ -8,6 +8,7 @@ import 'package:instagram/screens/post_screens/camera_preview_screen.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
 import 'package:instagram/widgets/image_thumbail.dart';
+import 'package:instagram/widgets/post_widgets/video_player_widget.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
@@ -31,8 +32,10 @@ class _AddPostScreenState extends State<AddPostScreen> {
   final double _crossAxisSpacing = 2;
   final double _mainAxisSpacing = 2;
   final double _childAspectRatio = 1;
+
   //final cropKey = GlobalKey<CropState>();
-  List<GlobalKey<CropState>> cropKeys = List.generate(10, (index) => GlobalKey<CropState>());
+  List<GlobalKey<CropState>> cropKeys =
+      List.generate(10, (index) => GlobalKey<CropState>());
   File? _sample;
   File? _lastCropped;
 
@@ -40,7 +43,8 @@ class _AddPostScreenState extends State<AddPostScreen> {
   void initState() {
     super.initState();
     assetViewModel = Provider.of<AssetViewModel>(context, listen: false);
-    _loadAssetPathsAndAssets = PermissionHandler.requestMediasPermissions().then((isAllGranted) {
+    _loadAssetPathsAndAssets =
+        PermissionHandler.requestMediasPermissions().then((isAllGranted) {
       if (isAllGranted) {
         return assetViewModel.loadAssetPathsAndAssets();
       } else {
@@ -102,15 +106,26 @@ class _AddPostScreenState extends State<AddPostScreen> {
                     child: FutureBuilder(
                       future: value.assetEntityToFile(value.selectedEntity!),
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(child: CircularProgressIndicator(),);
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
                         } else {
-                          return _buildCropImage(snapshot.data!);
+                          if (value.selectedEntity!.type == AssetType.image) {
+                            return _buildCropImage(snapshot.data!);
+                          } else {
+                            return VideoPlayerWidget.file(
+                              file: snapshot.data!,
+                              isPlay: true,
+                            );
+                          }
                         }
-                      },),
+                      },
+                    ),
                   ),
 
-                 /* SizedBox(
+                  /* SizedBox(
                     width: previewImageSize,
                     height: previewImageSize,
                     child: ImageItemWidget(
@@ -119,7 +134,6 @@ class _AddPostScreenState extends State<AddPostScreen> {
                             size: ThumbnailSize.square(1000), quality: 80)),
                   ),*/
                   _controllerBar(context, value),
-
                   Expanded(child: _mediasGrid(context, value, entities))
                 ],
               );
@@ -214,10 +228,10 @@ class _AddPostScreenState extends State<AddPostScreen> {
                   InkWell(
                     borderRadius: BorderRadius.circular(35),
                     onTap: () async {
-                          await availableCameras().then((cameras) {
-                            if (cameras.isEmpty) {
-                              return;
-                            }
+                      await availableCameras().then((cameras) {
+                        if (cameras.isEmpty) {
+                          return;
+                        }
                         Navigator.push(
                           context,
                           PageRouteBuilder(
@@ -408,7 +422,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
     );
   }
 
-  /*Future<void> _cropImage(File image) async {
+/*Future<void> _cropImage(File image) async {
     final scale = cropKey.currentState!.scale;
     final area = cropKey.currentState!.area;
     if (area == null) {
