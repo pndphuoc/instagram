@@ -6,6 +6,7 @@ import 'package:instagram/services/like_services.dart';
 import 'package:instagram/services/post_services.dart';
 
 import '../models/comment.dart';
+import '../models/post.dart';
 
 class LikeViewModel extends ChangeNotifier {
   final LikeService _likeService = LikeService();
@@ -46,7 +47,7 @@ class LikeViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  toggleLike(Comment cmt) {
+  toggleLikeComment(Comment cmt) {
     if (cmt.isLiked) {
      unlike(
           cmt.likedListId, _auth.currentUser!.uid);
@@ -58,6 +59,23 @@ class LikeViewModel extends ChangeNotifier {
     }
 
     _likeController.sink.add(!cmt.isLiked);
+  }
+
+  toggleLikePost(Post post) {
+    if (!post.isLiked) {
+      _likeService.like(
+          post.likedListId, _auth.currentUser!.uid);
+      post.likeCount++;
+      post.isLiked = true;
+    } else {
+      _likeService.unlike(
+        post.likedListId,
+        _auth.currentUser!.uid,
+      );
+      post.likeCount--;
+      post.isLiked = false;
+    }
+    _likeController.sink.add(post.isLiked);
   }
 
 }

@@ -10,6 +10,7 @@ import 'package:instagram/ultis/global_variables.dart';
 import '../models/user.dart' as model;
 
 class AuthenticationService implements IAuthenticationService {
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
@@ -20,51 +21,7 @@ class AuthenticationService implements IAuthenticationService {
   final CollectionReference _blockedListCollection =
       FirebaseFirestore.instance.collection('blockedList');
   final FireBaseStorageService _fireBaseStorageService = FireBaseStorageService();
-
-  @override
-  Future<String> completeSignInWithGoogle(
-      {required String username, String bio = "", File? file}) async {
-    try {
-      final currentUser = FirebaseAuth.instance.currentUser!;
-      String? photoUrl;
-
-      if (file != null) {
-        photoUrl = await _fireBaseStorageService.uploadFile(file, profilePicturesPath, isVideo: false);
-      }
-
-      final userRef = _firestore.collection('users').doc(currentUser.uid);
-
-      final userDoc = await userRef.get();
-
-      if (userDoc.exists) {
-        return 'User already exists';
-      }
-
-      final user = model.User(
-        uid: currentUser.uid,
-        username: username,
-        displayName: currentUser.displayName ?? '',
-        email: currentUser.email!,
-        bio: bio,
-        followerListId: '',
-        followerCount: 0,
-        followingListId: '',
-        followingCount: 0,
-        savedPostIds: [],
-        blockedListId: '',
-        avatarUrl: photoUrl ?? '',
-        postIds: [],
-        createdAt: DateTime.now(),
-      );
-
-      await userRef.set(user.toJson());
-
-      return 'Success';
-    } catch (err) {
-      print(err.toString());
-      return 'Some error occurred';
-    }
-  }
+  
 
   @override
   Future<String> login(
@@ -139,5 +96,16 @@ class AuthenticationService implements IAuthenticationService {
     } catch (err) {
       return err.toString();
     }
+  }
+
+  @override
+  Future<bool> isUsernameExists(String username) async {
+      final QuerySnapshot result = await FirebaseFirestore.instance
+          .collection('users')
+          .where('username', isEqualTo: username)
+          .get();
+
+      final List<DocumentSnapshot> documents = result.docs;
+      return documents.isNotEmpty;
   }
 }

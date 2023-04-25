@@ -9,7 +9,6 @@ import 'package:rxdart/rxdart.dart';
 import '../models/user_summary_information.dart';
 import '../models/post.dart';
 import '../models/user.dart' as model;
-import '../services/conversation_services.dart';
 import '../services/post_services.dart';
 import '../services/user_services.dart';
 
@@ -17,7 +16,6 @@ class CurrentUserViewModel extends ChangeNotifier {
   final UserService _userServices = UserService();
   final PostService _postService = PostService();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final ConversationService _conversationService = ConversationService();
 
   model.User? _user;
 
@@ -64,7 +62,7 @@ class CurrentUserViewModel extends ChangeNotifier {
               print('Error: $error');
             },
           ),
-        );
+        ).distinct();
   }
 
   Future<void> getPosts([int page = 1]) async {
@@ -89,6 +87,11 @@ class CurrentUserViewModel extends ChangeNotifier {
     try {
       _user = await _userServices
           .getUserDetails(FirebaseAuth.instance.currentUser!.uid);
+      _chatUser = UserSummaryInformation(
+        userId: _user!.uid,
+        username: _user!.username,
+        avatarUrl: _user!.avatarUrl,
+        displayName: _user!.displayName,);
       getPosts();
     } catch (e) {
       rethrow;

@@ -37,14 +37,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool _isLoading = false;
   final _scaffoldKey = GlobalKey<ScaffoldMessengerState>();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  late AuthenticationViewModel _authenticationViewModel;
+  final AuthenticationViewModel _authenticationViewModel =
+      AuthenticationViewModel();
   final UserViewModel _userViewModel = UserViewModel();
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    _authenticationViewModel = context.read<AuthenticationViewModel>();
   }
 
   @override
@@ -69,7 +69,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
-  void _signUpUser() async {
+/*  void _signUpUser() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -92,7 +92,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     setState(() {
       _isLoading = false;
     });
-  }
+  }*/
 
   Future<String?> _uploadAvatar() async {
     if (_image == null) return null;
@@ -156,8 +156,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           )
                         : const CircleAvatar(
                             radius: 64,
-                            backgroundImage: NetworkImage(
-                                'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Default_pfp.svg/1200px-Default_pfp.svg.png'),
+                            backgroundImage:
+                                AssetImage('assets/default_avatar.png'),
                           ),
                     Positioned(
                         bottom: -10,
@@ -252,24 +252,46 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 const SizedBox(
                   height: 15,
                 ),
-                InkWell(
-                  onTap: _signUpUser,
-                  child: _isLoading
-                      ? const Center(
+                StreamBuilder(
+                  stream: _authenticationViewModel.loadingStream,
+                  initialData: false,
+                  builder: (context, snapshot) {
+                    if (snapshot.data!) {
+                      return const Center(
                           child: CircularProgressIndicator(
-                          color: Colors.white,
-                        ))
-                      : Container(
-                          width: double.infinity,
-                          alignment: Alignment.center,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: const BoxDecoration(
-                              color: Colors.blue,
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(4))),
-                          child: const Text(
-                            'Sign up',
-                          )),
+                        color: Colors.white,
+                      ));
+                    } else {
+                      return InkWell(
+                        onTap: () {
+                          _authenticationViewModel
+                              .signUp(
+                                  email: _emailController.text,
+                                  password: _passwordController.text,
+                                  username: _usernameController.text)
+                              .then((value) {
+                            if (value != 'success') {
+                              showSnackBar(context, 'value');
+                            } else {
+                              showSnackBar(context, 'Sign up success');
+                              Navigator.pop(context);
+                            }
+                          });
+                        },
+                        child: Container(
+                            width: double.infinity,
+                            alignment: Alignment.center,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: const BoxDecoration(
+                                color: Colors.blue,
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(4))),
+                            child: const Text(
+                              'Sign up',
+                            )),
+                      );
+                    }
+                  },
                 ),
                 const SizedBox(
                   height: 10,

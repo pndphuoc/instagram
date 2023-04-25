@@ -11,7 +11,6 @@ import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/ultis/global_variables.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/like_view_model.dart';
-import 'package:instagram/view_model/post_view_model.dart';
 import 'package:instagram/widgets/animation_widgets/like_animation.dart';
 import 'package:instagram/widgets/post_widgets/video_player_widget.dart';
 import 'package:provider/provider.dart';
@@ -34,27 +33,20 @@ class PostCard extends StatefulWidget {
 class _PostCardState extends State<PostCard> {
   late double imageWidth;
   final LikeViewModel _likeViewModel = LikeViewModel();
-  final PostViewModel _postViewModel = PostViewModel();
   late CurrentUserViewModel _currentUserViewModel;
   bool isEnableShimmer = true;
   List<VideoPlayerController?> _currentControllers = [];
-  bool _isInitalizingVideo = true;
 
   @override
   void initState() {
     super.initState();
     _currentUserViewModel = context.read<CurrentUserViewModel>();
-    _postViewModel.addListener(() {
-      isEnableShimmer = _postViewModel.isEnableShimmer;
-    });
 
     for (int i = 0; i < widget.post.medias.length; i++) {
       if (widget.post.medias[i].type == 'video') {
         _currentControllers.add(VideoPlayerController.network(widget.post.medias[i].url)
           ..initialize().then((value) {
-            setState(() {
-              _isInitalizingVideo = true;
-            });
+            setState(() {});
           }));
       } else {
         _currentControllers.add(null);
@@ -68,24 +60,6 @@ class _PostCardState extends State<PostCard> {
       _currentControllers[i]?.dispose();
     }
     super.dispose();
-  }
-
-  void _toggleLikePost() {
-    final currentUserViewModel = context.read<CurrentUserViewModel>();
-    if (!widget.post.isLiked) {
-      _likeViewModel.like(
-          widget.post.likedListId, currentUserViewModel.user!.uid);
-      widget.post.likeCount++;
-      widget.post.isLiked = true;
-    } else {
-      _likeViewModel.unlike(
-        widget.post.likedListId,
-        currentUserViewModel.user!.uid,
-      );
-      widget.post.likeCount--;
-      widget.post.isLiked = false;
-    }
-    setState(() {});
   }
 
   @override
@@ -103,13 +77,132 @@ class _PostCardState extends State<PostCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            _buildPostHead(context),
+            const SizedBox(height: 10),
+            _buildMediasCarousel(context),
+            const SizedBox(
+              height: 10,
+            ),
+            _buildInteractBar(context),
+            const SizedBox(
+              height: 10,
+            ),
+            _buildContentBlock(context),
+          ],
+        ));
+  }
+
+  Widget _buildPostHead(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                ProfileScreen(userId: widget.post.userId),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return buildSlideTransition(animation, child);
+            },
+            transitionDuration: const Duration(milliseconds: 150),
+            reverseTransitionDuration:
+            const Duration(milliseconds: 150),
+          ),
+        );
+      },
+      child: Container(
+        color: Colors.transparent,
+        child: Row(
+          children: [
+            const SizedBox(
+              width: 10,
+            ),
+            widget.post.avatarUrl.isNotEmpty
+                ? CircleAvatar(
+              radius: avatarInPostCardSize,
+              backgroundImage: CachedNetworkImageProvider(
+                widget.post.avatarUrl,
+              ),
+            )
+                : const CircleAvatar(
+                radius: avatarInPostCardSize,
+                backgroundImage:
+                AssetImage("assets/default_avatar.png")),
+            const SizedBox(
+              width: 15,
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.post.username,
+                    style: Theme
+                        .of(context)
+                        .textTheme
+                        .titleSmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    getElapsedTime(widget.post.createAt),
+                    style: Theme
+                        .of(context)
+                        .textTheme
+                        .bodySmall,
+                  )
+                ],
+              ),
+            ),
+            IconButton(
+              onPressed: () {},
+              padding: EdgeInsets.zero,
+              icon: const Icon(Icons.more_horiz),
+            ),
+            const SizedBox(
+              width: 10,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInteractBar(BuildContext context) {
+    return StreamBuilder(
+      stream: _likeViewModel.likeStream,
+      initialData: widget.post.isLiked,
+      builder: (context, snapshot) {
+        return Row(
+          children: [
+            const SizedBox(
+              width: 20,
+            ),
+            GestureDetector(
+              onTap: () => _likeViewModel.toggleLikePost(widget.post),
+              child: LikeAnimation(
+                  isAnimating: snapshot.data!,
+                  child: snapshot.data!
+                      ? const Icon(
+                    Icons.favorite,
+                    color: Colors.red,
+                    size: 30,
+                  )
+                      : const Icon(
+                    Icons.favorite_border,
+                    size: 30,
+                  )),
+            ),
+            const SizedBox(
+              width: 10,
+            ),
             GestureDetector(
               onTap: () {
                 Navigator.push(
                   context,
                   PageRouteBuilder(
                     pageBuilder: (context, animation, secondaryAnimation) =>
-                        ProfileScreen(userId: widget.post.userId),
+                        LikeListScreen(likeListId: widget.post.likedListId),
                     transitionsBuilder:
                         (context, animation, secondaryAnimation, child) {
                       return buildSlideTransition(animation, child);
@@ -122,228 +215,17 @@ class _PostCardState extends State<PostCard> {
               },
               child: Container(
                 color: Colors.transparent,
-                child: Row(
-                  children: [
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    widget.post.avatarUrl.isNotEmpty
-                        ? CircleAvatar(
-                      radius: avatarInPostCardSize,
-                      backgroundImage: CachedNetworkImageProvider(
-                        widget.post.avatarUrl,
-                      ),
-                    )
-                        : const CircleAvatar(
-                        radius: avatarInPostCardSize,
-                        backgroundImage:
-                        AssetImage("assets/default_avatar.png")),
-                    const SizedBox(
-                      width: 15,
-                    ),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.post.username,
-                            style: Theme
-                                .of(context)
-                                .textTheme
-                                .titleSmall,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            getElapsedTime(widget.post.createAt),
-                            style: Theme
-                                .of(context)
-                                .textTheme
-                                .bodySmall,
-                          )
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () {},
-                      padding: EdgeInsets.zero,
-                      icon: const Icon(Icons.more_horiz),
-                    ),
-                    const SizedBox(
-                      width: 10,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.only(left: 15, right: 15),
-              child: GestureDetector(
-                onDoubleTap: () {
-                  if (!widget.post.isLiked) _toggleLikePost();
-                },
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(25),
-                  child: CarouselSlider(
-                    options: CarouselOptions(
-                        aspectRatio: 1,
-                        reverse: false,
-                        scrollPhysics: const BouncingScrollPhysics(),
-                        enableInfiniteScroll: false,
-                        viewportFraction: 1,
-
-                        onPageChanged: (index, reason) async {
-                          //_onPageChanged(index);
-                        }),
-                    items: widget.post.medias.map<Widget>((e) {
-                      if (e.type == 'image') {
-                        return CachedNetworkImage(
-                            imageUrl: e.url,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            fadeInDuration: const Duration(milliseconds: 100),
-                            placeholder: (_, __) =>
-                                Shimmer.fromColors(
-                                  baseColor:
-                                  const Color.fromARGB(255, 39, 39, 39),
-                                  highlightColor:
-                                  const Color.fromARGB(255, 86, 86, 86),
-                                  child: const SizedBox(
-                                    width: double.infinity,
-                                    height: double.infinity,
-                                  ),
-                                ));
-                      } else {
-                        final index = widget.post.medias.indexOf(e);
-                        return _currentControllers[index]!.value.isInitialized ? VisibilityDetector(
-                            key: Key(e.url),
-                            onVisibilityChanged: (info) {
-                              if(info.visibleFraction == 0){
-                                _currentControllers[index]!.pause();
-                              }
-                              else{
-                                _currentControllers[index]!.play();
-                              }
-                            },
-                            child: VideoPlayerWidget(videoUrl: e.url, controller: _currentControllers[index])) : const Center(child: CircularProgressIndicator(),) ;
-                      }
-                    }).toList(),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            Row(
-              children: [
-                const SizedBox(
-                  width: 20,
-                ),
-                GestureDetector(
-                  onTap: () => _toggleLikePost(),
-                  child: LikeAnimation(
-                      isAnimating: _likeViewModel.isLikeAnimating,
-                      child: widget.post.isLiked
-                          ? const Icon(
-                        Icons.favorite,
-                        color: Colors.red,
-                        size: 30,
-                      )
-                          : const Icon(
-                        Icons.favorite_border,
-                        size: 30,
-                      )),
-                ),
-                const SizedBox(
-                  width: 10,
-                ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) =>
-                            LikeListScreen(likeListId: widget.post.likedListId),
-                        transitionsBuilder:
-                            (context, animation, secondaryAnimation, child) {
-                          return buildSlideTransition(animation, child);
-                        },
-                        transitionDuration: const Duration(milliseconds: 150),
-                        reverseTransitionDuration:
-                        const Duration(milliseconds: 150),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    color: Colors.transparent,
-                    child: Text(
-                      widget.post.likeCount.toString(),
-                      style: Theme
-                          .of(context)
-                          .textTheme
-                          .bodyMedium,
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  width: 10,
-                ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) =>
-                            CommentReadingScreen(post: widget.post),
-                        transitionsBuilder:
-                            (context, animation, secondaryAnimation, child) {
-                          return buildSlideTransition(animation, child);
-                        },
-                        transitionDuration: const Duration(milliseconds: 150),
-                        reverseTransitionDuration:
-                        const Duration(milliseconds: 150),
-                      ),
-                    );
-                  },
-                  child: SvgPicture.asset(
-                    "assets/ic_comment.svg",
-                    height: 28,
-                    width: 28,
-                  ),
-                ),
-                const SizedBox(
-                  width: 10,
-                ),
-                Text(
-                  widget.post.commentCount.toString(),
+                child: Text(
+                  widget.post.likeCount.toString(),
                   style: Theme
                       .of(context)
                       .textTheme
                       .bodyMedium,
                 ),
-                const SizedBox(
-                  width: 10,
-                ),
-                SvgPicture.asset(
-                  "assets/ic_share.svg",
-                  height: 28,
-                  width: 28,
-                ),
-                const Expanded(child: SizedBox()),
-                SvgPicture.asset(
-                  "assets/ic_bookmark.svg",
-                  height: 28,
-                  width: 28,
-                ),
-                const SizedBox(
-                  width: 20,
-                ),
-              ],
+              ),
             ),
             const SizedBox(
-              height: 10,
+              width: 10,
             ),
             GestureDetector(
               onTap: () {
@@ -362,40 +244,146 @@ class _PostCardState extends State<PostCard> {
                   ),
                 );
               },
-              child: Container(
-                width: double.infinity,
-                color: Colors.transparent,
-                padding: const EdgeInsets.only(left: 15, right: 15),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ExpandableText(
-                      widget.post.caption,
-                      expandText: 'show more',
-                      maxLines: 3,
-                      animation: true,
-                      expandOnTextTap: true,
-                      linkColor: Colors.grey,
-                      linkStyle:
-                      GoogleFonts.readexPro(fontWeight: FontWeight.w200),
-                      animationDuration: const Duration(milliseconds: 500),
-                      style: GoogleFonts.readexPro(color: Colors.white),
-                    ),
-                    const SizedBox(
-                      height: 30,
-                    ),
-                  ],
-                ),
+              child: SvgPicture.asset(
+                "assets/ic_comment.svg",
+                height: 28,
+                width: 28,
               ),
             ),
+            const SizedBox(
+              width: 10,
+            ),
+            Text(
+              widget.post.commentCount.toString(),
+              style: Theme
+                  .of(context)
+                  .textTheme
+                  .bodyMedium,
+            ),
+            const SizedBox(
+              width: 10,
+            ),
+            SvgPicture.asset(
+              "assets/ic_share.svg",
+              height: 28,
+              width: 28,
+            ),
+            const Expanded(child: SizedBox()),
+            SvgPicture.asset(
+              "assets/ic_bookmark.svg",
+              height: 28,
+              width: 28,
+            ),
+            const SizedBox(
+              width: 20,
+            ),
           ],
-        ));
+        );
+      },
+    );
   }
 
-  _onPageChanged(int index) {
-    _currentControllers.where((element) => element != null).forEach((element) {element!.pause();});
-    if (widget.post.medias[index].type == 'video') {
-      _currentControllers[index]!.play();
-    }
+  Widget _buildMediasCarousel(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 15, right: 15),
+      child: GestureDetector(
+        onDoubleTap: () {
+          if (!widget.post.isLiked) _likeViewModel.toggleLikePost(widget.post);
+        },
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(25),
+          child: CarouselSlider(
+            options: CarouselOptions(
+                aspectRatio: 1,
+                reverse: false,
+                scrollPhysics: const BouncingScrollPhysics(),
+                enableInfiniteScroll: false,
+                viewportFraction: 1,
+                onPageChanged: (index, reason) async {
+                  //_onPageChanged(index);
+                }),
+            items: widget.post.medias.map((e) {
+              if (e.type == 'image') {
+                return CachedNetworkImage(
+                    imageUrl: e.url,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    fadeInDuration: const Duration(milliseconds: 100),
+                    placeholder: (_, __) =>
+                        Shimmer.fromColors(
+                          baseColor:
+                          const Color.fromARGB(255, 39, 39, 39),
+                          highlightColor:
+                          const Color.fromARGB(255, 86, 86, 86),
+                          child: const SizedBox(
+                            width: double.infinity,
+                            height: double.infinity,
+                          ),
+                        ));
+              } else {
+                final index = widget.post.medias.indexOf(e);
+                return _currentControllers[index]!.value.isInitialized ? VisibilityDetector(
+                    key: Key(e.url),
+                    onVisibilityChanged: (info) {
+                      if(info.visibleFraction == 0){
+                        _currentControllers[index]!.pause();
+                      }
+                      else{
+                        _currentControllers[index]!.play();
+                      }
+                    },
+                    child: VideoPlayerWidget(videoUrl: e.url, controller: _currentControllers[index])) : const Center(child: CircularProgressIndicator(),) ;
+              }
+            }).toList(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContentBlock(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                CommentReadingScreen(post: widget.post),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return buildSlideTransition(animation, child);
+            },
+            transitionDuration: const Duration(milliseconds: 150),
+            reverseTransitionDuration:
+            const Duration(milliseconds: 150),
+          ),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        color: Colors.transparent,
+        padding: const EdgeInsets.only(left: 15, right: 15),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ExpandableText(
+              widget.post.caption,
+              expandText: 'show more',
+              maxLines: 3,
+              animation: true,
+              expandOnTextTap: true,
+              linkColor: Colors.grey,
+              linkStyle:
+              GoogleFonts.readexPro(fontWeight: FontWeight.w200),
+              animationDuration: const Duration(milliseconds: 500),
+              style: GoogleFonts.readexPro(color: Colors.white),
+            ),
+            const SizedBox(
+              height: 30,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

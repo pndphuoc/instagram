@@ -12,6 +12,5 @@ abstract class IAuthenticationService {
   Future<String> login({required String email, required String password});
   Future<void> logout();
   Future<UserCredential> signInWithGoogle();
-  Future<String> completeSignInWithGoogle(
-      {required String username, String bio = "", File? file});
+  Future<bool> isUsernameExists(String username);
 }

@@ -40,6 +40,7 @@ class _CommentCardState extends State<CommentCard> {
   late CommentViewModel _localCommentViewModel;
   List<Comment> replyComments = [];
   late Stream<List<Comment>> _getReplyComments;
+  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
   @override
   void initState() {
@@ -152,7 +153,7 @@ class _CommentCardState extends State<CommentCard> {
                     flex: 1,
                     child: GestureDetector(
                       onTap: () {
-                        _likeViewModel.toggleLike(widget.cmt);
+                        _likeViewModel.toggleLikeComment(widget.cmt);
                       },
                       onLongPress: () {},
                       child: Container(

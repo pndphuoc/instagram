@@ -29,6 +29,11 @@ class PostViewModel extends ChangeNotifier {
 
   List<Post> get posts => _posts;
 
+  set posts(List<Post> value) {
+    _posts = value;
+    notifyListeners();
+  }
+
   bool get isUploading => _isUploading;
 
   bool _isEnableShimmer = true;
@@ -193,10 +198,6 @@ class PostViewModel extends ChangeNotifier {
         viewedListId: '');
 
     handleUploadNewPost(post, assetViewModel);
-
-  }
-
-  void onPageChanged() {
 
   }
 
