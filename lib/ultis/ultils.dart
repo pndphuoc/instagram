@@ -63,3 +63,17 @@ SlideTransition buildSlideTransition(
     child: child,
   );
 }
+
+double calculateItemHeight(
+    {required BuildContext context,
+    required double crossAxisSpacing,
+    required double mainAxisSpacing,
+    required int gridViewCrossAxisCount,
+    required double childAspectRatio}) {
+  double screenWidth = MediaQuery.of(context).size.width;
+  double itemWidth =
+      (screenWidth - crossAxisSpacing * (gridViewCrossAxisCount - 1)) /
+          gridViewCrossAxisCount;
+  double itemHeight = itemWidth / childAspectRatio + mainAxisSpacing;
+  return itemHeight;
+}

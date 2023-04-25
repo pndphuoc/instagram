@@ -136,7 +136,7 @@ class _SentMessageCardState extends State<SentMessageCard> {
       height: 13,
       decoration: BoxDecoration(
           image: DecorationImage(
-              image: CachedNetworkImageProvider(widget.restUserAvatarUrl)),
+              image: widget.restUserAvatarUrl.isNotEmpty ? CachedNetworkImageProvider(widget.restUserAvatarUrl) : const AssetImage('assets/default_avatar.png') as ImageProvider),
           shape: BoxShape.circle,
           border: const Border.fromBorderSide(
               BorderSide(width: 1, color: primaryColor))),
@@ -150,13 +150,6 @@ class _SentMessageCardState extends State<SentMessageCard> {
   }
 
   _messageStatusDetector() {
-/*    if (widget.lastSeenMessageTimeOfRestUser != null) {
-      if (widget.lastSeenMessageTimeOfRestUser == widget.message.timestamp) {
-        return _buildLastSeenStatusMessage(context);
-      } else {
-        return _buildSeenStatusMessage(context);
-      }
-    } */
     if (widget.isLastSeenMessage) {
       return _buildLastSeenStatusMessage(context);
     } else if (widget.message.status == 'seen') {

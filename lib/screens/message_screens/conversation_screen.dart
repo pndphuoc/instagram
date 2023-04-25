@@ -11,6 +11,7 @@ import 'package:instagram/widgets/message_widgets/sent_message_card.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
 
+import '../../ultis/ultils.dart';
 import '../../widgets/image_thumbail.dart';
 
 class ConversationScreen extends StatefulWidget {
@@ -68,15 +69,6 @@ class _ConversationScreenState extends State<ConversationScreen>
 
     _messageStream = _messageViewModel.messagesStream;
     super.initState();
-  }
-
-  double _calculateItemHeight(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double itemWidth =
-        (screenWidth - _crossAxisSpacing * (_gridViewCrossAxisCount - 1)) /
-            _gridViewCrossAxisCount;
-    double itemHeight = itemWidth / _childAspectRatio + _mainAxisSpacing;
-    return itemHeight;
   }
 
   @override
@@ -380,7 +372,12 @@ class _ConversationScreenState extends State<ConversationScreen>
   }
 
   Widget _mediasGrid(BuildContext context, ScrollController scrollController) {
-    double itemHeight = _calculateItemHeight(context);
+    double itemHeight = calculateItemHeight(
+        context: context,
+        crossAxisSpacing: _crossAxisSpacing,
+        mainAxisSpacing: _mainAxisSpacing,
+        gridViewCrossAxisCount: _gridViewCrossAxisCount,
+        childAspectRatio: _childAspectRatio);
     return NotificationListener<ScrollNotification>(
       onNotification: (scrollNotification) {
         const double threshold = 0.5; // 90% of the list length

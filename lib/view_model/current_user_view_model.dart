@@ -9,6 +9,7 @@ import 'package:rxdart/rxdart.dart';
 import '../models/user_summary_information.dart';
 import '../models/post.dart';
 import '../models/user.dart' as model;
+import '../services/conversation_services.dart';
 import '../services/post_services.dart';
 import '../services/user_services.dart';
 
@@ -16,6 +17,7 @@ class CurrentUserViewModel extends ChangeNotifier {
   final UserService _userServices = UserService();
   final PostService _postService = PostService();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final ConversationService _conversationService = ConversationService();
 
   model.User? _user;
 
@@ -27,6 +29,15 @@ class CurrentUserViewModel extends ChangeNotifier {
   model.User? get user => _user;
 
   bool get hasMorePosts => _hasMorePosts;
+
+  List<bool> _isSeenConversations = [];
+
+  List<bool> get isSeenConversations => _isSeenConversations;
+
+  set isSeenConversations(List<bool> value) {
+    _isSeenConversations = value;
+    notifyListeners();
+  }
 
   int _totalPage = 1;
   final int _pageSize = 12;
@@ -83,4 +94,6 @@ class CurrentUserViewModel extends ChangeNotifier {
       rethrow;
     }
   }
+
+
 }

@@ -133,4 +133,10 @@ class UserService implements IUserService {
         .onValue
         .map((event) => event.snapshot.value as int);
   }
+
+  @override
+  Stream<bool> hasUnReadMessage(String conversationIds) {
+    // TODO: implement hasUnReadMessage
+    throw UnimplementedError();
+  }
 }

@@ -4,6 +4,7 @@ import 'package:instagram/route/route_name.dart';
 import 'package:instagram/screens/post_screens/post_details_screen.dart';
 import 'package:instagram/screens/search_screen.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
+import 'package:instagram/widgets/post_widgets/video_player_widget.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
@@ -136,10 +137,18 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           onTap: (){
             Navigator.push(context, MaterialPageRoute(builder: (context) => PostDetailsScreen(posts: posts, index: index),));
           },
-          child: CachedNetworkImage(
-            imageUrl: posts[index].medias.first.url,
-            fit: BoxFit.cover,
-            fadeInDuration: const Duration(milliseconds: 200),
+          child: Stack(
+            children: [
+              Positioned.fill(child: posts[index].medias.first.type == 'image' ? CachedNetworkImage(
+                imageUrl: posts[index].medias.first.url,
+                fit: BoxFit.cover,
+                fadeInDuration: const Duration(milliseconds: 200),
+              ) : VideoPlayerWidget.network(url: posts[index].medias.first.url)),
+              if (posts[index].medias.length > 1) 
+                const Positioned(top: 5, right: 5, child: Icon(Icons.layers_rounded, color: Colors.white,))
+              else if (posts[index].medias.first.type == 'video')
+                const Positioned(top: 5, right: 5,child: Icon(Icons.slow_motion_video_rounded, color: Colors.white,))
+            ],
           ),
         );
       },

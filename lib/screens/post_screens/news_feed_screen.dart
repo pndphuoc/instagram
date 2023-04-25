@@ -32,7 +32,6 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
     NotificationController().addListener(() => setState(() {}));
     _currentUserViewModel = context.read<CurrentUserViewModel>();
     _getPosts = context.read<PostViewModel>().getPosts(_currentUserViewModel.user!.followingListId);
-    print(_currentUserViewModel.user!.followingListId);
   }
 
   Future<void> _refresh() async {
@@ -111,8 +110,8 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
       ),
       actions: [
         Padding(
-          padding: const EdgeInsets.only(right: 20),
-          child: InkWell(
+          padding: const EdgeInsets.only(right: 20, top: 10),
+          child: GestureDetector(
             onTap: () {
               Navigator.push(
                 context,
@@ -130,8 +129,20 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
                 ),
               );
             },
-            borderRadius: BorderRadius.circular(30),
-            child: const Icon(Icons.mail_outline),
+            child: Consumer<CurrentUserViewModel>(
+              builder: (context, value, child) {
+                return StreamBuilder(
+                    //stream: value.hasUnReadMessage(),
+                    initialData: false,
+                    builder: (context, snapshot) {
+                      return Badge(
+                        smallSize: 10,
+                        isLabelVisible: snapshot.data!,
+                        child: const Icon(Icons.mail_outline_rounded, color: Colors.white,),
+                      );
+                    },);
+              },
+            ),
           ),
         )
       ],

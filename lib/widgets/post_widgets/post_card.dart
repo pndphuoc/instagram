@@ -38,6 +38,7 @@ class _PostCardState extends State<PostCard> {
   late CurrentUserViewModel _currentUserViewModel;
   bool isEnableShimmer = true;
   List<VideoPlayerController?> _currentControllers = [];
+  bool _isInitalizingVideo = true;
 
   @override
   void initState() {
@@ -51,7 +52,9 @@ class _PostCardState extends State<PostCard> {
       if (widget.post.medias[i].type == 'video') {
         _currentControllers.add(VideoPlayerController.network(widget.post.medias[i].url)
           ..initialize().then((value) {
-            setState(() {});
+            setState(() {
+              _isInitalizingVideo = true;
+            });
           }));
       } else {
         _currentControllers.add(null);

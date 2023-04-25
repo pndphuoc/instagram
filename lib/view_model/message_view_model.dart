@@ -198,7 +198,7 @@ class MessageViewModel extends ChangeNotifier {
   void listenToMessages() {
     _messagesSubscription = _messageServices.getNewMessage(
         conversationId: _conversationId,
-        lastMessageTimestamp: _messages.first.timestamp)
+        lastMessageTimestamp: _messages.isNotEmpty ? _messages.first.timestamp : null)
         .listen((List<Message>? messages) {
       if (messages == null) {
         _messageController.sink.add([]);

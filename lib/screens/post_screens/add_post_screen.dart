@@ -61,19 +61,15 @@ class _AddPostScreenState extends State<AddPostScreen> {
     super.dispose();
   }
 
-  double _calculateItemHeight(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double itemWidth =
-        (screenWidth - _crossAxisSpacing * (_gridViewCrossAxisCount - 1)) /
-            _gridViewCrossAxisCount;
-    double itemHeight = itemWidth / _childAspectRatio + _mainAxisSpacing;
-    return itemHeight;
-  }
-
   @override
   Widget build(BuildContext context) {
     double previewImageSize = MediaQuery.of(context).size.width;
-    itemHeight = _calculateItemHeight(context);
+    itemHeight = calculateItemHeight(
+        context: context,
+        crossAxisSpacing: _crossAxisSpacing,
+        mainAxisSpacing: _mainAxisSpacing,
+        gridViewCrossAxisCount: _gridViewCrossAxisCount,
+        childAspectRatio: _childAspectRatio);
 
     return Scaffold(
       resizeToAvoidBottomInset: false,

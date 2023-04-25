@@ -11,11 +11,10 @@ import '../models/conversation.dart';
 class ConversationViewModel extends ChangeNotifier {
   final ConversationService _conversationService = ConversationService();
 
-  List<Conversation> _conversations = [];
-
-  List<Conversation> get conversations => _conversations;
-
   final _statusController = StreamController<bool>();
+
+  final _unseenMessageController = StreamController<bool>();
+  Stream<bool> get hasUnseenMessage => _unseenMessageController.stream;
 
   Stream<bool> get statusStream => _statusController.stream;
 
