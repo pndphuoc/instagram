@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 
 import '../models/conversation.dart';
 import '../models/user_summary_information.dart';
@@ -25,4 +26,6 @@ abstract class IConversationService {
       required String content,
       required DateTime timestamp,
       required String type});
+
+  Future<bool> isSeenStatus({required String conversationId, required String userId});
 }

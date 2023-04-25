@@ -106,7 +106,7 @@ class _PostCardState extends State<PostCard> {
                   context,
                   PageRouteBuilder(
                     pageBuilder: (context, animation, secondaryAnimation) =>
-                        ProfileScreen(userId: widget.post!.userId),
+                        ProfileScreen(userId: widget.post.userId),
                     transitionsBuilder:
                         (context, animation, secondaryAnimation, child) {
                       return buildSlideTransition(animation, child);

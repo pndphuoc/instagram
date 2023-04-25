@@ -1,18 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/models/user_summary_information.dart';
-import 'package:instagram/models/conversation.dart';
-import 'package:instagram/models/message.dart';
 import 'package:instagram/ultis/colors.dart';
-import 'package:instagram/view_model/conversation_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/message_view_model.dart';
 import 'package:instagram/view_model/user_view_model.dart';
 import 'package:instagram/widgets/avatar_with_status.dart';
 import 'package:instagram/widgets/message_widgets/received_message_card.dart';
-import 'package:instagram/widgets/message_widgets/sending_image_message.dart';
 import 'package:instagram/widgets/message_widgets/sent_message_card.dart';
-import 'package:instagram/widgets/shimmer_widgets/message_shimmer.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
 
@@ -28,7 +23,8 @@ class ConversationScreen extends StatefulWidget {
   State<ConversationScreen> createState() => _ConversationScreenState();
 }
 
-class _ConversationScreenState extends State<ConversationScreen> {
+class _ConversationScreenState extends State<ConversationScreen>
+    with WidgetsBindingObserver {
   final double avatarSize = 20;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   late MessageViewModel _messageViewModel;
@@ -42,22 +38,35 @@ class _ConversationScreenState extends State<ConversationScreen> {
   final _gridViewCrossAxisCount = 3;
   late Stream _messageStream;
 
+  late AppLifecycleState _appLifecycleState;
+
   @override
   void dispose() {
     _messageController.dispose();
     _messageViewModel.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _appLifecycleState = state;
+    _messageViewModel.appLifecycleState = state;
+    if (state == AppLifecycleState.resumed) {
+      _messageViewModel.updateSeenStatus();
+    }
+  }
+
+  @override
   void initState() {
+    WidgetsBinding.instance.addObserver(this);
+
     _currentUserViewModel = context.read<CurrentUserViewModel>();
 
     _messageViewModel =
         MessageViewModel([widget.restUser, _currentUserViewModel.chatUser]);
 
     _messageStream = _messageViewModel.messagesStream;
-
     super.initState();
   }
 
@@ -99,13 +108,12 @@ class _ConversationScreenState extends State<ConversationScreen> {
                   reverse: true,
                   itemCount: _messageViewModel.messages.length,
                   itemBuilder: (context, index) {
-
                     bool isLastSeenMessage = index ==
-                        _messageViewModel.messages.indexWhere(
-                                (element) => element.status == 'seen');
+                        _messageViewModel.messages
+                            .indexWhere((element) => element.status == 'seen');
                     bool isFirstMessage = _messageViewModel.firstMessageInGroup
                         .contains(_messageViewModel.messages[index].id);
-                    bool isLastMessage =  _messageViewModel.lastMessageInGroup
+                    bool isLastMessage = _messageViewModel.lastMessageInGroup
                         .contains(_messageViewModel.messages[index].id);
 
                     if (_messageViewModel.messages[index].senderId ==
@@ -119,11 +127,11 @@ class _ConversationScreenState extends State<ConversationScreen> {
                         isLastSeenMessage: isLastSeenMessage,
                       );
                     } else {
-                        return ReceivedMessageCard(
-                            message: _messageViewModel.messages[index],
-                            isLastInGroup: isLastMessage,
-                            isFirstInGroup: isFirstMessage,
-                            user: widget.restUser);
+                      return ReceivedMessageCard(
+                          message: _messageViewModel.messages[index],
+                          isLastInGroup: isLastMessage,
+                          isFirstInGroup: isFirstMessage,
+                          user: widget.restUser);
                     }
                   },
                 );

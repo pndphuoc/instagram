@@ -35,7 +35,6 @@ class CommentCard extends StatefulWidget {
 
 class _CommentCardState extends State<CommentCard> {
   bool isLiked = false;
-  List<Comment> replyCommentList = [];
   final LikeViewModel _likeViewModel = LikeViewModel();
   late CurrentUserViewModel _currentUserViewModel;
   late CommentViewModel _localCommentViewModel;
@@ -59,9 +58,6 @@ class _CommentCardState extends State<CommentCard> {
       child: Column(
         children: [
           _buildCommentContent(context),
-          const SizedBox(
-            height: 15,
-          ),
           _buildReplyComments(context),
           _buildReadMoreCommentsButton(context)
         ],
@@ -208,7 +204,7 @@ class _CommentCardState extends State<CommentCard> {
         } else if (snapshot.hasError) {
           return Text(snapshot.error.toString());
         } else {
-          replyComments.addAll(snapshot.data!.map((e) => e));
+          replyComments.addAll(snapshot.data!.where((element) => !replyComments.contains(element)));
           return ListView.separated(
             itemCount: replyComments.length,
             separatorBuilder: (context, index) => const SizedBox(
@@ -217,12 +213,15 @@ class _CommentCardState extends State<CommentCard> {
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
             itemBuilder: (context, index) {
-              return ReplyCommentCard(
-                commentListId: widget.commentListId,
-                commentId: widget.cmt.uid,
-                replyComment: replyComments[index],
-                commentViewModel: widget.commentViewModel,
-                replyComments: replyComments,
+              return Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: ReplyCommentCard(
+                  commentListId: widget.commentListId,
+                  commentId: widget.cmt.uid,
+                  replyComment: replyComments[index],
+                  commentViewModel: widget.commentViewModel,
+                  replyComments: replyComments,
+                ),
               );
             },
           );
@@ -258,7 +257,7 @@ class _CommentCardState extends State<CommentCard> {
                     if (snapshot.data! > 0) {
                       return GestureDetector(
                         onTap: () {
-                          _localCommentViewModel.getReplyComments();
+                          _localCommentViewModel.getReplyComments(commentId: widget.cmt.uid);
                         },
                         child: Container(
                           color: Colors.transparent,

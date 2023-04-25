@@ -23,7 +23,7 @@ class Conversation {
       lastMessageContent: json['lastMessageContent'] ?? '',
       lastMessageTime: json['lastMessageTime'].toDate() ?? '',
       users: users,
-      isSeen: json['isSeen'] ?? ''
+      isSeen: json['isSeen'] ?? false
     );
   }
 
@@ -35,7 +35,6 @@ class Conversation {
       'lastMessageContent': lastMessageContent,
       'lastMessageTime': lastMessageTime,
       'users': usersJson,
-      'isSeen': isSeen
     };
   }
 }

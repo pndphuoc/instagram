@@ -199,6 +199,8 @@ class CommentServices implements ICommentService {
   Future<void> updateReplyCount(
       String commentListId, String commentId, bool isIncrease) async {
     try {
+      print("aaaaaaaaaaa $commentListId");
+      print("bbbbbbbbbbb $commentId");
       await _commentListCollection
           .doc(commentListId)
           .collection('comments')

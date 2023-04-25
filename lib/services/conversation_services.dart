@@ -93,12 +93,36 @@ class ConversationService implements IConversationService {
       'isSeen': false
     });
     List<String> userIds = conversationId.split("_");
-    for(String userId in userIds) {
+    for (String userId in userIds) {
       await _usersCollection
           .doc(userId)
           .collection('conversations')
           .doc(conversationId)
           .update({'lastMessageTime': timestamp});
     }
+  }
+
+  @override
+  Future<bool> isSeenStatus(
+      {required String conversationId, required String userId}) async {
+    final snapshots = await _conversationsCollection
+        .doc(conversationId)
+        .collection('messages')
+        .where('senderId', isNotEqualTo: userId)
+        .where('status', isEqualTo: 'sent')
+        .get();
+    return snapshots.size == 0;
+  }
+
+  Stream<bool> seenStatusStream({required String conversationId, required String userId}) {
+    final snapshots = _conversationsCollection
+        .doc(conversationId)
+        .collection('messages')
+        .where('senderId', isNotEqualTo: userId).snapshots();
+
+    return snapshots.map((querySnapshot) {
+      final allSeen = querySnapshot.docs.every((doc) => doc['status'] == 'seen');
+      return allSeen;
+    });
   }
 }

@@ -171,7 +171,6 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
           child: ElevatedButton(
               onPressed: () {
                 context.read<PostViewModel>().dispose();
-                context.read<AssetViewModel>().dispose();
                 context.read<AssetMessageViewModel>().dispose();
                 context.read<CurrentUserViewModel>().dispose();
                 context.read<AuthenticationViewModel>().logout();

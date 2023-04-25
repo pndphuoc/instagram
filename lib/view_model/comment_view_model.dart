@@ -12,11 +12,13 @@ import '../models/user_summary_information.dart';
 
 class CommentViewModel extends ChangeNotifier {
   final String commentListId;
-  final String commentId;
+  final String postId;
   late String userId;
-  CommentViewModel(this.commentListId, this.commentId) {
+
+  CommentViewModel(this.commentListId, this.postId) {
     userId = FirebaseAuth.instance.currentUser!.uid;
   }
+
   final CommentServices _commentServices = CommentServices();
   final PostService _postService = PostService();
   final LikeService _likeService = LikeService();
@@ -79,7 +81,7 @@ class CommentViewModel extends ChangeNotifier {
     return uid;
   }
 
-  Future<String> addReplyComment(Comment replyComment) async {
+  Future<String> addReplyComment(String commentId, Comment replyComment) async {
     String uid = await _commentServices.addReplyComment(
         commentListId, commentId, replyComment);
 
@@ -173,6 +175,7 @@ class CommentViewModel extends ChangeNotifier {
   }
 
   Future<void> getReplyComments({
+    required String commentId,
     int pageSize = 5,
   }) async {
     try {
@@ -278,16 +281,21 @@ class CommentViewModel extends ChangeNotifier {
 
   void onReplyButtonTap(
       String username, String commentId, List<Comment> displayedReplyComments) {
+
     replyComments = displayedReplyComments;
     _isReplyingComment = true;
+
     if (!commentFocusNode.hasFocus) {
       commentFocusNode.requestFocus();
     }
+
     _commentTextField.text = "@$username ";
     usernameOfCommentIsBeingReplied = username;
     _commentTextField.selection = TextSelection.fromPosition(
         TextPosition(offset: _commentTextField.text.length));
+
     _commentRepliedId = commentId;
+
     _usernameIsBeingReplied.sink.add(username);
   }
 
@@ -330,10 +338,10 @@ class CommentViewModel extends ChangeNotifier {
         duration: const Duration(milliseconds: 300),
         curve: Curves.fastOutSlowIn,
       );
-      await addComment(comment);
+      addComment(comment);
     } else {
       replyComments.insert(0, comment);
-      await addReplyComment(comment);
+      addReplyComment(_commentRepliedId, comment);
     }
 
     onCancelReplyCommentTap();

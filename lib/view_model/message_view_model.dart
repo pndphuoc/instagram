@@ -23,6 +23,7 @@ class MessageViewModel extends ChangeNotifier {
   MessageViewModel(List<UserSummaryInformation> users) {
     getAssets();
     _users = users;
+    _restUser = _users.firstWhere((user) => user.userId != FirebaseAuth.instance.currentUser!.uid);
     createConversationIdFromUsers();
     _messageDetailsService.updateStatus(
         conversationId: _conversationId,
@@ -35,7 +36,7 @@ class MessageViewModel extends ChangeNotifier {
       listenToMessages();
     });
   }
-
+  late UserSummaryInformation _restUser;
   final ConversationService _conversationService = ConversationService();
   final MessageServices _messageServices = MessageServices();
   final MessageDetailsService _messageDetailsService = MessageDetailsService();
@@ -188,6 +189,12 @@ class MessageViewModel extends ChangeNotifier {
   bool _loadingOldMessages = false;
   DateTime? _oldestMessageTimestamp;
 
+  AppLifecycleState _appLifecycleState = AppLifecycleState.resumed;
+
+  set appLifecycleState(AppLifecycleState value) {
+    _appLifecycleState = value;
+  }
+
   void listenToMessages() {
     _messagesSubscription = _messageServices.getNewMessage(
         conversationId: _conversationId,
@@ -207,14 +214,9 @@ class MessageViewModel extends ChangeNotifier {
           _messages[index] = message;
         }
       }
-
-
-      UserSummaryInformation recipient = _users.firstWhere((user) => user.userId != FirebaseAuth.instance.currentUser!.uid);
-
-      _messageDetailsService.updateStatus(
-          conversationId: _conversationId,
-          senderId: recipient.userId);
-
+      if (_appLifecycleState == AppLifecycleState.resumed) {
+        updateSeenStatus();
+      }
 
       _messageController.sink.add([]);
     });
@@ -226,6 +228,14 @@ class MessageViewModel extends ChangeNotifier {
         loadOldMessages();
       }
     });
+  }
+
+  Future<void> updateSeenStatus() async {
+    _messages.where((element) => element.senderId == _restUser.userId && element.status == 'sent').map((e) => e.status = 'seen');
+
+    await _messageDetailsService.updateStatus(
+        conversationId: _conversationId,
+        senderId: _restUser.userId);
   }
 
 
@@ -252,6 +262,7 @@ class MessageViewModel extends ChangeNotifier {
       groupMessage();
       _messageController.sink.add([]);
     } else {
+      _messageController.sink.add([]);
       _hasMoreMessages = false;
     }
 

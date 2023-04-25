@@ -33,7 +33,6 @@ class _AddPostScreenState extends State<AddPostScreen> {
   final double _mainAxisSpacing = 2;
   final double _childAspectRatio = 1;
 
-  //final cropKey = GlobalKey<CropState>();
   List<GlobalKey<CropState>> cropKeys =
       List.generate(10, (index) => GlobalKey<CropState>());
   File? _sample;

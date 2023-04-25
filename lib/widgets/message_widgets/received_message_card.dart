@@ -80,12 +80,17 @@ class _ReceivedMessageCardState extends State<ReceivedMessageCard> {
           const SizedBox(
             width: 10,
           ),
-          widget.isLastInGroup ? CircleAvatar(
-            radius: avatarSize,
-            backgroundImage: widget.user.avatarUrl.isNotEmpty
-                ? CachedNetworkImageProvider(widget.user.avatarUrl)
-                : const AssetImage('assets/default_avatar.png') as ImageProvider,
-          ) : SizedBox(width: avatarSize * 2,),
+          widget.isLastInGroup
+              ? CircleAvatar(
+                  radius: avatarSize,
+                  backgroundImage: widget.user.avatarUrl.isNotEmpty
+                      ? CachedNetworkImageProvider(widget.user.avatarUrl)
+                      : const AssetImage('assets/default_avatar.png')
+                          as ImageProvider,
+                )
+              : SizedBox(
+                  width: avatarSize * 2,
+                ),
           const SizedBox(
             width: 10,
           ),
@@ -115,6 +120,8 @@ class _ReceivedMessageCardState extends State<ReceivedMessageCard> {
 
   Widget _buildTextMessage(BuildContext context) {
     return Container(
+      constraints:
+          BoxConstraints(maxWidth: MediaQuery.of(context).size.width / 2),
       padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
       decoration: BoxDecoration(
           color: const Color.fromRGBO(55, 126, 189, 1.0),
