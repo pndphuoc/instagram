@@ -14,6 +14,7 @@ import '../../models/post.dart';
 import '../../models/user.dart' as model;
 import '../../ultis/ultils.dart';
 import '../../widgets/sticky_tab_bar_delegate.dart';
+import 'follower_following_list_screen.dart';
 
 class PersonalProfileScreen extends StatefulWidget {
   const PersonalProfileScreen({Key? key}) : super(key: key);
@@ -197,8 +198,12 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
           width: 20,
         ),
         _statsBlock(name: 'Posts', count: user.postIds.length),
-        _statsBlock(name: 'Followers', count: user.followerCount),
-        _statsBlock(name: 'Following', count: user.followingCount),
+        _statsBlock(name: 'Followers', count: user.followerCount, onTap: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => FollowerFollowingListScreen(followerListId: user.followerListId, followingListId: user.followerListId),));
+        }),
+        _statsBlock(name: 'Following', count: user.followingCount, onTap: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => FollowerFollowingListScreen(followerListId: user.followerListId, followingListId: user.followerListId, initialIndex: 1,),));
+        }),
         const SizedBox(
           width: 20,
         ),

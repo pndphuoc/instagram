@@ -3,12 +3,14 @@ class UserSummaryInformation {
   String username;
   String avatarUrl;
   String displayName;
+  String? isFollowing;
 
   UserSummaryInformation({
     required this.userId,
     required this.username,
     required this.avatarUrl,
     required this.displayName,
+    this.isFollowing
   });
 
   factory UserSummaryInformation.fromJson(Map<String, dynamic> json) {
@@ -16,7 +18,7 @@ class UserSummaryInformation {
       userId: json['userId'] ?? '',
       username: json['username'] ?? '',
       avatarUrl: json['avatarUrl'] ?? '',
-      displayName: json['displayName'] ?? ''
+      displayName: json['displayName'] ?? '',
     );
   }
 

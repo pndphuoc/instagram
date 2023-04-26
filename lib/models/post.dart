@@ -50,7 +50,7 @@ class Post {
       avatarUrl: json['avatarUrl'] as String,
       createAt: json['createAt'].toDate(),
       updateAt: json['updateAt'].toDate(),
-      isDeleted: json['idDeleted'] as bool,
+      isDeleted: json['isDeleted'] as bool,
     );
   }
 
@@ -70,7 +70,7 @@ class Post {
       'avatarUrl': avatarUrl,
       'createAt': createAt,
       'updateAt': updateAt,
-      'idDeleted': isDeleted,
+      'isDeleted': isDeleted,
     };
   }
 }

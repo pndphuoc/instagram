@@ -9,5 +9,7 @@ abstract class IRelationshipService {
 
   Future<void> unblockUser(String userId, String userBeUnblockedId);
 
-  Future<void> getFollowingIds(String likeListId);
+  Future<List<String>> getFollowingIds(String followingListId);
+
+  Future<List<String>> getFollowerIds(String followerListId);
 }

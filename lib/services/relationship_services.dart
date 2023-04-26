@@ -54,5 +54,13 @@ class RelationshipService implements IRelationshipService {
     return followingIds?.cast<String>() ?? [];
   }
 
+  @override
+  Future<List<String>> getFollowerIds(String followerListId) async {
+    final doc = await _followerListRef.doc(followerListId).get();
+    final data = doc.data() as Map<String, dynamic>?;
+    final followingIds = data?['followerIds'] as List?;
+    return followingIds?.cast<String>() ?? [];
+  }
+
 
 }

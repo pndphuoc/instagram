@@ -24,6 +24,7 @@ class PostService implements IPostServices {
   Future<List<Post>> getPosts(List<String> followingIds) async {
     QuerySnapshot snapshot = await _postsCollection
         .where('userId', whereIn: followingIds)
+        .where('isDeleted', isEqualTo: false)
         .orderBy('createAt', descending: true)
         .orderBy('likeCount', descending: true)
         .get();
@@ -36,14 +37,14 @@ class PostService implements IPostServices {
   Future<List<Post>> getDiscoverPosts(List<String> followingIds) async {
     followingIds.add(FirebaseAuth.instance.currentUser!.uid);
     QuerySnapshot snapshot = await _postsCollection
-        .where('userId', whereNotIn: followingIds).orderBy('userId', descending: true)
+        .where('userId', whereNotIn: followingIds)
+        .orderBy('userId', descending: true)
         .get();
     List<Post> posts = snapshot.docs
         .map((doc) => Post.fromJson(doc.data() as Map<String, dynamic>))
         .toList();
     return posts;
   }
-
 
   @override
   Future<String> addPost(Post post) async {

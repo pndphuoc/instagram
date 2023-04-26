@@ -109,7 +109,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         ChangeNotifierProvider(create: (context) => ElasticViewModel()),
         ChangeNotifierProvider(create: (context) => UserViewModel()),
         ChangeNotifierProvider(create: (context) => AssetMessageViewModel()),
-        ChangeNotifierProvider(create: (context) => ConversationViewModel(),)
+        ChangeNotifierProvider(create: (context) => ConversationViewModel(),),
       ],
       builder: (context, child) {
 
