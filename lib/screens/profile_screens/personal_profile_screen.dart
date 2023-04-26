@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/screens/post_screens/post_details_screen.dart';
+import 'package:instagram/screens/profile_screens/edit_profile_screen.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/asset_message_view_model.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
@@ -52,7 +53,6 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
             if (_currentUserViewModel.hasMorePosts &&
                 scrollNotification is ScrollEndNotification &&
                 extentAfter / maxScrollExtent < threshold) {
-              print("da cuon");
               _currentUserViewModel.getPosts(++page);
               /*_currentUserViewModel.getOwnPosts().whenComplete(() {
                 setState(() {});
@@ -83,15 +83,21 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
                           height: 20,
                         ),
                         _currentUserViewModel.user!.avatarUrl.isNotEmpty
-                            ? CircleAvatar(
-                                radius: avatarSize,
-                                backgroundImage: CachedNetworkImageProvider(
-                                    _currentUserViewModel.user!.avatarUrl),
-                              )
-                            : CircleAvatar(
-                                radius: avatarSize,
-                                backgroundImage: const AssetImage(
-                                    "assets/default_avatar.png")),
+                            ? Hero(
+                          tag: 'avatar',
+                              child: CircleAvatar(
+                                  radius: avatarSize,
+                                  backgroundImage: CachedNetworkImageProvider(
+                                      _currentUserViewModel.user!.avatarUrl),
+                                ),
+                            )
+                            : Hero(
+                          tag: 'avatar',
+                              child: CircleAvatar(
+                                  radius: avatarSize,
+                                  backgroundImage: const AssetImage(
+                                      "assets/default_avatar.png")),
+                            ),
                         const SizedBox(
                           height: 15,
                         ),
@@ -155,7 +161,22 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
         ),
         Expanded(
           child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                        const EditProfileScreen(),
+                    transitionsBuilder:
+                        (context, animation, secondaryAnimation, child) {
+                      return buildSlideTransition(animation, child, offset: const Offset(0.0, 1.0));
+                    },
+                    transitionDuration: const Duration(milliseconds: 150),
+                    reverseTransitionDuration:
+                    const Duration(milliseconds: 150),
+                  ),
+                );
+              },
               style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10)),

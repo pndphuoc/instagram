@@ -54,10 +54,11 @@ bool scrollEvent(scrollNotification, viewModel, double threshold) {
 }
 
 SlideTransition buildSlideTransition(
-    Animation<double> animation, Widget child) {
+    Animation<double> animation, Widget child,
+    {Offset offset = const Offset(1.0, 0.0)}) {
   return SlideTransition(
     position: Tween<Offset>(
-      begin: const Offset(1.0, 0.0),
+      begin: offset,
       end: Offset.zero,
     ).animate(animation),
     child: child,
