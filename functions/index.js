@@ -146,5 +146,67 @@ exports.updateFollowerCount = functions.firestore.document('followerList/{follow
     console.error('Error updating user info', err);
   });
 });
+
+exports.sendNotification = functions.firestore
+  .document("conversations/{conversationId}/messages/{messageId}")
+  .onCreate((snap, context) => {
+    const conversationId = context.params.conversationId;
+    const messageId = context.params.messageId;
+    const messageData = snap.data();
+
+    const content = messageData.content;
+    const senderId = messageData.senderId;
+
+    const conversationRef = admin.firestore()
+      .collection("conversations")
+      .doc(conversationId);
+
+    conversationRef.get().then((conversationSnapshot) => {
+      if (conversationSnapshot.exists) {
+        const userIds = conversationSnapshot.data().userIds;
+
+        const usersRef = admin.firestore().collection("users");
+
+        const fcmTokensPromises = [];
+
+        userIds.forEach((targetUserId) => {
+          if (targetUserId !== senderId) {
+            const fcmTokensPromise = usersRef.doc(targetUserId).get().then((userSnapshot) => {
+              if (userSnapshot.exists) {
+                const fcmTokens = userSnapshot.data().fcmTokens;
+                return fcmTokens;
+              }
+            });
+            fcmTokensPromises.push(fcmTokensPromise);
+          }
+        });
+
+        Promise.all(fcmTokensPromises).then((fcmTokensArray) => {
+          const registrationTokens = fcmTokensArray.flat().filter((token) => token !== null);
+
+          if (registrationTokens.length > 0) {
+            const message = {
+              notification: {
+                title: "New message",
+                body: content,
+              },
+              priority: "high",
+              tokens: registrationTokens,
+            };
+
+            admin.messaging().sendMulticast(message)
+              .then((response) => {
+                console.log("Notification sent successfully:", response);
+              })
+              .catch((error) => {
+                console.log("Error sending notification:", error);
+              });
+          }
+        });
+      }
+    });
+  });
+
+
     
 
