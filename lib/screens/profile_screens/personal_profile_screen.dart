@@ -54,9 +54,6 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
                 scrollNotification is ScrollEndNotification &&
                 extentAfter / maxScrollExtent < threshold) {
               _currentUserViewModel.getPosts(++page);
-              /*_currentUserViewModel.getOwnPosts().whenComplete(() {
-                setState(() {});
-              });*/
             }
             return true;
           },
@@ -194,6 +191,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
               onPressed: () {
                 final AuthenticationViewModel auth = AuthenticationViewModel();
                 context.read<PostViewModel>().posts = [];
+                context.read<CurrentUserViewModel>().posts = [];
                 auth.logout();
               },
               style: ElevatedButton.styleFrom(
@@ -282,9 +280,6 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
   }
 
   Widget _postGrid(BuildContext context) {
-    List<Post> posts = [];
-    page = 1;
-    _currentUserViewModel.getPosts(page);
     return StreamBuilder(
         stream: _currentUserViewModel.postStream,
         builder: (context, snapshot) {
@@ -296,18 +291,16 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
             return Center(
               child: Text(snapshot.error.toString()),
             );
-          } else {
-            if (snapshot.data == null) {
-              return Container();
-            }
-            posts.addAll(snapshot.data!);
-            snapshot.data!.clear();
+          } else if (!snapshot.hasData) {
+            return const Center(child: Text("No Post"),);
+          }
+          else {
             return GridView.builder(
               cacheExtent: 1000,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: _currentUserViewModel.hasMorePosts
-                  ? posts.length + 1
-                  : posts.length,
+                  ? _currentUserViewModel.posts.length + 1
+                  : _currentUserViewModel.posts.length,
               shrinkWrap: true,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
@@ -315,7 +308,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
                   crossAxisSpacing: 2,
                   mainAxisSpacing: 1),
               itemBuilder: (context, index) {
-                if (index >= posts.length &&
+                if (index >= _currentUserViewModel.posts.length &&
                     _currentUserViewModel.hasMorePosts) {
                   return const Center(
                     child: CircularProgressIndicator(),
@@ -328,7 +321,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
                       PageRouteBuilder(
                         pageBuilder:
                             (context, animation, secondaryAnimation) =>
-                            PostDetailsScreen(posts: posts, index: index,),
+                            PostDetailsScreen(posts: _currentUserViewModel.posts, index: index,),
                         transitionsBuilder: (context, animation,
                             secondaryAnimation, child) {
                           return buildSlideTransition(animation, child);
@@ -341,23 +334,23 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
                   },
                   child: Stack(
                     children: [
-                      if (posts[index].medias.first.type == 'image')
+                      if (_currentUserViewModel.posts[index].medias.first.type == 'image')
                         CachedNetworkImage(
-                          imageUrl: posts[index].medias.first.url,
+                          imageUrl: _currentUserViewModel.posts[index].medias.first.url,
                           fit: BoxFit.cover,
                           width: double.infinity,
                           height: double.infinity,
                           fadeInDuration: const Duration(milliseconds: 100),
                         )
                       else
-                        Positioned.fill(child: VideoPlayerWidget.network(url: posts[index].medias.first.url, isPlay: false,),),
+                        Positioned.fill(child: VideoPlayerWidget.network(url: _currentUserViewModel.posts[index].medias.first.url, isPlay: false,),),
 
-                      if (posts[index].medias.length > 1)
+                      if (_currentUserViewModel.posts[index].medias.length > 1)
                         const Positioned(
                             top: 5,
                             right: 5,
                             child: Icon(Icons.layers_rounded, color: Colors.white,))
-                      else if (posts[index].medias.first.type == 'video')
+                      else if (_currentUserViewModel.posts[index].medias.first.type == 'video')
                         const Positioned(
                             top: 5,
                             right: 5,

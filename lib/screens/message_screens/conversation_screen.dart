@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/models/user_summary_information.dart';
+import 'package:instagram/screens/profile_screens/profile_screen.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/message_view_model.dart';
@@ -167,45 +168,63 @@ class _ConversationScreenState extends State<ConversationScreen>
   AppBar _buildAppBar(BuildContext context) {
     return AppBar(
       backgroundColor: mobileBackgroundColor,
-      title: Row(
-        children: [
-          AvatarWithStatus(
-            userId: widget.restUser.userId,
-            radius: avatarSize,
-            imageUrl: widget.restUser.avatarUrl,
-          ),
-          const SizedBox(
-            width: 10,
-          ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.restUser.displayName.isNotEmpty
-                      ? widget.restUser.displayName
-                      : widget.restUser.username,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.normal, fontSize: 13),
-                  maxLines: 1,
-                  overflow: TextOverflow.fade,
-                ),
-                const SizedBox(
-                  height: 5,
-                ),
-                StreamBuilder(
-                    stream:
-                        _userViewModel.getOnlineStatus(widget.restUser.userId),
-                    builder: (context, snapshot) {
-                      return Text(
-                        snapshot.data ?? widget.restUser.username,
-                        style: Theme.of(context).textTheme.labelMedium,
-                      );
-                    })
-              ],
+      title: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  ProfileScreen(userId: widget.restUser.userId),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                return buildSlideTransition(animation, child);
+              },
+              transitionDuration: const Duration(milliseconds: 150),
+              reverseTransitionDuration:
+              const Duration(milliseconds: 150),
             ),
-          )
-        ],
+          );
+        },
+        child: Row(
+          children: [
+            AvatarWithStatus(
+              userId: widget.restUser.userId,
+              radius: avatarSize,
+              imageUrl: widget.restUser.avatarUrl,
+            ),
+            const SizedBox(
+              width: 10,
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.restUser.displayName.isNotEmpty
+                        ? widget.restUser.displayName
+                        : widget.restUser.username,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.normal, fontSize: 13),
+                    maxLines: 1,
+                    overflow: TextOverflow.fade,
+                  ),
+                  const SizedBox(
+                    height: 5,
+                  ),
+                  StreamBuilder(
+                      stream:
+                          _userViewModel.getOnlineStatus(widget.restUser.userId),
+                      builder: (context, snapshot) {
+                        return Text(
+                          snapshot.data ?? widget.restUser.username,
+                          style: Theme.of(context).textTheme.labelMedium,
+                        );
+                      })
+                ],
+              ),
+            )
+          ],
+        ),
       ),
       actions: const [
         Icon(
@@ -268,11 +287,11 @@ class _ConversationScreenState extends State<ConversationScreen>
           const SizedBox(
             width: 10,
           ),
-          StreamBuilder<String>(
+          StreamBuilder<bool>(
               stream: _messageViewModel.writingMessageStream,
-              initialData: '',
+              initialData: true,
               builder: (context, snapshot) {
-                if (snapshot.data!.trim().isEmpty) {
+                if (snapshot.data!) {
                   return Row(
                     children: [
                       GestureDetector(

@@ -10,7 +10,7 @@ class UserSummaryInformation {
     required this.username,
     required this.avatarUrl,
     required this.displayName,
-    this.isFollowing
+    this.isFollowing,
   });
 
   factory UserSummaryInformation.fromJson(Map<String, dynamic> json) {
@@ -24,10 +24,10 @@ class UserSummaryInformation {
 
   Map<String, dynamic> toJson() {
     return {
-      'userId': userId,
-      'username': username,
       'avatarUrl': avatarUrl,
       'displayName': displayName,
+      'userId': userId,
+      'username': username,
     };
   }
 }

@@ -5,9 +5,9 @@ import 'package:instagram/models/user_summary_information.dart';
 
 class ConversationService implements IConversationService {
   final CollectionReference _usersCollection =
-      FirebaseFirestore.instance.collection('users');
+  FirebaseFirestore.instance.collection('users');
   final CollectionReference _conversationsCollection =
-      FirebaseFirestore.instance.collection('conversations');
+  FirebaseFirestore.instance.collection('conversations');
 
   @override
   Stream<DocumentSnapshot> getConversationData(
@@ -16,10 +16,9 @@ class ConversationService implements IConversationService {
   }
 
   @override
-  Stream<List<String>> getConversationIds(
-      {required String userId,
-      int pageSize = 20,
-      DocumentSnapshot<Object?>? lastDocument}) {
+  Stream<List<String>> getConversationIds({required String userId,
+    int pageSize = 20,
+    DocumentSnapshot<Object?>? lastDocument}) {
     Query<Map<String, dynamic>> query = _usersCollection
         .doc(userId)
         .collection('conversations')
@@ -43,18 +42,17 @@ class ConversationService implements IConversationService {
   }
 
   @override
-  Future<void> createConversation(
-      {required List<UserSummaryInformation> users,
-      required String conversationId,
-      required String messageContent,
-      required DateTime messageTime}) async {
+  Future<void> createConversation({required List<UserSummaryInformation> users,
+    required String conversationId,
+    required String messageContent,
+    required DateTime messageTime}) async {
     await _conversationsCollection.doc(conversationId).set({
       'users':
-          FieldValue.arrayUnion(users.map((user) => user.toJson()).toList()),
+      FieldValue.arrayUnion(users.map((user) => user.toJson()).toList()),
+      'userIds': FieldValue.arrayUnion(users.map((user) => user.userId).toList()),
       'uid': conversationId,
       'lastMessageContent': messageContent,
       'lastMessageTime': messageTime,
-      'isSeen': false
     });
 
     //await conversationRef.update();
@@ -74,7 +72,7 @@ class ConversationService implements IConversationService {
   @override
   Future<bool> isExistsConversation(List<String> userIds) async {
     userIds.sort(
-      (a, b) => a.compareTo(b),
+          (a, b) => a.compareTo(b),
     );
     final String uid = userIds.join("_");
     final docRef = await _conversationsCollection.doc(uid).get();
@@ -82,11 +80,10 @@ class ConversationService implements IConversationService {
   }
 
   @override
-  Future<void> updateLastMessageOfConversation(
-      {required String conversationId,
-      required String content,
-      required DateTime timestamp,
-      required String type}) async {
+  Future<void> updateLastMessageOfConversation({required String conversationId,
+    required String content,
+    required DateTime timestamp,
+    required String type}) async {
     await _conversationsCollection.doc(conversationId).update({
       'lastMessageContent': content,
       'lastMessageTime': timestamp,
@@ -114,15 +111,47 @@ class ConversationService implements IConversationService {
     return snapshots.size == 0;
   }
 
-  Stream<bool> seenStatusStream({required String conversationId, required String userId}) {
+  Stream<bool> seenStatusStream(
+      {required String conversationId, required String userId}) {
     final snapshots = _conversationsCollection
         .doc(conversationId)
         .collection('messages')
         .where('senderId', isNotEqualTo: userId).snapshots();
 
     return snapshots.map((querySnapshot) {
-      final allSeen = querySnapshot.docs.every((doc) => doc['status'] == 'seen');
+      final allSeen = querySnapshot.docs.every((doc) =>
+      doc['status'] == 'seen');
       return allSeen;
     });
+  }
+
+  @override
+  Future<void> updateUserInformation(
+      {required String userId, required UserSummaryInformation oldData, required UserSummaryInformation newData}) async {
+    try {
+      final conversations = await _conversationsCollection.where(
+          'users', arrayContains: oldData.toJson()).get();
+
+      final batch = FirebaseFirestore.instance.batch();
+      for (final conversation in conversations.docs) {
+        final users = List<Map<String, dynamic>>.from((conversation.data() as Map<String, dynamic>)['users']);
+        final updatedUsers = users.map((user) {
+          if (user['userId'] == userId) {
+            return newData.toJson();
+          } else {
+            return user;
+          }
+        }).toList();
+
+        final conversationRef =
+        _conversationsCollection.doc(conversation.id);
+        batch.update(conversationRef, {'users': updatedUsers});
+      }
+
+      await batch.commit();
+
+    } catch (e) {
+      rethrow;
+    }
   }
 }

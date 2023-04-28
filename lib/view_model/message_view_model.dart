@@ -8,8 +8,10 @@ import 'package:instagram/models/conversation.dart';
 import 'package:instagram/services/conversation_services.dart';
 import 'package:instagram/services/message_details_services.dart';
 import 'package:instagram/services/message_services.dart';
+import 'package:instagram/services/notification_services.dart';
 import 'package:instagram/services/user_services.dart';
 import 'package:instagram/ultis/ultils.dart';
+import 'package:instagram/view_model/notification_controller.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:rxdart/rxdart.dart';
@@ -23,7 +25,8 @@ class MessageViewModel extends ChangeNotifier {
   MessageViewModel(List<UserSummaryInformation> users) {
     getAssets();
     _users = users;
-    _restUser = _users.firstWhere((user) => user.userId != FirebaseAuth.instance.currentUser!.uid);
+    _restUser = _users.firstWhere((user) => user.userId !=
+        FirebaseAuth.instance.currentUser!.uid);
     createConversationIdFromUsers();
     _messageDetailsService.updateStatus(
         conversationId: _conversationId,
@@ -36,14 +39,17 @@ class MessageViewModel extends ChangeNotifier {
       listenToMessages();
     });
   }
+
   late UserSummaryInformation _restUser;
   final ConversationService _conversationService = ConversationService();
   final MessageServices _messageServices = MessageServices();
   final MessageDetailsService _messageDetailsService = MessageDetailsService();
-  final StreamController<String> _writingMessageController =
-      StreamController<String>();
+  final NotificationServices _notificationServices =NotificationServices();
+  final UserService _userService = UserService();
+  final StreamController<bool> _writingMessageController =
+  StreamController<bool>();
 
-  Stream<String> get writingMessageStream => _writingMessageController.stream;
+  Stream<bool> get writingMessageStream => _writingMessageController.stream;
 
   int page = 1;
 
@@ -73,13 +79,13 @@ class MessageViewModel extends ChangeNotifier {
       _sendingMessageController.stream;
 
   final StreamController<List<UserSummaryInformation>> _usersList =
-      StreamController<List<UserSummaryInformation>>();
+  StreamController<List<UserSummaryInformation>>();
 
   Stream<List<UserSummaryInformation>> get usersStream => _usersList.stream;
 
   final AssetService _assetService = AssetService();
   final FireBaseStorageService _fireBaseStorageService =
-      FireBaseStorageService();
+  FireBaseStorageService();
 
   List<AssetEntity> _selectedEntities = [];
 
@@ -125,8 +131,11 @@ class MessageViewModel extends ChangeNotifier {
     firstMessageInGroup.add(_messages.last.id);
 
     for (int index = 0; index < _messages.length - 1; index++) {
-      bool isDifferentSender = _messages[index].senderId != _messages[index + 1].senderId;
-      bool isMoreThan30s = _messages[index].timestamp.difference(_messages[index + 1].timestamp).inSeconds >= 30;
+      bool isDifferentSender = _messages[index].senderId !=
+          _messages[index + 1].senderId;
+      bool isMoreThan30s = _messages[index].timestamp
+          .difference(_messages[index + 1].timestamp)
+          .inSeconds >= 30;
 
       if (isDifferentSender) {
         lastMessageInGroup.add(_messages[index + 1].id);
@@ -140,24 +149,25 @@ class MessageViewModel extends ChangeNotifier {
 
 
   void onChange(String value) {
-    _writingMessageController.sink.add(value);
+    if (value.length > 1) return;
+    _writingMessageController.sink.add(value.isEmpty ? true : false);
   }
 
   void createConversationIdFromUsers() {
     _users.sort(
-      (a, b) => a.userId.compareTo(b.userId),
+          (a, b) => a.userId.compareTo(b.userId),
     );
     List<String> uid = _users.map((e) => e.userId).toList();
     _conversationId = uid.join("_");
   }
 
-  Future<void> sendTextMessage(
-      {required String senderId,
-      required String messageType,
-      required String messageContent,
-      required DateTime timestamp}) async {
+  Future<void> sendTextMessage({required String senderId,
+    required String messageType,
+    required String messageContent,
+    required DateTime timestamp}) async {
+    _writingMessageController.sink.add(true);
     if (await _conversationService
-            .isExistsConversation(_users.map((e) => e.userId).toList()) ==
+        .isExistsConversation(_users.map((e) => e.userId).toList()) ==
         false) {
       await _conversationService.createConversation(
           users: _users,
@@ -175,6 +185,21 @@ class MessageViewModel extends ChangeNotifier {
         content: messageContent,
         type: messageType,
         timestamp: timestamp);
+
+    final tokens = await _userService.getFcmTokens(_restUser.userId);
+    final jsonData = notificationJsonDataMaker(registrationIds: tokens,
+        title: _restUser.displayName.isNotEmpty
+            ? _restUser.displayName
+            : _restUser.username,
+        senderName: _restUser.displayName.isNotEmpty
+            ? _restUser.displayName
+            : _restUser.username,
+        body: messageContent,
+        channelKey: _conversationId,
+        notificationLayout: 'Messaging',
+        secret: 'Phuoc dep trai');
+
+    await _notificationServices.sendMessageNotification(jsonData);
   }
 
   final _messageController = StreamController<List<Message>>.broadcast();
@@ -198,7 +223,9 @@ class MessageViewModel extends ChangeNotifier {
   void listenToMessages() {
     _messagesSubscription = _messageServices.getNewMessage(
         conversationId: _conversationId,
-        lastMessageTimestamp: _messages.isNotEmpty ? _messages.first.timestamp : null)
+        lastMessageTimestamp: _messages.isNotEmpty
+            ? _messages.first.timestamp
+            : null)
         .listen((List<Message>? messages) {
       if (messages == null) {
         _messageController.sink.add([]);
@@ -206,7 +233,8 @@ class MessageViewModel extends ChangeNotifier {
       }
 
       for (Message message in messages) {
-        final index = _messages.indexWhere((element) => element.id == message.id);
+        final index = _messages.indexWhere((element) =>
+        element.id == message.id);
         if (index == -1) {
           _messages.insert(0, message);
           groupMessage();
@@ -231,7 +259,9 @@ class MessageViewModel extends ChangeNotifier {
   }
 
   Future<void> updateSeenStatus() async {
-    _messages.where((element) => element.senderId == _restUser.userId && element.status == 'sent').map((e) => e.status = 'seen');
+    _messages.where((element) =>
+    element.senderId == _restUser.userId && element.status == 'sent').map((e) =>
+    e.status = 'seen');
 
     await _messageDetailsService.updateStatus(
         conversationId: _conversationId,
@@ -270,7 +300,7 @@ class MessageViewModel extends ChangeNotifier {
   }
 
   final StreamController<List<AssetEntity>> _selectedEntitiesController =
-      BehaviorSubject();
+  BehaviorSubject();
 
   Stream<List<AssetEntity>> get selectedEntitiesStream =>
       _selectedEntitiesController.stream;
@@ -319,7 +349,7 @@ class MessageViewModel extends ChangeNotifier {
 
   void onTapSendImageMessages() async {
     if (await _conversationService
-            .isExistsConversation(_users.map((e) => e.userId).toList()) ==
+        .isExistsConversation(_users.map((e) => e.userId).toList()) ==
         false) {
       await _conversationService.createConversation(
           users: _users,
@@ -384,7 +414,7 @@ class MessageViewModel extends ChangeNotifier {
 
   Future<bool> _requestPermission() async {
     final PermissionStatus status =
-        await Permission.manageExternalStorage.request();
+    await Permission.manageExternalStorage.request();
     if (status == PermissionStatus.denied) {
       Fluttertoast.showToast(
           msg: "Unable to download because permission is not granted");

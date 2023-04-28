@@ -3,16 +3,21 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/ultis/colors.dart';
+import 'package:instagram/view_model/asset_avatar_change_view_model.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
+import 'package:instagram/view_model/edit_profile_view_model.dart';
 import 'package:provider/provider.dart';
 
 import '../../ultis/ultils.dart';
+import '../profile_screens/edit_profile_screen.dart';
 import 'add_caption_screen.dart';
 
 class EditingPhotoScreen extends StatefulWidget {
   final File photo;
+  final bool isChangeAvatar;
+  final EditProfileViewModel? editProfileViewModel;
 
-  const EditingPhotoScreen({Key? key, required this.photo}) : super(key: key);
+  const EditingPhotoScreen({Key? key, required this.photo, this.isChangeAvatar = false, this.editProfileViewModel}) : super(key: key);
 
   @override
   State<EditingPhotoScreen> createState() => _EditingPhotoScreenState();
@@ -59,24 +64,29 @@ class _EditingPhotoScreenState extends State<EditingPhotoScreen> {
       actions: [
         IconButton(
             onPressed: () {
-              AssetViewModel assetViewModel = context.read<AssetViewModel>();
-              assetViewModel.selectedFile = widget.photo;
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder:
-                      (context, animation, secondaryAnimation) =>
-                      AddCaptionScreen(media: widget.photo),
-                  transitionsBuilder: (context, animation,
-                      secondaryAnimation, child) {
-                    return buildSlideTransition(animation, child);
-                  },
-                  transitionDuration:
-                  const Duration(milliseconds: 150),
-                  reverseTransitionDuration:
-                  const Duration(milliseconds: 150),
-                ),
-              );
+              if (widget.isChangeAvatar) {
+                widget.editProfileViewModel?.onConfirmNewAvatar(widget.photo);
+                Navigator.pop(context);
+              } else {
+                AssetViewModel assetViewModel = context.read<AssetViewModel>();
+                assetViewModel.selectedFile = widget.photo;
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder:
+                        (context, animation, secondaryAnimation) =>
+                        AddCaptionScreen(media: widget.photo),
+                    transitionsBuilder: (context, animation,
+                        secondaryAnimation, child) {
+                      return buildSlideTransition(animation, child);
+                    },
+                    transitionDuration:
+                    const Duration(milliseconds: 150),
+                    reverseTransitionDuration:
+                    const Duration(milliseconds: 150),
+                  ),
+                );
+              }
             },
             icon: const Icon(
               Icons.arrow_forward,

@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
+import 'package:instagram/services/notification_services.dart';
 
 import '../main.dart';
 
@@ -143,11 +144,11 @@ class NotificationController extends ChangeNotifier {
   /// Use this method to detect when a new fcm token is received
   @pragma("vm:entry-point")
   static Future<void> myFcmTokenHandle(String token) async {
-    Fluttertoast.showToast(
+/*    Fluttertoast.showToast(
         msg: 'Fcm token received',
         backgroundColor: Colors.blueAccent,
         textColor: Colors.white,
-        fontSize: 16);
+        fontSize: 16);*/
     debugPrint('Firebase Token:"$token"');
 
     _instance._firebaseToken = token;
@@ -304,4 +305,5 @@ class NotificationController extends ChangeNotifier {
     }
     return '';
   }
+
 }

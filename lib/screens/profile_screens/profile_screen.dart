@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:instagram/screens/message_screens/conversation_screen.dart';
 import 'package:instagram/screens/profile_screens/personal_profile_screen.dart';
 import 'package:instagram/screens/post_screens/post_details_screen.dart';
+import 'package:instagram/ultis/global_variables.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/user_view_model.dart';
 import 'package:instagram/widgets/bottom_navigator_bar.dart';
@@ -43,7 +44,8 @@ class _ProfileScreenState extends State<ProfileScreen>
     _currentUserViewModel = context.read<CurrentUserViewModel>();
 
     getUserDetails = _userViewModel
-        .getUserDetailsWithCurrentUser(_currentUserViewModel.user!.uid, widget.userId)
+        .getUserDetailsWithCurrentUser(
+            _currentUserViewModel.user!.uid, widget.userId)
         .whenComplete(() => _userViewModel.getPosts());
     super.initState();
   }
@@ -129,10 +131,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                                     backgroundImage: CachedNetworkImageProvider(
                                         user.avatarUrl),
                                   )
-                                : Image.asset(
-                                    'assets/default_avatar.jpg',
-                                    width: avatarSize,
-                                    height: avatarSize,
+                                : CircleAvatar(
+                                    radius: avatarSize,
+                                    backgroundImage: defaultAvatar,
                                   ),
                             const SizedBox(
                               height: 15,
@@ -213,51 +214,60 @@ class _ProfileScreenState extends State<ProfileScreen>
                 );
               }
               return GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) =>
-                          PostDetailsScreen(
-                        posts: posts,
-                        index: index,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            PostDetailsScreen(
+                          posts: posts,
+                          index: index,
+                        ),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
+                          return buildSlideTransition(animation, child);
+                        },
+                        transitionDuration: const Duration(milliseconds: 150),
+                        reverseTransitionDuration:
+                            const Duration(milliseconds: 150),
                       ),
-                      transitionsBuilder:
-                          (context, animation, secondaryAnimation, child) {
-                        return buildSlideTransition(animation, child);
-                      },
-                      transitionDuration: const Duration(milliseconds: 150),
-                      reverseTransitionDuration:
-                          const Duration(milliseconds: 150),
-                    ),
-                  );
-                },
-                child: Stack(
-                  children: [
-                    if (posts[index].medias.first.type == 'image')
-                      CachedNetworkImage(
-                        imageUrl: posts[index].medias.first.url,
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: double.infinity,
-                        fadeInDuration: const Duration(milliseconds: 100),
-                      )
-                    else
-                      Positioned.fill(child: VideoPlayerWidget.network(url: posts[index].medias.first.url, isPlay: false,),),
-
-                    if (posts[index].medias.length > 1)
-                      const Positioned(
-                          top: 5,
-                          right: 5,
-                          child: Icon(Icons.layers_rounded, color: Colors.white,))
-                    else if (posts[index].medias.first.type == 'video')
-                      const Positioned(
-                          top: 5,
-                          right: 5,
-                          child: Icon(Icons.slow_motion_video_rounded, color: Colors.white,))
-                  ],
-                )
-              );
+                    );
+                  },
+                  child: Stack(
+                    children: [
+                      if (posts[index].medias.first.type == 'image')
+                        CachedNetworkImage(
+                          imageUrl: posts[index].medias.first.url,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
+                          fadeInDuration: const Duration(milliseconds: 100),
+                        )
+                      else
+                        Positioned.fill(
+                          child: VideoPlayerWidget.network(
+                            url: posts[index].medias.first.url,
+                            isPlay: false,
+                          ),
+                        ),
+                      if (posts[index].medias.length > 1)
+                        const Positioned(
+                            top: 5,
+                            right: 5,
+                            child: Icon(
+                              Icons.layers_rounded,
+                              color: Colors.white,
+                            ))
+                      else if (posts[index].medias.first.type == 'video')
+                        const Positioned(
+                            top: 5,
+                            right: 5,
+                            child: Icon(
+                              Icons.slow_motion_video_rounded,
+                              color: Colors.white,
+                            ))
+                    ],
+                  ));
             },
           );
         } else {
@@ -406,22 +416,23 @@ class _ProfileScreenState extends State<ProfileScreen>
 
   _onMessageButtonPressed() {
     final UserSummaryInformation restUser = UserSummaryInformation(
-        userId: widget.userId,
-        username: _userViewModel.user.username,
-        avatarUrl: _userViewModel.user.avatarUrl,
-        displayName: _userViewModel.user.displayName,);
+      userId: widget.userId,
+      username: _userViewModel.user.username,
+      avatarUrl: _userViewModel.user.avatarUrl,
+      displayName: _userViewModel.user.displayName,
+    );
     Navigator.push(
       context,
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
-            ConversationScreen(restUser: restUser,),
-        transitionsBuilder:
-            (context, animation, secondaryAnimation, child) {
+            ConversationScreen(
+          restUser: restUser,
+        ),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return buildSlideTransition(animation, child);
         },
         transitionDuration: const Duration(milliseconds: 150),
-        reverseTransitionDuration:
-        const Duration(milliseconds: 150),
+        reverseTransitionDuration: const Duration(milliseconds: 150),
       ),
     );
   }

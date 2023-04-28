@@ -163,7 +163,6 @@ class _LoginScreenState extends State<LoginScreen> {
             GestureDetector(
               onTap: () async {
                 await _authViewModel.signInWithGoogle();
-                await _currentUserViewModel.getCurrentUserDetails();
               },
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,

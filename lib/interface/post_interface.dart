@@ -21,4 +21,7 @@ abstract class IPostServices {
 
   Future<void> deleteComment(String postId);
 
+  Future<void> updateOwnerInformation(
+      {required String userId, required String avatarUrl, required String username});
+
 }

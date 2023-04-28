@@ -109,6 +109,7 @@ class UserService implements IUserService {
         avatarUrl: avatarUrl,
         postIds: [],
         createdAt: DateTime.now(),
+        fcmTokens: []
       );
       await newUserRef.set(user.toJson());
       return newUserRef.id;
@@ -139,4 +140,38 @@ class UserService implements IUserService {
     // TODO: implement hasUnReadMessage
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> updateUserInformationTransaction(
+      {required String userId,
+        required String newAvatarUrl,
+        required String newUsername,
+        required String newDisplayName,
+        required String newBio,
+        dynamic transaction}) async {
+    try {
+      final userRef = FirebaseFirestore.instance.collection('users').doc(userId);
+      final data = {
+        'avatarUrl': newAvatarUrl,
+        'username': newUsername,
+        'displayName': newDisplayName,
+        'bio': newBio,
+      };
+      if (transaction != null) {
+        transaction.update(userRef, data);
+      } else {
+        await userRef.update(data);
+      }
+      print('User information updated successfully');
+    } catch (error) {
+      print('Error updating user information: $error');
+    }
+  }
+
+  @override
+  Future<List<String>> getFcmTokens(String userId) async {
+    final doc = await _usersListCollection.doc(userId).get();
+    return List<String>.from((doc.data() as Map<String, dynamic>)['fcmTokens']).toList();
+  }
+
 }

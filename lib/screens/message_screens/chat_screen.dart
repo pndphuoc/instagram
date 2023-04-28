@@ -55,7 +55,7 @@ class _ChatScreenState extends State<ChatScreen> {
             const SizedBox(
               height: 20,
             ),
-            _buildActiveFriendList(context),
+            //_buildActiveFriendList(context),
             const SizedBox(
               height: 10,
             ),

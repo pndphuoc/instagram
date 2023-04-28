@@ -13,6 +13,9 @@ import 'package:photo_manager/photo_manager.dart';
 import '../ultis/colors.dart';
 
 class AssetViewModel extends ChangeNotifier {
+  AssetViewModel() {
+    loadAssetPathsAndAssets();
+  }
   final AssetService _assetService = AssetService();
   List<AssetPathEntity> _paths = [];
   List<AssetEntity> _entities = [];
@@ -77,9 +80,9 @@ class AssetViewModel extends ChangeNotifier {
 
   bool _hasMoreToLoad = false;
 
-  Future<void> loadAssetPathList() async {
+  Future<void> loadAssetPathList({bool onlyImage = false}) async {
     try {
-      _paths = await _assetService.loadAssetPathList();
+      _paths = await _assetService.loadAssetPathList(onlyImage: onlyImage);
 
       notifyListeners();
     } catch (e) {
@@ -99,9 +102,9 @@ class AssetViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> loadAssetPathsAndAssets() async {
+  Future<bool> loadAssetPathsAndAssets({bool onlyImage = false}) async {
     try {
-      await loadAssetPathList();
+      await loadAssetPathList(onlyImage: onlyImage);
       _selectedPath = _paths.first;
       await loadAssetsOfPath();
 
@@ -130,6 +133,8 @@ class AssetViewModel extends ChangeNotifier {
     } else {
       _selectedEntity = entity;
     }
+
+    print(_selectedEntity!.type.name);
 
     notifyListeners();
   }

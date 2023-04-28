@@ -2,25 +2,19 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:instagram/interface/authenticatin_interface.dart';
 import 'package:instagram/services/firebase_storage_services.dart';
 import 'package:instagram/ultis/global_variables.dart';
+import 'package:instagram/view_model/notification_controller.dart';
 
 import '../models/user.dart' as model;
 
 class AuthenticationService implements IAuthenticationService {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
-  final CollectionReference _followerListCollection =
-      FirebaseFirestore.instance.collection('followerList');
-  final CollectionReference _followingListCollection =
-      FirebaseFirestore.instance.collection('followingList');
-  final CollectionReference _blockedListCollection =
-      FirebaseFirestore.instance.collection('blockedList');
-  final FireBaseStorageService _fireBaseStorageService = FireBaseStorageService();
   
 
   @override
@@ -30,7 +24,6 @@ class AuthenticationService implements IAuthenticationService {
       if (email.isEmpty || password.isEmpty) {
         return "Please enter all fields";
       }
-
       await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
 

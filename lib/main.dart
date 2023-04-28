@@ -13,6 +13,7 @@ import 'package:instagram/responsive/web_screen_layout.dart';
 import 'package:instagram/screens/authentication_screens/login_screen.dart';
 import 'package:instagram/theme.dart';
 import 'package:instagram/ultis/colors.dart';
+import 'package:instagram/view_model/asset_avatar_change_view_model.dart';
 import 'package:instagram/view_model/asset_message_view_model.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
 import 'package:instagram/view_model/conversation_view_model.dart';
@@ -28,19 +29,6 @@ import 'package:provider/provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-
-  final FirebaseMessagingViewModel firebaseMessagingViewModel = FirebaseMessagingViewModel();
-  await firebaseMessagingViewModel.setupFirebaseMessaging();
-  print(await firebaseMessagingViewModel.getToken());
-
-  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    print('Got a message whilst in the foreground!');
-    print('Message data: ${message.data}');
-
-    if (message.notification != null) {
-      print('Message also contained a notification: ${message.notification}');
-    }
-  });
 
   await NotificationController.initializeLocalNotifications(debug: true);
   await NotificationController.initializeRemoteNotifications(debug: true);
@@ -76,7 +64,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         _userViewModel.setOnlineStatus(true);
       });
     }
-
   }
 
   @override
@@ -111,7 +98,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         ChangeNotifierProvider(create: (context) => ConversationViewModel(),),
       ],
       builder: (context, child) {
-
         return MaterialApp(
             routes: routes,
             debugShowCheckedModeBanner: false,

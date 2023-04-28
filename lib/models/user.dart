@@ -13,6 +13,7 @@ class User {
   String avatarUrl;
   List<String> postIds;
   DateTime createdAt;
+  List<String> fcmTokens;
 
   User({
     required this.uid,
@@ -28,7 +29,8 @@ class User {
     required this.blockedListId,
     required this.avatarUrl,
     required this.postIds,
-    required this.createdAt
+    required this.createdAt,
+    required this.fcmTokens
   });
 
   factory User.fromJson(Map<String, dynamic> json) => User(
@@ -47,6 +49,7 @@ class User {
     avatarUrl: json['avatarUrl'] as String,
     postIds: List<String>.from(json['postIds'] as List<dynamic>).reversed.toList(),
     createdAt: DateTime.parse(json['createdAt'] as String),
+      fcmTokens: List<String>.from(json['fcmTokens'] as List<dynamic>).toList()
   );
 
   Map<String, dynamic> toJson() => {
@@ -64,5 +67,6 @@ class User {
     'avatarUrl': avatarUrl,
     'postIds': postIds,
     'createdAt': createdAt.toIso8601String(),
+    'fcmTokens': fcmTokens
   };
 }

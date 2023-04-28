@@ -9,6 +9,7 @@ import 'package:rxdart/rxdart.dart';
 import '../models/user_summary_information.dart';
 import '../models/post.dart';
 import '../models/user.dart' as model;
+import '../services/like_services.dart';
 import '../services/post_services.dart';
 import '../services/user_services.dart';
 
@@ -16,8 +17,17 @@ class CurrentUserViewModel extends ChangeNotifier {
   final UserService _userServices = UserService();
   final PostService _postService = PostService();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final LikeService _likeService = LikeService();
 
   model.User? _user;
+
+  List<Post> _posts = [];
+
+  List<Post> get posts => _posts;
+
+  set posts(List<Post> value) {
+    _posts = value;
+  }
 
   UserSummaryInformation? _chatUser;
 
@@ -45,16 +55,23 @@ class CurrentUserViewModel extends ChangeNotifier {
   Stream<List<Post>> get postStream => _postController.stream;
 
   Stream<model.User> getUserData(String userId) {
-    return _firestore.collection('users').doc(userId).snapshots().transform(
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .snapshots()
+        .transform(
           StreamTransformer<DocumentSnapshot<Map<String, dynamic>>,
               model.User>.fromHandlers(
-            handleData: (snapshot, sink) {
+            handleData: (snapshot, sink) async {
               _user = model.User.fromJson(snapshot.data()!);
               _chatUser = UserSummaryInformation(
-                  userId: _user!.uid,
-                  username: _user!.username,
-                  avatarUrl: _user!.avatarUrl,
-                  displayName: _user!.displayName,);
+                userId: _user!.uid,
+                username: _user!.username,
+                avatarUrl: _user!.avatarUrl,
+                displayName: _user!.displayName,
+              );
+              await getPosts();
+              print("hehe ${_posts.length}");
               sink.add(user!);
             },
             handleError: (error, stackTrace, sink) {
@@ -62,25 +79,33 @@ class CurrentUserViewModel extends ChangeNotifier {
               print('Error: $error');
             },
           ),
-        ).distinct();
+        )
+        .distinct();
   }
 
   Future<void> getPosts([int page = 1]) async {
+    _totalPage = (_user!.postIds.length / _pageSize).ceil() + 1;
     if (page > _totalPage) {
       return;
     }
-
-    _totalPage = (_user!.postIds.length / _pageSize).ceil();
     final startIndex = (page - 1) * _pageSize;
     final endIndex = startIndex + _pageSize;
     _hasMorePosts = endIndex < _user!.postIds.length;
 
-    final newPosts = await Future.wait(_user!.postIds
+/*    await Future.wait(_user!.postIds
         .skip(startIndex)
         .take(_pageSize)
         .map((postId) => _postService.getPost(postId))
-        .toList());
-    _postController.sink.add(newPosts);
+        .toList());*/
+    for (var uid in _user!.postIds.skip(startIndex).take(_pageSize)) {
+      if (!_posts.any((element) => element.uid == uid)) {
+        final post = await _postService.getPost(uid);
+        post.isLiked = await _likeService.isLiked(post.likedListId, _user!.uid);
+        _posts.add(post);
+      }
+    }
+
+    _postController.sink.add([]);
   }
 
   Future<void> getCurrentUserDetails() async {
@@ -91,12 +116,10 @@ class CurrentUserViewModel extends ChangeNotifier {
         userId: _user!.uid,
         username: _user!.username,
         avatarUrl: _user!.avatarUrl,
-        displayName: _user!.displayName,);
-      getPosts();
+        displayName: _user!.displayName,
+      );
     } catch (e) {
       rethrow;
     }
   }
-
-
 }

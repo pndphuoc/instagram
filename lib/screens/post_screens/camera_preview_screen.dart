@@ -3,13 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:instagram/screens/post_screens/editing_photo_screen.dart';
 import 'package:instagram/screens/post_screens/video_preview_screen.dart';
 import 'package:instagram/view_model/camera_view_model.dart';
+import 'package:instagram/view_model/edit_profile_view_model.dart';
 
 import '../../ultis/ultils.dart';
 
 class CameraPreviewScreen extends StatefulWidget {
+  final bool isAvatarChange;
   final List<CameraDescription> cameras;
-
-  const CameraPreviewScreen({Key? key, required this.cameras})
+  final EditProfileViewModel? editProfileViewModel;
+  const CameraPreviewScreen({Key? key, required this.cameras, this.isAvatarChange = false, this.editProfileViewModel})
       : super(key: key);
 
   @override
@@ -143,7 +145,7 @@ class _CameraPreviewScreenState extends State<CameraPreviewScreen> {
                             children: [
                               Expanded(child: Container()),
                               Expanded(
-                                child: GestureDetector(
+                                child: widget.isAvatarChange ? Container() :  GestureDetector(
                                   onTap: () {
                                     if (snapshot.data! == 'stop') {
                                       _cameraViewModel.startRecording();
@@ -175,7 +177,7 @@ class _CameraPreviewScreenState extends State<CameraPreviewScreen> {
                             ],
                           ),
                         ),
-                        GestureDetector(
+                         GestureDetector(
                           onTap: () {
                             if (snapshot.data! == 'recording' || snapshot.data! == 'pause') {
                               _cameraViewModel.stopRecording().then((video) {
@@ -203,12 +205,12 @@ class _CameraPreviewScreenState extends State<CameraPreviewScreen> {
                               _cameraViewModel
                                   .takePicture()
                                   .then((photo) {
-                                Navigator.push(
+                                Navigator.pushReplacement(
                                   context,
                                   PageRouteBuilder(
                                     pageBuilder: (context, animation,
                                         secondaryAnimation) =>
-                                        EditingPhotoScreen(photo: photo),
+                                        EditingPhotoScreen(photo: photo, isChangeAvatar: widget.isAvatarChange, editProfileViewModel: widget.editProfileViewModel),
                                     transitionsBuilder: (context,
                                         animation,
                                         secondaryAnimation,

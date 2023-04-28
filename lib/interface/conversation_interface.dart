@@ -28,4 +28,6 @@ abstract class IConversationService {
       required String type});
 
   Future<bool> isSeenStatus({required String conversationId, required String userId});
+
+  Future<void> updateUserInformation({required String userId, required UserSummaryInformation oldData, required UserSummaryInformation newData});
 }

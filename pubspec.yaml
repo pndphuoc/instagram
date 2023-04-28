@@ -42,7 +42,7 @@ dependencies:
   firebase_storage: ^11.0.16
   flutter_svg:
   google_fonts: ^4.0.3
-  image_picker: ^0.8.7
+  image_picker: ^0.8.7+4
   provider: ^6.0.5
   google_sign_in: ^6.0.2
   cached_network_image: ^3.2.3

@@ -7,7 +7,7 @@ pickImage(ImageSource source) async {
 
   XFile? _file = await _imagePicker.pickImage(source: source);
 
-  if(_file != null) {
+  if (_file != null) {
     return await _file.readAsBytes();
   }
   print("No image selected");
@@ -20,7 +20,6 @@ void showSnackBar(BuildContext context, String text) {
   );
   ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
-
 
 String getElapsedTime(DateTime startTime) {
   Duration timePassed = DateTime.now().difference(startTime);
@@ -40,10 +39,8 @@ String getElapsedTime(DateTime startTime) {
 }
 
 bool scrollEvent(scrollNotification, viewModel, double threshold) {
-  final double extentAfter =
-      scrollNotification.metrics.extentAfter;
-  final double maxScrollExtent =
-      scrollNotification.metrics.maxScrollExtent;
+  final double extentAfter = scrollNotification.metrics.extentAfter;
+  final double maxScrollExtent = scrollNotification.metrics.maxScrollExtent;
 
   if (viewModel.hasMorePosts &&
       scrollNotification is ScrollEndNotification &&
@@ -53,8 +50,7 @@ bool scrollEvent(scrollNotification, viewModel, double threshold) {
   return true;
 }
 
-SlideTransition buildSlideTransition(
-    Animation<double> animation, Widget child,
+SlideTransition buildSlideTransition(Animation<double> animation, Widget child,
     {Offset offset = const Offset(1.0, 0.0)}) {
   return SlideTransition(
     position: Tween<Offset>(
@@ -77,4 +73,55 @@ double calculateItemHeight(
           gridViewCrossAxisCount;
   double itemHeight = itemWidth / childAspectRatio + mainAxisSpacing;
   return itemHeight;
+}
+
+Map<String, dynamic> notificationJsonDataMaker(
+    {required List<String> registrationIds,
+    String priority = 'high',
+    required String title,
+      bool mutableContent = true,
+    required String body,
+    required String channelKey,
+      required String notificationLayout,
+      bool displayOnForeground = true,
+      bool autoDismissible = true,
+      required String secret,
+      required String senderName
+    }) {
+  return {
+    "registration_ids" : registrationIds,
+    "priority": priority,
+    "mutable_content": mutableContent,
+    "notification": {
+      "badge": 42,
+      "title": title,
+      "body": body
+    },
+    "data" : {
+      "content": {
+        "id": -1,
+        "badge": 42,
+        "channelKey": "alerts",
+        "displayOnForeground": displayOnForeground,
+        "notificationLayout": notificationLayout,
+        "largeIcon": "https://br.web.img3.acsta.net/pictures/19/06/18/17/09/0834720.jpg",
+        "bigPicture": "https://www.dw.com/image/49519617_303.jpg",
+        "showWhen": true,
+        "autoDismissible": autoDismissible,
+        "privacy": "Private",
+        "payload": {
+          "secret": secret
+        }
+      },
+      "Android": {
+        "content": {
+          "title": title,
+          "summary": senderName,
+          "payload": {
+            "android": "android custom content!"
+          }
+        }
+      },
+    }
+  };
 }

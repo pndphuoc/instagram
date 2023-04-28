@@ -16,7 +16,20 @@ abstract class IUserService {
   });
 
   Future<void> setOnlineStatus(bool isOnline);
+
   Stream<int> getLastOnlineTime(String userId);
+
   Stream<String> getOnlineStatus(String userId);
+
   Stream<bool> hasUnReadMessage(String conversationIds);
+
+  Future<void> updateUserInformationTransaction(
+      {required String userId,
+      required String newAvatarUrl,
+      required String newUsername,
+      required String newDisplayName,
+      required String newBio,
+      dynamic transaction});
+
+  Future<List<String>> getFcmTokens(String userId);
 }

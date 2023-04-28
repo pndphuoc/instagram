@@ -126,4 +126,23 @@ class PostService implements IPostServices {
       });
     });
   }
+
+  @override
+  Future<void> updateOwnerInformation({required String userId, required String avatarUrl, required String username}) async {
+    try {
+      final posts = await _postsCollection.where('userId', isEqualTo: userId).get();
+
+      final batch = FirebaseFirestore.instance.batch();
+      for (final post in posts.docs) {
+        batch.update(post.reference, {
+          'avatarUrl': avatarUrl,
+          'username': username,
+        });
+      }
+
+      await batch.commit();
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

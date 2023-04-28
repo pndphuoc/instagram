@@ -8,6 +8,7 @@ class AssetService implements IAssetService {
   Future<List<AssetEntity>> loadAssetsOfPath(AssetPathEntity path,
       {int page = 0, int sizePerPage = 50}) async {
     final List<AssetEntity> entities = await path.getAssetListPaged(
+
       page: page,
       size: sizePerPage,
     );
@@ -46,7 +47,7 @@ class AssetService implements IAssetService {
   }
 
   @override
-  Future<List<AssetPathEntity>> loadAssetPathList() async {
+  Future<List<AssetPathEntity>> loadAssetPathList({bool onlyImage = false}) async {
     final FilterOptionGroup filterOptionGroup = FilterOptionGroup(
       imageOption: const FilterOption(
         sizeConstraint: SizeConstraint(ignoreSize: true),
@@ -61,6 +62,7 @@ class AssetService implements IAssetService {
 
     final List<AssetPathEntity> paths = await PhotoManager.getAssetPathList(
       hasAll: true,
+      type: onlyImage ? RequestType.image : RequestType.common,
       filterOption: filterOptionGroup,
     );
     return paths;

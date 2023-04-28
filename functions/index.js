@@ -100,5 +100,51 @@ exports.updateFollowerCount = functions.firestore.document('followerList/{follow
         })
     
     });
+
+ exports.updateUserInfo = functions.firestore.document('users/{uid}').onUpdate((change, context) => {
+  const newData = change.after.data();
+  const oldData = change.before.data();
+  const uid = context.params.uid;
+
+  const avatarUrlChanged = oldData.avatarUrl !== newData.avatarUrl;
+  const usernameChanged = oldData.username !== newData.username;
+  const displayNameChanged = oldData.displayName !== newData.displayName;
+
+  const batch = admin.firestore().batch();
+
+  // Update user info in conversation collection
+  const conversationRef = admin.firestore().collection('conversation').where('users', 'array-contains', {avatarUrl: oldData.avatarUrl, displayName: oldData.displayName, userId: uid, username: oldData.username});
+  conversationRef.get().then(snapshot => {
+    snapshot.forEach(doc => {
+      const users = doc.data().users;
+      const updatedUsers = users.map(user => {
+        if (user.userId === uid) {
+          return {uid: uid, username: newData.username, avatarUrl: newData.avatarUrl, displayName: newData.displayName};
+        } else {
+          return user;
+        }
+      });
+      batch.update(doc.ref, {users: updatedUsers});
+    });
+  }).catch(err => {
+    console.error('Error updating user info in conversation collection', err);
+  });
+
+  // Update user info in posts collection
+  const postsRef = admin.firestore().collection('posts').where('userId', '==', uid);
+  postsRef.get().then(snapshot => {
+    snapshot.forEach(doc => {
+      batch.update(doc.ref, {'username': newData.username, 'avatarUrl': newData.avatarUrl});
+    });
+  }).catch(err => {
+    console.error('Error updating user info in posts collection', err);
+  });
+
+  return batch.commit().then(() => {
+    console.log('Updated user info in all collections');
+  }).catch(err => {
+    console.error('Error updating user info', err);
+  });
+});
     
 
