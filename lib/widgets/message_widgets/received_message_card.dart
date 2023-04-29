@@ -170,7 +170,7 @@ class _ReceivedMessageCardState extends State<ReceivedMessageCard> {
               imageUrl: widget.message.content,
               width: MediaQuery.of(context).size.width / 10 * 6.5,
               height: MediaQuery.of(context).size.width / 10 * 6.5,
-              fit: BoxFit.contain,
+              fit: BoxFit.cover,
             ),
           ),
         ),

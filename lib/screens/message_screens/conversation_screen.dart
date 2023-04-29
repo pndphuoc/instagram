@@ -11,6 +11,7 @@ import 'package:instagram/widgets/message_widgets/received_message_card.dart';
 import 'package:instagram/widgets/message_widgets/sent_message_card.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../ultis/ultils.dart';
 import '../../widgets/image_thumbail.dart';

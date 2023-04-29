@@ -25,29 +25,35 @@ class MessageViewModel extends ChangeNotifier {
   MessageViewModel(List<UserSummaryInformation> users) {
     getAssets();
     _users = users;
-    _restUser = _users.firstWhere((user) => user.userId !=
-        FirebaseAuth.instance.currentUser!.uid);
+    _restUser = _users.firstWhere(
+        (user) => user.userId != FirebaseAuth.instance.currentUser!.uid);
+    _currentUser = _users.firstWhere(
+        (user) => user.userId == FirebaseAuth.instance.currentUser!.uid);
     createConversationIdFromUsers();
     _messageDetailsService.updateStatus(
         conversationId: _conversationId,
         senderId: _users
             .where((element) =>
-        element.userId != FirebaseAuth.instance.currentUser!.uid)
+                element.userId != FirebaseAuth.instance.currentUser!.uid)
             .first
             .userId);
-    loadOldMessages().whenComplete(() {
-      listenToMessages();
-    });
+    getRestUserTokens().whenComplete(() => loadOldMessages().whenComplete(() {
+      listenToNotificationSettingOfRestUser();
+          listenToMessages();
+        }));
   }
 
   late UserSummaryInformation _restUser;
+  late UserSummaryInformation _currentUser;
   final ConversationService _conversationService = ConversationService();
   final MessageServices _messageServices = MessageServices();
   final MessageDetailsService _messageDetailsService = MessageDetailsService();
-  final NotificationServices _notificationServices =NotificationServices();
+  final NotificationServices _notificationServices = NotificationServices();
   final UserService _userService = UserService();
   final StreamController<bool> _writingMessageController =
-  StreamController<bool>();
+      StreamController<bool>();
+  late List<String> _restUserTokens = [];
+  bool _isRestUserTurnOffNotification = false;
 
   Stream<bool> get writingMessageStream => _writingMessageController.stream;
 
@@ -79,13 +85,13 @@ class MessageViewModel extends ChangeNotifier {
       _sendingMessageController.stream;
 
   final StreamController<List<UserSummaryInformation>> _usersList =
-  StreamController<List<UserSummaryInformation>>();
+      StreamController<List<UserSummaryInformation>>();
 
   Stream<List<UserSummaryInformation>> get usersStream => _usersList.stream;
 
   final AssetService _assetService = AssetService();
   final FireBaseStorageService _fireBaseStorageService =
-  FireBaseStorageService();
+      FireBaseStorageService();
 
   List<AssetEntity> _selectedEntities = [];
 
@@ -131,11 +137,13 @@ class MessageViewModel extends ChangeNotifier {
     firstMessageInGroup.add(_messages.last.id);
 
     for (int index = 0; index < _messages.length - 1; index++) {
-      bool isDifferentSender = _messages[index].senderId !=
-          _messages[index + 1].senderId;
-      bool isMoreThan30s = _messages[index].timestamp
-          .difference(_messages[index + 1].timestamp)
-          .inSeconds >= 30;
+      bool isDifferentSender =
+          _messages[index].senderId != _messages[index + 1].senderId;
+      bool isMoreThan30s = _messages[index]
+              .timestamp
+              .difference(_messages[index + 1].timestamp)
+              .inSeconds >=
+          30;
 
       if (isDifferentSender) {
         lastMessageInGroup.add(_messages[index + 1].id);
@@ -147,6 +155,9 @@ class MessageViewModel extends ChangeNotifier {
     }
   }
 
+  Future<void> getRestUserTokens() async {
+    _restUserTokens = await _userService.getFcmTokens(_restUser.userId);
+  }
 
   void onChange(String value) {
     if (value.length > 1) return;
@@ -155,19 +166,26 @@ class MessageViewModel extends ChangeNotifier {
 
   void createConversationIdFromUsers() {
     _users.sort(
-          (a, b) => a.userId.compareTo(b.userId),
+      (a, b) => a.userId.compareTo(b.userId),
     );
     List<String> uid = _users.map((e) => e.userId).toList();
     _conversationId = uid.join("_");
   }
 
-  Future<void> sendTextMessage({required String senderId,
-    required String messageType,
-    required String messageContent,
-    required DateTime timestamp}) async {
+  void listenToNotificationSettingOfRestUser() {
+    _messageServices.isTurnOffNotification(userId: _restUser.userId, conversationId: _conversationId).listen((conversationSnapshot) {
+      _isRestUserTurnOffNotification = conversationSnapshot;
+    });
+  }
+
+  Future<void> sendTextMessage(
+      {required String senderId,
+      required String messageType,
+      required String messageContent,
+      required DateTime timestamp}) async {
     _writingMessageController.sink.add(true);
     if (await _conversationService
-        .isExistsConversation(_users.map((e) => e.userId).toList()) ==
+            .isExistsConversation(_users.map((e) => e.userId).toList()) ==
         false) {
       await _conversationService.createConversation(
           users: _users,
@@ -186,18 +204,19 @@ class MessageViewModel extends ChangeNotifier {
         type: messageType,
         timestamp: timestamp);
 
-    final tokens = await _userService.getFcmTokens(_restUser.userId);
-    final jsonData = notificationJsonDataMaker(registrationIds: tokens,
-        title: _restUser.displayName.isNotEmpty
-            ? _restUser.displayName
-            : _restUser.username,
-        senderName: _restUser.displayName.isNotEmpty
-            ? _restUser.displayName
-            : _restUser.username,
+    if (_isRestUserTurnOffNotification) return;
+
+    final jsonData = notificationJsonDataMaker(
+        registrationIds: _restUserTokens,
+        title: _currentUser.displayName.isNotEmpty
+            ? _currentUser.displayName
+            : _currentUser.username,
+        senderName: _currentUser.username,
         body: messageContent,
         channelKey: _conversationId,
         notificationLayout: 'Messaging',
-        secret: 'Phuoc dep trai');
+        conversationId: _conversationId,
+        avatarUrl: _currentUser.avatarUrl);
 
     await _notificationServices.sendMessageNotification(jsonData);
   }
@@ -221,11 +240,11 @@ class MessageViewModel extends ChangeNotifier {
   }
 
   void listenToMessages() {
-    _messagesSubscription = _messageServices.getNewMessage(
-        conversationId: _conversationId,
-        lastMessageTimestamp: _messages.isNotEmpty
-            ? _messages.first.timestamp
-            : null)
+    _messagesSubscription = _messageServices
+        .getNewMessage(
+            conversationId: _conversationId,
+            lastMessageTimestamp:
+                _messages.isNotEmpty ? _messages.first.timestamp : null)
         .listen((List<Message>? messages) {
       if (messages == null) {
         _messageController.sink.add([]);
@@ -233,8 +252,8 @@ class MessageViewModel extends ChangeNotifier {
       }
 
       for (Message message in messages) {
-        final index = _messages.indexWhere((element) =>
-        element.id == message.id);
+        final index =
+            _messages.indexWhere((element) => element.id == message.id);
         if (index == -1) {
           _messages.insert(0, message);
           groupMessage();
@@ -251,7 +270,7 @@ class MessageViewModel extends ChangeNotifier {
 
     _scrollController.addListener(() {
       if (_scrollController.position.pixels /
-          _scrollController.position.maxScrollExtent <
+              _scrollController.position.maxScrollExtent <
           0.8) {
         loadOldMessages();
       }
@@ -259,15 +278,14 @@ class MessageViewModel extends ChangeNotifier {
   }
 
   Future<void> updateSeenStatus() async {
-    _messages.where((element) =>
-    element.senderId == _restUser.userId && element.status == 'sent').map((e) =>
-    e.status = 'seen');
+    _messages
+        .where((element) =>
+            element.senderId == _restUser.userId && element.status == 'sent')
+        .map((e) => e.status = 'seen');
 
     await _messageDetailsService.updateStatus(
-        conversationId: _conversationId,
-        senderId: _restUser.userId);
+        conversationId: _conversationId, senderId: _restUser.userId);
   }
-
 
   Future<void> loadOldMessages() async {
     if (_hasMoreMessages || _loadingOldMessages) {
@@ -300,7 +318,7 @@ class MessageViewModel extends ChangeNotifier {
   }
 
   final StreamController<List<AssetEntity>> _selectedEntitiesController =
-  BehaviorSubject();
+      BehaviorSubject();
 
   Stream<List<AssetEntity>> get selectedEntitiesStream =>
       _selectedEntitiesController.stream;
@@ -349,7 +367,7 @@ class MessageViewModel extends ChangeNotifier {
 
   void onTapSendImageMessages() async {
     if (await _conversationService
-        .isExistsConversation(_users.map((e) => e.userId).toList()) ==
+            .isExistsConversation(_users.map((e) => e.userId).toList()) ==
         false) {
       await _conversationService.createConversation(
           users: _users,
@@ -414,7 +432,7 @@ class MessageViewModel extends ChangeNotifier {
 
   Future<bool> _requestPermission() async {
     final PermissionStatus status =
-    await Permission.manageExternalStorage.request();
+        await Permission.manageExternalStorage.request();
     if (status == PermissionStatus.denied) {
       Fluttertoast.showToast(
           msg: "Unable to download because permission is not granted");

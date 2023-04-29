@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/config/route/routes.dart';
 import 'package:instagram/provider/home_screen_provider.dart';
@@ -13,13 +12,10 @@ import 'package:instagram/responsive/web_screen_layout.dart';
 import 'package:instagram/screens/authentication_screens/login_screen.dart';
 import 'package:instagram/theme.dart';
 import 'package:instagram/ultis/colors.dart';
-import 'package:instagram/view_model/asset_avatar_change_view_model.dart';
 import 'package:instagram/view_model/asset_message_view_model.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
 import 'package:instagram/view_model/conversation_view_model.dart';
-import 'package:instagram/view_model/edit_profile_view_model.dart';
 import 'package:instagram/view_model/elastic_view_model.dart';
-import 'package:instagram/view_model/firebase_messaging_view_model.dart';
 import 'package:instagram/view_model/notification_controller.dart';
 import 'package:instagram/view_model/post_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
@@ -49,7 +45,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
-  AppLifecycleState? _notification;
   final UserViewModel _userViewModel = UserViewModel();
   late Timer _timer;
   @override

@@ -179,4 +179,21 @@ class MessageServices implements IMessageService {
       print('Error sending message: $error');
     }
   }
+
+  @override
+  Stream<bool> isTurnOffNotification({required String userId, required String conversationId}) {
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('conversations')
+        .doc(conversationId)
+        .snapshots()
+        .map((docSnapshot) => docSnapshot.get('isTurnOffNotification') ?? true);
+  }
+
+  @override
+  Future<void> changeNotificationSetting({required String userId, required String conversationId, required isTurnOffNotification}) async {
+    await _usersCollection.doc(userId).collection('conversations').doc(conversationId).update(
+        {"isTurnOffNotification": isTurnOffNotification});
+  }
 }

@@ -64,7 +64,8 @@ class ConversationService implements IConversationService {
           .doc(conversationId)
           .set({
         "conversationId": FieldValue.arrayUnion([conversationId]),
-        "lastMessageTime": messageTime
+        "lastMessageTime": messageTime,
+        "isTurnOffNotification": false
       });
     }
   }

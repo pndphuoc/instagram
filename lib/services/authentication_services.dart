@@ -1,15 +1,8 @@
-import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:instagram/interface/authenticatin_interface.dart';
-import 'package:instagram/services/firebase_storage_services.dart';
-import 'package:instagram/ultis/global_variables.dart';
-import 'package:instagram/view_model/notification_controller.dart';
 
-import '../models/user.dart' as model;
 
 class AuthenticationService implements IAuthenticationService {
 

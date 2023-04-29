@@ -1,3 +1,4 @@
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -77,6 +78,8 @@ double calculateItemHeight(
 
 Map<String, dynamic> notificationJsonDataMaker(
     {required List<String> registrationIds,
+      required String conversationId,
+      required String avatarUrl,
     String priority = 'high',
     required String title,
       bool mutableContent = true,
@@ -85,7 +88,6 @@ Map<String, dynamic> notificationJsonDataMaker(
       required String notificationLayout,
       bool displayOnForeground = true,
       bool autoDismissible = true,
-      required String secret,
       required String senderName
     }) {
   return {
@@ -94,7 +96,7 @@ Map<String, dynamic> notificationJsonDataMaker(
     "mutable_content": mutableContent,
     "notification": {
       "badge": 42,
-      "title": title,
+      "title": "message",
       "body": body
     },
     "data" : {
@@ -102,16 +104,14 @@ Map<String, dynamic> notificationJsonDataMaker(
         "id": -1,
         "badge": 42,
         "channelKey": "alerts",
+        "groupKey": conversationId,
+        "category": NotificationCategory.Message.name,
         "displayOnForeground": displayOnForeground,
         "notificationLayout": notificationLayout,
-        "largeIcon": "https://br.web.img3.acsta.net/pictures/19/06/18/17/09/0834720.jpg",
-        "bigPicture": "https://www.dw.com/image/49519617_303.jpg",
+        "icon": true,
         "showWhen": true,
         "autoDismissible": autoDismissible,
         "privacy": "Private",
-        "payload": {
-          "secret": secret
-        }
       },
       "Android": {
         "content": {
