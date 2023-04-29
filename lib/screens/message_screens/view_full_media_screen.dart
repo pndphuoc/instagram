@@ -20,6 +20,11 @@ class FullMediaScreen extends StatefulWidget {
 class _FullMediaScreenState extends State<FullMediaScreen> {
   late VideoPlayerController _controller;
   bool isLoading = true;
+  final TransformationController _transformationController = TransformationController();
+
+  void _onInteractionEnd(ScaleEndDetails details) {
+    _transformationController.value = Matrix4.identity();
+  }
 
   @override
   void initState() {
@@ -54,16 +59,23 @@ class _FullMediaScreenState extends State<FullMediaScreen> {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(20),
             child: GestureDetector(
-              child: widget.message.type == 'image' ? CachedNetworkImage(
-                imageUrl: widget.message.content,
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height - kToolbarHeight,
-                placeholder: (context, url) => Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
+              child: widget.message.type == 'image' ? InteractiveViewer(
+                transformationController: _transformationController,
+                onInteractionEnd: _onInteractionEnd,
+                panEnabled: false, // Set it to false to prevent panning.
+                boundaryMargin: const EdgeInsets.all(80),
+                maxScale: 4,
+                child: CachedNetworkImage(
+                  imageUrl: widget.message.content,
                   width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height - kToolbarHeight,
+                  placeholder: (context, url) => Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    width: MediaQuery.of(context).size.width,
+                  ),
                 ),
               ) : isLoading ? const Center(child: CircularProgressIndicator(),) : AspectRatio(
                   aspectRatio: _controller.value.aspectRatio,
