@@ -14,6 +14,7 @@ import 'package:instagram/theme.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/asset_message_view_model.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
+import 'package:instagram/view_model/camera_view_model.dart';
 import 'package:instagram/view_model/conversation_view_model.dart';
 import 'package:instagram/view_model/elastic_view_model.dart';
 import 'package:instagram/view_model/notification_controller.dart';
@@ -90,7 +91,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         ChangeNotifierProvider(create: (context) => ElasticViewModel()),
         ChangeNotifierProvider(create: (context) => UserViewModel()),
         ChangeNotifierProvider(create: (context) => AssetMessageViewModel()),
-        ChangeNotifierProvider(create: (context) => ConversationViewModel(),),
+        ChangeNotifierProvider(create: (context) => ConversationViewModel()),
       ],
       builder: (context, child) {
         return MaterialApp(

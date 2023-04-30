@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,6 +9,7 @@ import 'package:instagram/services/message_services.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../models/conversation.dart';
+import '../services/firebase_storage_services.dart';
 
 class ConversationViewModel extends ChangeNotifier {
   final ConversationService _conversationService = ConversationService();

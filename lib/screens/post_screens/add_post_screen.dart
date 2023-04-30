@@ -14,6 +14,7 @@ import 'package:provider/provider.dart';
 import 'dart:io';
 
 import '../../ultis/ultils.dart';
+import 'add_caption_screen.dart';
 
 class AddPostScreen extends StatefulWidget {
   const AddPostScreen({Key? key}) : super(key: key);
@@ -223,16 +224,16 @@ class _AddPostScreenState extends State<AddPostScreen> {
                   InkWell(
                     borderRadius: BorderRadius.circular(35),
                     onTap: () async {
-                      await availableCameras().then((cameras) {
+                      await availableCameras().then((cameras) async {
                         if (cameras.isEmpty) {
                           return;
                         }
-                        Navigator.push(
+                        final List media = await Navigator.push(
                           context,
                           PageRouteBuilder(
                             pageBuilder:
                                 (context, animation, secondaryAnimation) =>
-                                    CameraPreviewScreen(cameras: cameras),
+                                    CameraPreviewScreen(cameras: cameras, isOnlyTakePhoto: false,),
                             transitionsBuilder: (context, animation,
                                 secondaryAnimation, child) {
                               return buildSlideTransition(animation, child);
@@ -242,7 +243,48 @@ class _AddPostScreenState extends State<AddPostScreen> {
                             reverseTransitionDuration:
                                 const Duration(milliseconds: 150),
                           ),
-                        );
+                        ).then((value) {
+                          if (value[1] == 'image') {
+                            context.read<AssetViewModel>().selectedFile = value[0];
+                            Navigator.push(
+                              context,
+                              PageRouteBuilder(
+                                pageBuilder:
+                                    (context, animation, secondaryAnimation) =>
+                                    AddCaptionScreen(media: value[0]),
+                                transitionsBuilder: (context, animation,
+                                    secondaryAnimation, child) {
+                                  return buildSlideTransition(animation, child);
+                                },
+                                transitionDuration:
+                                const Duration(milliseconds: 150),
+                                reverseTransitionDuration:
+                                const Duration(milliseconds: 150),
+                              ),
+                            );
+                          } else {
+                            Navigator.push(
+                              context,
+                              PageRouteBuilder(
+                                pageBuilder: (context, animation,
+                                    secondaryAnimation) =>
+                                    AddCaptionScreen(media: File(value[0].path)),
+                                transitionsBuilder: (context,
+                                    animation,
+                                    secondaryAnimation,
+                                    child) {
+                                  return buildSlideTransition(
+                                      animation, child);
+                                },
+                                transitionDuration:
+                                const Duration(milliseconds: 150),
+                                reverseTransitionDuration:
+                                const Duration(milliseconds: 150),
+                              ),
+                            );
+                          }
+                          return [];
+                        });
                       });
                     },
                     child: Container(

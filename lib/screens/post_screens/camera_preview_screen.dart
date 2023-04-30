@@ -1,17 +1,18 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/screens/post_screens/editing_photo_screen.dart';
-import 'package:instagram/screens/post_screens/video_preview_screen.dart';
+import 'package:instagram/screens/post_screens/media_preview_screen.dart';
 import 'package:instagram/view_model/camera_view_model.dart';
 import 'package:instagram/view_model/edit_profile_view_model.dart';
 
 import '../../ultis/ultils.dart';
 
 class CameraPreviewScreen extends StatefulWidget {
-  final bool isAvatarChange;
+  final bool isOnlyTakePhoto;
+  final bool isSendMessage;
+  final String? username;
   final List<CameraDescription> cameras;
-  final EditProfileViewModel? editProfileViewModel;
-  const CameraPreviewScreen({Key? key, required this.cameras, this.isAvatarChange = false, this.editProfileViewModel})
+  const CameraPreviewScreen({Key? key, required this.cameras, required this.isOnlyTakePhoto, this.isSendMessage = false, this.username})
       : super(key: key);
 
   @override
@@ -60,6 +61,34 @@ class _CameraPreviewScreenState extends State<CameraPreviewScreen> {
     );
   }
 
+  Widget _buildReplyingText(BuildContext context) {
+    return RichText(
+      textAlign: TextAlign.center,
+      text: TextSpan(children: [
+        WidgetSpan(
+            child: Text(
+              "Replying ",
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(color: Colors.white),
+              textAlign: TextAlign.center,
+            )),
+        WidgetSpan(
+            child: Text(
+              widget.username ?? "",
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            )),
+      ]),
+    );
+  }
+
   Widget _buildPreviewCamera(BuildContext context) {
     return Column(
       children: [
@@ -73,9 +102,10 @@ class _CameraPreviewScreenState extends State<CameraPreviewScreen> {
                   alignment: Alignment.center,
                   child: Column(
                     children: [
+                      widget.isSendMessage ? Container(width: MediaQuery.of(context).size.width, height: 35, color: Colors.black54, child: _buildReplyingText(context),) : Container(),
                       Expanded(
                           child: Container(
-                            color: Colors.black54,
+                            color: widget.isSendMessage ? Colors.transparent : Colors.black54,
                             child: Padding(
                               padding:
                               const EdgeInsets.only(
@@ -101,7 +131,7 @@ class _CameraPreviewScreenState extends State<CameraPreviewScreen> {
                               ),
                             ),
                           )),
-                      SizedBox(
+                      widget.isSendMessage ? Container() : SizedBox(
                         width: MediaQuery
                             .of(context)
                             .size
@@ -125,7 +155,7 @@ class _CameraPreviewScreenState extends State<CameraPreviewScreen> {
                       ),
                       Expanded(
                           child: Container(
-                            color: Colors.black54,
+                            color: widget.isSendMessage ? Colors.transparent : Colors.black54,
                           )),
                     ],
                   ),
@@ -145,7 +175,7 @@ class _CameraPreviewScreenState extends State<CameraPreviewScreen> {
                             children: [
                               Expanded(child: Container()),
                               Expanded(
-                                child: widget.isAvatarChange ? Container() :  GestureDetector(
+                                child: widget.isOnlyTakePhoto ? Container() :  GestureDetector(
                                   onTap: () {
                                     if (snapshot.data! == 'stop') {
                                       _cameraViewModel.startRecording();
@@ -186,7 +216,7 @@ class _CameraPreviewScreenState extends State<CameraPreviewScreen> {
                                   PageRouteBuilder(
                                     pageBuilder: (context, animation,
                                         secondaryAnimation) =>
-                                        VideoPreviewScreen(video: video),
+                                        MediaPreviewScreen.video(video: video, isSendMessage: widget.isSendMessage),
                                     transitionsBuilder: (context,
                                         animation,
                                         secondaryAnimation,
@@ -199,18 +229,18 @@ class _CameraPreviewScreenState extends State<CameraPreviewScreen> {
                                     reverseTransitionDuration:
                                     const Duration(milliseconds: 150),
                                   ),
-                                );
+                                ).then((value) => Navigator.pop(context, value));
                               });
                             } else if (snapshot.data! == 'stop') {
                               _cameraViewModel
-                                  .takePicture()
+                                  .takePicture(isSendMessage: widget.isSendMessage)
                                   .then((photo) {
-                                Navigator.pushReplacement(
+                                Navigator.push(
                                   context,
                                   PageRouteBuilder(
                                     pageBuilder: (context, animation,
-                                        secondaryAnimation) =>
-                                        EditingPhotoScreen(photo: photo, isChangeAvatar: widget.isAvatarChange, editProfileViewModel: widget.editProfileViewModel),
+                                        secondaryAnimation) => widget.isSendMessage ? MediaPreviewScreen.image(image: photo, isSendMessage: widget.isSendMessage) :
+                                        EditingPhotoScreen(photo: photo, isOnlyTakePhoto: widget.isOnlyTakePhoto),
                                     transitionsBuilder: (context,
                                         animation,
                                         secondaryAnimation,
@@ -223,7 +253,7 @@ class _CameraPreviewScreenState extends State<CameraPreviewScreen> {
                                     reverseTransitionDuration:
                                     const Duration(milliseconds: 150),
                                   ),
-                                );
+                                ).then((value) => Navigator.pop(context, value));
                               });
                             }
                           },

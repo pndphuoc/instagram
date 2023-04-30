@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -371,19 +372,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   children: [
                     GestureDetector(
                       onTap: () async {
-                        await availableCameras().then((cameras) {
+                        await availableCameras().then((cameras) async {
                           if (cameras.isEmpty) {
                             return;
                           }
                           Navigator.pop(context);
-                          Navigator.push(
+                          final List newAvatar = await Navigator.push(
                             context,
                             PageRouteBuilder(
                               pageBuilder:
                                   (context, animation, secondaryAnimation) =>
                                   CameraPreviewScreen(cameras: cameras,
-                                      isAvatarChange: true,
-                                      editProfileViewModel: _editProfileViewModel),
+                                      isOnlyTakePhoto: true,),
                               transitionsBuilder: (context, animation,
                                   secondaryAnimation, child) {
                                 return buildSlideTransition(animation, child);
@@ -394,6 +394,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               const Duration(milliseconds: 150),
                             ),
                           );
+                          _editProfileViewModel.onConfirmNewAvatar(newAvatar[0]);
                         });
                       },
                       child: Container(

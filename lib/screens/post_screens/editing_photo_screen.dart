@@ -11,10 +11,10 @@ import 'add_caption_screen.dart';
 
 class EditingPhotoScreen extends StatefulWidget {
   final File photo;
-  final bool isChangeAvatar;
+  final bool isOnlyTakePhoto;
   final EditProfileViewModel? editProfileViewModel;
 
-  const EditingPhotoScreen({Key? key, required this.photo, this.isChangeAvatar = false, this.editProfileViewModel}) : super(key: key);
+  const EditingPhotoScreen({Key? key, required this.photo, this.isOnlyTakePhoto = false, this.editProfileViewModel}) : super(key: key);
 
   @override
   State<EditingPhotoScreen> createState() => _EditingPhotoScreenState();
@@ -61,28 +61,7 @@ class _EditingPhotoScreenState extends State<EditingPhotoScreen> {
       actions: [
         IconButton(
             onPressed: () {
-              if (widget.isChangeAvatar) {
-                widget.editProfileViewModel?.onConfirmNewAvatar(widget.photo);
-                Navigator.pop(context);
-              } else {
-                context.read<AssetViewModel>().selectedFile = widget.photo;
-                Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder:
-                        (context, animation, secondaryAnimation) =>
-                        AddCaptionScreen(media: widget.photo),
-                    transitionsBuilder: (context, animation,
-                        secondaryAnimation, child) {
-                      return buildSlideTransition(animation, child);
-                    },
-                    transitionDuration:
-                    const Duration(milliseconds: 150),
-                    reverseTransitionDuration:
-                    const Duration(milliseconds: 150),
-                  ),
-                );
-              }
+              Navigator.pop(context, [widget.photo, 'image']);
             },
             icon: const Icon(
               Icons.arrow_forward,

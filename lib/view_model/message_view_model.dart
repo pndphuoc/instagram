@@ -1,17 +1,15 @@
 import 'dart:async';
+import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:instagram/models/conversation.dart';
 import 'package:instagram/services/conversation_services.dart';
 import 'package:instagram/services/message_details_services.dart';
 import 'package:instagram/services/message_services.dart';
 import 'package:instagram/services/notification_services.dart';
 import 'package:instagram/services/user_services.dart';
 import 'package:instagram/ultis/ultils.dart';
-import 'package:instagram/view_model/notification_controller.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:rxdart/rxdart.dart';
@@ -363,6 +361,42 @@ class MessageViewModel extends ChangeNotifier {
       _selectedEntities.add(entity);
     }
     _selectedEntitiesController.sink.add(_selectedEntities);
+  }
+
+  static void onTapSendMediaFromCamera({required String conversationId, required File file, required bool isVideo}) async {
+    late String lastMessageContent;
+    late String url;
+    DateTime time = DateTime.now();
+
+    if (isVideo) {
+      url = await FireBaseStorageService()
+          .uploadFile(file, 'messages/$conversationId/videos', isVideo: true);
+      lastMessageContent = "Sent a video";
+
+      MessageServices().sendVideoMessage(
+          conversationId: conversationId,
+          senderId: FirebaseAuth.instance.currentUser!.uid,
+          messageContent: url,
+          timestamp: time);
+
+    } else {
+      url = await FireBaseStorageService()
+          .uploadFile(file, 'messages/$conversationId/videos', isVideo: false);
+      lastMessageContent = "Sent a image";
+
+      MessageServices().sendImageMessage(
+          conversationId: conversationId,
+          senderId: FirebaseAuth.instance.currentUser!.uid,
+          messageContent: url,
+          timestamp: time);
+    }
+
+    ConversationService().updateLastMessageOfConversation(
+        conversationId: conversationId,
+        content: lastMessageContent,
+        type: isVideo ? 'video' : 'image',
+        timestamp: time);
+
   }
 
   void onTapSendImageMessages() async {

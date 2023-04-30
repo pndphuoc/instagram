@@ -20,8 +20,11 @@ class CameraViewModel extends ChangeNotifier {
   final _videoController = StreamController<String>();
   Stream<String> get videoStream => _videoController.stream;
 
-  Future<File> takePicture() async {
+  Future<File> takePicture({bool isSendMessage = false}) async {
     try {
+      if (isSendMessage) {
+        return File((await _controller.takePicture()).path);
+      }
       final capturedImage = await _controller.takePicture();
       return await cropImage(capturedImage);
 /*      final img.Image capturedImage = img.decodeImage(await File(image.path).readAsBytes())!;

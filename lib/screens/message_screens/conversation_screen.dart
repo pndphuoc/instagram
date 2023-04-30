@@ -1,3 +1,4 @@
+import 'package:camera/camera.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/models/user_summary_information.dart';
@@ -15,6 +16,7 @@ import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../ultis/ultils.dart';
 import '../../widgets/image_thumbail.dart';
+import '../post_screens/camera_preview_screen.dart';
 
 class ConversationScreen extends StatefulWidget {
   final UserSummaryInformation restUser;
@@ -246,6 +248,20 @@ class _ConversationScreenState extends State<ConversationScreen>
     );
   }
 
+  _onCameraTap() {
+    availableCameras().then((value) => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CameraPreviewScreen(
+              cameras: value,
+              isOnlyTakePhoto: false,
+              isSendMessage: true,
+              username: widget.restUser.username),
+        ))).then((media) {
+      MessageViewModel.onTapSendMediaFromCamera(conversationId: _messageViewModel.conversationId, file: media[0], isVideo: media[1] == 'video' ? true : false,);
+    });
+  }
+
   Widget _buildWriteMessage(BuildContext context) {
     return Container(
       width: MediaQuery.of(context).size.width,
@@ -256,16 +272,21 @@ class _ConversationScreenState extends State<ConversationScreen>
           borderRadius: BorderRadius.circular(25)),
       child: Row(
         children: [
-          Container(
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: primaryColor,
-            ),
-            width: 40,
-            height: 40,
-            child: const Icon(
-              Icons.camera_alt,
-              color: Colors.white,
+          GestureDetector(
+            onTap: () {
+              _onCameraTap();
+            },
+            child: Container(
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: primaryColor,
+              ),
+              width: 40,
+              height: 40,
+              child: const Icon(
+                Icons.camera_alt,
+                color: Colors.white,
+              ),
             ),
           ),
           const SizedBox(
