@@ -148,18 +148,18 @@ class EditProfileViewModel extends ChangeNotifier {
     String newDisplayName = _displayNameController.text;
     String newBio = _bioController.text;
 
-    if ((_newAvatar == null &&
+    if (_newAvatar != null) {
+      newAvatarUrl = await _firestoreViewModel.uploadFile(
+          _newAvatar!, profilePicturesPath);
+    } else if ((_newAvatar == null &&
         _oldUsername == newUsername &&
         _oldDisplayName == newDisplayName &&
-        _oldBio == newBio) || !_isUsernameValid) {
+        _oldBio == newBio) || _isUsernameValid == false) {
       _updatingController.sink.add(false);
       return false;
     }
 
-    if (_newAvatar != null) {
-      newAvatarUrl = await _firestoreViewModel.uploadFile(
-          _newAvatar!, profilePicturesPath);
-    }
+
 
     try {
       await FirebaseFirestore.instance.runTransaction((transaction) async {

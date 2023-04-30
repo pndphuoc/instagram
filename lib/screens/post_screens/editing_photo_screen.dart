@@ -1,15 +1,12 @@
 import 'dart:io';
 
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/ultis/colors.dart';
-import 'package:instagram/view_model/asset_avatar_change_view_model.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
 import 'package:instagram/view_model/edit_profile_view_model.dart';
 import 'package:provider/provider.dart';
 
 import '../../ultis/ultils.dart';
-import '../profile_screens/edit_profile_screen.dart';
 import 'add_caption_screen.dart';
 
 class EditingPhotoScreen extends StatefulWidget {
@@ -68,8 +65,7 @@ class _EditingPhotoScreenState extends State<EditingPhotoScreen> {
                 widget.editProfileViewModel?.onConfirmNewAvatar(widget.photo);
                 Navigator.pop(context);
               } else {
-                AssetViewModel assetViewModel = context.read<AssetViewModel>();
-                assetViewModel.selectedFile = widget.photo;
+                context.read<AssetViewModel>().selectedFile = widget.photo;
                 Navigator.push(
                   context,
                   PageRouteBuilder(
