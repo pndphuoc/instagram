@@ -29,7 +29,7 @@ class _FollowerListTabBarWidgetState extends State<FollowerListTabBarWidget> wit
             const SizedBox(height: 15,),
             StreamBuilder(
                 stream: widget.relationshipViewModel.rebuildStream,
-                builder: (context, snapshot) =>             ListView.separated(
+                builder: (context, snapshot) => ListView.separated(
                   separatorBuilder: (context, index) => const SizedBox(height: 10,),
                   physics: const NeverScrollableScrollPhysics(),
                   shrinkWrap: true,

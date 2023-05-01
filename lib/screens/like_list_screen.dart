@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:instagram/ultis/colors.dart';
+import 'package:instagram/view_model/like_view_model.dart';
+import 'package:instagram/view_model/relationship_view_model.dart';
+import 'package:instagram/widgets/following_card.dart';
+import 'package:instagram/widgets/post_widgets/liked_user_card.dart';
 
 class LikeListScreen extends StatefulWidget {
   final String likeListId;
@@ -12,7 +16,16 @@ class LikeListScreen extends StatefulWidget {
 class _LikeListScreenState extends State<LikeListScreen> {
   final searchFieldBorder =
   OutlineInputBorder(borderRadius: BorderRadius.circular(10));
-  
+  final LikeViewModel _likeViewModel = LikeViewModel();
+  final RelationshipViewModel _relationshipViewModel = RelationshipViewModel();
+  late Future _getLikedList;
+
+  @override
+  void initState() {
+    _getLikedList = _likeViewModel.getLikedByList(widget.likeListId);
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,7 +35,9 @@ class _LikeListScreenState extends State<LikeListScreen> {
           child: Column(
             children: [
               const SizedBox(height: 10,),
-              _buildSearchBar(context)
+              _buildSearchBar(context),
+              const SizedBox(height: 10,),
+              _buildLikedUserList(context)
             ],
           ),
         ),
@@ -58,6 +73,24 @@ class _LikeListScreenState extends State<LikeListScreen> {
             fillColor: secondaryColor),
       ),
     );
+  }
+
+  Widget _buildLikedUserList(BuildContext context) {
+    return FutureBuilder(
+        future: _getLikedList,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator(),);
+          } else {
+            return ListView.separated(
+              separatorBuilder: (context, index) => const SizedBox(height: 10,),
+              padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
+              shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _likeViewModel.likeBy.length,
+                itemBuilder: (context, index) => LikedUserCard(userId: _likeViewModel.likeBy[index]),);
+          }
+        },);
   }
 
 

@@ -1,12 +1,13 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:instagram/services/relationship_services.dart';
 import 'package:instagram/services/user_services.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../models/post.dart';
-import '../models/user.dart';
+import '../models/user.dart' as model;
 import '../services/post_services.dart';
 
 class UserViewModel extends ChangeNotifier {
@@ -30,9 +31,9 @@ class UserViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  late User _user;
+  late model.User _user;
 
-  User get user => _user;
+  model.User get user => _user;
 
   Stream<String> getOnlineStatus(String userId) {
     return _userService.getOnlineStatus(userId);
@@ -52,15 +53,14 @@ class UserViewModel extends ChangeNotifier {
 
   bool get isLoading => _isLoading;
 
-  Future<User> getUserDetailsWithCurrentUser(
-      String currentUserId, String targetUserId) async {
+  Future<model.User> getUserDetailsWithCurrentUser(String targetUserId) async {
     _user = await _userService.getUserDetails(targetUserId);
-    _followStateController.sink.add(await _relationshipService.isFollowing(currentUserId, targetUserId));
+    _followStateController.sink.add(await _relationshipService.isFollowing(FirebaseAuth.instance.currentUser!.uid, targetUserId));
     _followerController.sink.add(_user.followerCount);
     return _user;
   }
 
-  Future<User> getUserDetails(String userId) async {
+  Future<model.User> getUserDetails(String userId) async {
     return await _userService.getUserDetails(userId);
   }
 
