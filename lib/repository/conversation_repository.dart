@@ -1,22 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:instagram/interface/conversation_interface.dart';
-import 'package:instagram/models/conversation.dart';
 import 'package:instagram/models/user_summary_information.dart';
 
-class ConversationService implements IConversationService {
-  final CollectionReference _usersCollection =
+class ConversationRepository{
+  static final CollectionReference _usersCollection =
   FirebaseFirestore.instance.collection('users');
-  final CollectionReference _conversationsCollection =
+  static final CollectionReference _conversationsCollection =
   FirebaseFirestore.instance.collection('conversations');
 
-  @override
-  Stream<DocumentSnapshot> getConversationData(
+  static Stream<DocumentSnapshot> getConversationData(
       {required String conversationId}) {
     return _conversationsCollection.doc(conversationId).snapshots();
   }
 
-  @override
-  Stream<List<String>> getConversationIds({required String userId,
+  static Stream<List<String>> getConversationIds({required String userId,
     int pageSize = 20,
     DocumentSnapshot<Object?>? lastDocument}) {
     Query<Map<String, dynamic>> query = _usersCollection
@@ -41,8 +37,7 @@ class ConversationService implements IConversationService {
     });
   }
 
-  @override
-  Future<void> createConversation({required List<UserSummaryInformation> users,
+  static Future<void> createConversation({required List<UserSummaryInformation> users,
     required String conversationId,
     required String messageContent,
     required DateTime messageTime}) async {
@@ -70,8 +65,7 @@ class ConversationService implements IConversationService {
     }
   }
 
-  @override
-  Future<bool> isExistsConversation(List<String> userIds) async {
+  static Future<bool> isExistsConversation(List<String> userIds) async {
     userIds.sort(
           (a, b) => a.compareTo(b),
     );
@@ -80,8 +74,7 @@ class ConversationService implements IConversationService {
     return docRef.exists;
   }
 
-  @override
-  Future<void> updateLastMessageOfConversation({required String conversationId,
+  static Future<void> updateLastMessageOfConversation({required String conversationId,
     required String content,
     required DateTime timestamp,
     required String type}) async {
@@ -100,8 +93,7 @@ class ConversationService implements IConversationService {
     }
   }
 
-  @override
-  Future<bool> isSeenStatus(
+  static Future<bool> isSeenStatus(
       {required String conversationId, required String userId}) async {
     final snapshots = await _conversationsCollection
         .doc(conversationId)
@@ -112,7 +104,7 @@ class ConversationService implements IConversationService {
     return snapshots.size == 0;
   }
 
-  Stream<bool> seenStatusStream(
+  static Stream<bool> seenStatusStream(
       {required String conversationId, required String userId}) {
     final snapshots = _conversationsCollection
         .doc(conversationId)
@@ -126,8 +118,7 @@ class ConversationService implements IConversationService {
     });
   }
 
-  @override
-  Future<void> updateUserInformation(
+  static Future<void> updateUserInformation(
       {required String userId, required UserSummaryInformation oldData, required UserSummaryInformation newData}) async {
     try {
       final conversations = await _conversationsCollection.where(

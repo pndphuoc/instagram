@@ -1,32 +1,25 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
-import 'package:instagram/services/firebase_storage_services.dart';
-import 'package:instagram/services/like_services.dart';
-import 'package:instagram/services/relationship_services.dart';
-import 'package:instagram/services/user_services.dart';
+import 'package:instagram/repository/firebase_storage_repository.dart';
+import 'package:instagram/repository/like_repository.dart';
+import 'package:instagram/repository/relationship_repository.dart';
+import 'package:instagram/repository/user_repository.dart';
 import 'package:instagram/ultis/global_variables.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
 import 'package:instagram/view_model/like_view_model.dart';
 import 'package:mime/mime.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:video_player/video_player.dart';
-import 'dart:io';
 
 import '../models/media.dart';
 import '../models/user.dart' as user;
 import '../models/post.dart';
-import '../services/post_services.dart';
+import '../repository/post_repository.dart';
 
 class PostViewModel extends ChangeNotifier {
-  final PostService _postService = PostService();
-  final UserService _userService = UserService();
-  final LikeService _likeService = LikeService();
-  final RelationshipService _relationshipService = RelationshipService();
-  final FireBaseStorageService _firebaseStorageService = FireBaseStorageService();
 
   List<Post> _posts = [];
   bool _isUploading = false;
-
+  bool isLoading = false;
   List<Post> get posts => _posts;
 
   set posts(List<Post> value) {
@@ -45,10 +38,10 @@ class PostViewModel extends ChangeNotifier {
   }
 
   Future<void> getPosts(String followingListId) async {
-    List<String> followingIds = await _relationshipService.getFollowingIds(followingListId);
-    _posts = await _postService.getPosts(followingIds);
+    List<String> followingIds = await RelationshipRepository.getFollowingIds(followingListId);
+    _posts = await PostRepository.getPosts(followingIds);
     for (var element in _posts) {
-      element.isLiked = await _likeService.isLiked(element.likedListId, FirebaseAuth.instance.currentUser!.uid);
+      element.isLiked = await LikeRepository.isLiked(element.likedListId, FirebaseAuth.instance.currentUser!.uid);
     }
     _isEnableShimmer = false;
     notifyListeners();
@@ -56,17 +49,17 @@ class PostViewModel extends ChangeNotifier {
 
 
   Future<Post> getPost(String postId, LikeViewModel likeViewModel, String userId) async {
-    final post = await _postService.getPost(postId);
+    final post = await PostRepository.getPost(postId);
     post.isLiked = await likeViewModel.getIsLiked(post.likedListId, userId);
     return post;
   }
 
   Future<List<Post>> getDiscoverPosts(String followingListId) async {
-    List<String> followingIds = await _relationshipService.getFollowingIds(followingListId);
+    List<String> followingIds = await RelationshipRepository.getFollowingIds(followingListId);
 
-    List<Post> discoverPosts = await _postService.getDiscoverPosts(followingIds);
+    List<Post> discoverPosts = await PostRepository.getDiscoverPosts(followingIds);
     for (var element in discoverPosts) {
-      element.isLiked = await _likeService.isLiked(element.likedListId, FirebaseAuth.instance.currentUser!.uid);
+      element.isLiked = await LikeRepository.isLiked(element.likedListId, FirebaseAuth.instance.currentUser!.uid);
     }
 
     discoverPosts.shuffle();
@@ -87,11 +80,11 @@ class PostViewModel extends ChangeNotifier {
 
       if (mimeType != null) {
         if (mimeType.startsWith('image/')) {
-          String url = await _firebaseStorageService.uploadFile(
+          String url = await FireBaseStorageRepository.uploadFile(
               assetViewModel.file!, postsPhotosPath, isVideo: false);
           medias.add(Media(url: url, type: 'image'));
         } else if (mimeType.startsWith('video/')) {
-          String url = await _firebaseStorageService.uploadFile(
+          String url = await FireBaseStorageRepository.uploadFile(
               assetViewModel.file!, postVideosPath, isVideo: true);
           medias.add(Media(url: url, type: 'video'));
         } else {
@@ -113,12 +106,12 @@ class PostViewModel extends ChangeNotifier {
       }
 
       if (entity.type == AssetType.image) {
-        String url = await _firebaseStorageService.uploadFile(
+        String url = await FireBaseStorageRepository.uploadFile(
             file, postsPhotosPath, isVideo: false);
         medias.add(Media(url: url, type: 'image'));
         return medias;
       } else if (entity.type == AssetType.video) {
-        String url = await _firebaseStorageService.uploadFile(
+        String url = await FireBaseStorageRepository.uploadFile(
             file, postsPhotosPath, isVideo: true);
         medias.add(Media(url: url, type: 'video'));
         return medias;
@@ -132,11 +125,11 @@ class PostViewModel extends ChangeNotifier {
       }
 
       if (entity.type == AssetType.image) {
-        String url = await _firebaseStorageService.uploadFile(
+        String url = await FireBaseStorageRepository.uploadFile(
             file, postsPhotosPath, isVideo: false);
         medias.add(Media(url: url, type: 'image'));
       } else if (entity.type == AssetType.video) {
-        String url = await _firebaseStorageService.uploadFile(
+        String url = await FireBaseStorageRepository.uploadFile(
             file, postsPhotosPath, isVideo: true);
         medias.add(Media(url: url, type: 'video'));
       }
@@ -145,9 +138,9 @@ class PostViewModel extends ChangeNotifier {
   }
 
   Future<String> addPost(Post post) async {
-    String newPostId = await _postService.addPost(post);
+    String newPostId = await PostRepository.addPost(post);
 
-    Post newPost = await _postService.getPost(newPostId);
+    Post newPost = await PostRepository.getPost(newPostId);
 
     _isUploading = false;
     _posts.removeAt(0);
@@ -157,16 +150,8 @@ class PostViewModel extends ChangeNotifier {
     return newPostId;
   }
 
-
-  Future<void> updatePost(Post post) async {
-    await _postService.updatePost(post);
-    final index = _posts.indexWhere((p) => p.uid == post.uid);
-    _posts[index] = post;
-    notifyListeners();
-  }
-
   Future<void> deletePost(String postId) async {
-    await _postService.deletePost(postId);
+    await PostRepository.deletePost(postId);
     _posts.removeWhere((p) => p.uid == postId);
     notifyListeners();
   }
@@ -177,7 +162,7 @@ class PostViewModel extends ChangeNotifier {
     final List<Media> medias = await uploadMediasOfPost(asset);
     post.medias = medias;
     String id = await addPost(post);
-    await _userService.updatePostInformation(id);
+    await UserRepository.updatePostInformation(id);
     isUploading = false;
   }
 

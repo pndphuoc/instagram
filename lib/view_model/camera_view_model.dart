@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:image/image.dart' as img;
 import 'package:image_cropper/image_cropper.dart';
 import 'package:instagram/ultis/colors.dart';
 

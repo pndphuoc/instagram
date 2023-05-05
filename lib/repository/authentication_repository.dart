@@ -1,17 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:instagram/interface/authenticatin_interface.dart';
 
 
-class AuthenticationService implements IAuthenticationService {
-
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+class AuthenticationRepository {
+  static final FirebaseAuth _auth = FirebaseAuth.instance;
+  static final GoogleSignIn _googleSignIn = GoogleSignIn();
   
 
-  @override
-  Future<String> login(
+  static Future<String> login(
       {required String email, required String password}) async {
     try {
       if (email.isEmpty || password.isEmpty) {
@@ -36,8 +33,7 @@ class AuthenticationService implements IAuthenticationService {
     }
   }
 
-  @override
-  Future<void> logout() async {
+  static Future<void> logout() async {
     if (await _googleSignIn.isSignedIn()) {
       await _googleSignIn.disconnect();
       await _googleSignIn.signOut();
@@ -45,8 +41,7 @@ class AuthenticationService implements IAuthenticationService {
     await FirebaseAuth.instance.signOut();
   }
 
-  @override
-  Future<UserCredential> signInWithGoogle() async {
+  static Future<UserCredential> signInWithGoogle() async {
     // Trigger the authentication flow
     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
@@ -66,8 +61,7 @@ class AuthenticationService implements IAuthenticationService {
     return authResult;
   }
 
-  @override
-  Future<String> signUp({
+  static Future<String> signUp({
     required String email,
     required String password,
   }) async {
@@ -84,8 +78,7 @@ class AuthenticationService implements IAuthenticationService {
     }
   }
 
-  @override
-  Future<bool> isUsernameExists(String username) async {
+  static Future<bool> isUsernameExists(String username) async {
       final QuerySnapshot result = await FirebaseFirestore.instance
           .collection('users')
           .where('username', isEqualTo: username)

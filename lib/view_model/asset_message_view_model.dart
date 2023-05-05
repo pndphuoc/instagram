@@ -1,16 +1,12 @@
 import 'dart:async';
 
-import 'package:instagram/services/firebase_storage_services.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:rxdart/rxdart.dart';
 
-import '../services/asset_services.dart';
+import '../repository/asset_repository.dart';
 
 class AssetMessageViewModel extends ChangeNotifier {
-  final AssetService _assetService = AssetService();
-  final FireBaseStorageService _fireBaseStorageService = FireBaseStorageService();
-
   List<AssetEntity> _selectedEntities = [];
 
   List<AssetEntity> get selectedEntities => _selectedEntities;
@@ -51,7 +47,7 @@ class AssetMessageViewModel extends ChangeNotifier {
 
   Future<void> loadAssetPathList() async {
     try {
-      _paths = await _assetService.loadAssetPathList();
+      _paths = await AssetRepository.loadAssetPathList();
 
       notifyListeners();
     } catch (e) {
@@ -61,7 +57,7 @@ class AssetMessageViewModel extends ChangeNotifier {
   }
 
   Future<void> loadAssetsOfPath({int page = 0, int sizePerPage = 50}) async {
-    _entities.addAll(await _assetService.loadAssetsOfPath(_selectedPath,
+    _entities.addAll(await AssetRepository.loadAssetsOfPath(_selectedPath,
         page: page, sizePerPage: sizePerPage));
 
     entitiesCount = await _selectedPath.assetCountAsync;

@@ -5,18 +5,15 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_crop/image_crop.dart';
 import 'package:image_cropper/image_cropper.dart';
-import 'package:instagram/permision_handler.dart';
-import 'package:instagram/services/asset_services.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
 
+import '../repository/asset_repository.dart';
 import '../ultis/colors.dart';
 
 class AssetViewModel extends ChangeNotifier {
   AssetViewModel() {
     loadAssetPathsAndAssets();
   }
-  final AssetService _assetService = AssetService();
   List<AssetPathEntity> _paths = [];
   List<AssetEntity> _entities = [];
   List<AssetEntity> _selectedEntities = [];
@@ -82,7 +79,7 @@ class AssetViewModel extends ChangeNotifier {
 
   Future<void> loadAssetPathList({bool onlyImage = false}) async {
     try {
-      _paths = await _assetService.loadAssetPathList(onlyImage: onlyImage);
+      _paths = await AssetRepository.loadAssetPathList(onlyImage: onlyImage);
 
       notifyListeners();
     } catch (e) {
@@ -92,7 +89,7 @@ class AssetViewModel extends ChangeNotifier {
   }
 
   Future<void> loadAssetsOfPath({int page = 0, int sizePerPage = 50}) async {
-    _entities.addAll(await _assetService.loadAssetsOfPath(_selectedPath,
+    _entities.addAll(await AssetRepository.loadAssetsOfPath(_selectedPath,
         page: page, sizePerPage: sizePerPage));
     if (page == 0) {
       _selectedEntity = _entities.first;

@@ -6,12 +6,11 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:instagram/services/authentication_services.dart';
-import 'package:instagram/services/conversation_services.dart';
-import 'package:instagram/services/post_services.dart';
-import 'package:instagram/services/user_services.dart';
+import 'package:instagram/repository/authentication_repository.dart';
+import 'package:instagram/repository/conversation_repository.dart';
+import 'package:instagram/repository/post_repository.dart';
+import 'package:instagram/repository/user_repository.dart';
 import 'package:instagram/view_model/firestore_view_model.dart';
 
 import '../models/user_summary_information.dart';
@@ -34,11 +33,7 @@ class EditProfileViewModel extends ChangeNotifier {
         displayName: _oldDisplayName);
   }
 
-  final AuthenticationService _authenticationService = AuthenticationService();
   final FirestoreViewModel _firestoreViewModel = FirestoreViewModel();
-  final UserService _userService = UserService();
-  final PostService _postService = PostService();
-  final ConversationService _conversationService = ConversationService();
 
   TextEditingController _displayNameController = TextEditingController();
   TextEditingController _usernameController = TextEditingController();
@@ -111,7 +106,7 @@ class EditProfileViewModel extends ChangeNotifier {
     }
 
     _usernameCheckingController.sink.add(true);
-    final result = await _authenticationService.isUsernameExists(username);
+    final result = await AuthenticationRepository.isUsernameExists(username);
     _usernameCheckingController.sink.add(false);
     if (result) {
       _usernameNotificationController.sink.add("Username already exists");
@@ -163,7 +158,7 @@ class EditProfileViewModel extends ChangeNotifier {
 
     try {
       await FirebaseFirestore.instance.runTransaction((transaction) async {
-        await _userService.updateUserInformationTransaction(
+        await UserRepository.updateUserInformationTransaction(
             transaction: transaction,
             userId: _userId,
             newAvatarUrl: newAvatarUrl,
@@ -172,7 +167,7 @@ class EditProfileViewModel extends ChangeNotifier {
             newBio: newBio
         );
 
-        await _postService.updateOwnerInformation(
+        await PostRepository.updateOwnerInformation(
             userId: _userId,
             avatarUrl: newAvatarUrl,
             username: newUsername
@@ -184,7 +179,7 @@ class EditProfileViewModel extends ChangeNotifier {
             avatarUrl: newAvatarUrl,
             displayName: newDisplayName);
 
-        await _conversationService.updateUserInformation(
+        await ConversationRepository.updateUserInformation(
             userId: _userId,
             oldData: _oldData,
             newData: newData

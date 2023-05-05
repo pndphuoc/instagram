@@ -2,19 +2,15 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:instagram/services/relationship_services.dart';
-import 'package:instagram/services/user_services.dart';
+import 'package:instagram/repository/relationship_repository.dart';
+import 'package:instagram/repository/user_repository.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../models/post.dart';
 import '../models/user.dart' as model;
-import '../services/post_services.dart';
+import '../repository/post_repository.dart';
 
 class UserViewModel extends ChangeNotifier {
-  final UserService _userService = UserService();
-  final PostService _postService = PostService();
-  final RelationshipService _relationshipService = RelationshipService();
-
   List<Post> posts = [];
   bool _isLoading = false;
   int _currentPage = 1;
@@ -36,7 +32,7 @@ class UserViewModel extends ChangeNotifier {
   model.User get user => _user;
 
   Stream<String> getOnlineStatus(String userId) {
-    return _userService.getOnlineStatus(userId);
+    return UserRepository.getOnlineStatus(userId);
   }
 
   final _followStateController = StreamController<bool>();
@@ -54,14 +50,14 @@ class UserViewModel extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   Future<model.User> getUserDetailsWithCurrentUser(String targetUserId) async {
-    _user = await _userService.getUserDetails(targetUserId);
-    _followStateController.sink.add(await _relationshipService.isFollowing(FirebaseAuth.instance.currentUser!.uid, targetUserId));
+    _user = await UserRepository.getUserDetails(targetUserId);
+    _followStateController.sink.add(await RelationshipRepository.isFollowing(FirebaseAuth.instance.currentUser!.uid, targetUserId));
     _followerController.sink.add(_user.followerCount);
     return _user;
   }
 
   Future<model.User> getUserDetails(String userId) async {
-    return await _userService.getUserDetails(userId);
+    return await UserRepository.getUserDetails(userId);
   }
 
   Future<void> getPostThumbnail() async {
@@ -87,7 +83,7 @@ class UserViewModel extends ChangeNotifier {
 
     List<Post> newPosts = await Future.wait(_user.postIds
         .sublist(firstIndex, lastIndex)
-        .map((postId) => _postService.getPost(postId)));
+        .map((postId) => PostRepository.getPost(postId)));
 
     _postController.sink.add(newPosts);
 
@@ -102,7 +98,7 @@ class UserViewModel extends ChangeNotifier {
       String displayName = '',
       String bio = '',
       String avatarUrl = ''}) async {
-    return await _userService.addNewUser(
+    return await UserRepository.addNewUser(
         email: email,
         username: username,
         uid: uid,
@@ -113,11 +109,11 @@ class UserViewModel extends ChangeNotifier {
 
   Future<void> isFollowed(String currentUserId, String targetUserId) async {
     _isFollowing =
-        await _relationshipService.isFollowing(currentUserId, targetUserId);
+        await RelationshipRepository.isFollowing(currentUserId, targetUserId);
   }
 
   Future<void> setOnlineStatus(bool isOnline) async {
-    await _userService.setOnlineStatus(isOnline);
+    await UserRepository.setOnlineStatus(userId: FirebaseAuth.instance.currentUser!.uid, isOnline: isOnline);
   }
 
   @override

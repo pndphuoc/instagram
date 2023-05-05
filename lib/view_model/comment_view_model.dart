@@ -4,9 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:instagram/models/comment.dart';
-import 'package:instagram/services/comment_services.dart';
-import 'package:instagram/services/like_services.dart';
-import 'package:instagram/services/post_services.dart';
+import 'package:instagram/repository/comment_repository.dart';
+import 'package:instagram/repository/like_repository.dart';
+import 'package:instagram/repository/post_repository.dart';
 
 import '../models/user_summary_information.dart';
 
@@ -18,10 +18,6 @@ class CommentViewModel extends ChangeNotifier {
   CommentViewModel(this.commentListId, this.postId) {
     userId = FirebaseAuth.instance.currentUser!.uid;
   }
-
-  final CommentServices _commentServices = CommentServices();
-  final PostService _postService = PostService();
-  final LikeService _likeService = LikeService();
 
   final _commentController = StreamController<List<Comment>>();
   final _replyCommentController = StreamController<List<Comment>>();
@@ -71,10 +67,10 @@ class CommentViewModel extends ChangeNotifier {
   DocumentSnapshot? _lastDocument;
 
   Future<String> addComment(Comment comment) async {
-    String uid = await _commentServices.addComment(commentListId, comment);
+    String uid = await CommentRepository.addComment(commentListId, comment);
     //await _postService.addComment(postId);
 
-    comment = await _commentServices.getComment(commentListId, uid);
+    comment = await CommentRepository.getComment(commentListId, uid);
     _comments.insert(0, comment);
     _commentController.sink.add([]);
 
@@ -82,11 +78,11 @@ class CommentViewModel extends ChangeNotifier {
   }
 
   Future<String> addReplyComment(String commentId, Comment replyComment) async {
-    String uid = await _commentServices.addReplyComment(
+    String uid = await CommentRepository.addReplyComment(
         commentListId, commentId, replyComment);
 
     replyComment =
-        await _commentServices.getReplyComment(commentListId, commentId, uid);
+        await CommentRepository.getReplyComment(commentListId, commentId, uid);
 
     _replyCommentController.sink.add([replyComment]);
 
@@ -97,7 +93,7 @@ class CommentViewModel extends ChangeNotifier {
     int pageSize = 10,
   }) async {
     try {
-      final docs = await _commentServices.getComments(
+      final docs = await CommentRepository.getComments(
         commentListId: commentListId,
         pageSize: pageSize,
       );
@@ -120,7 +116,7 @@ class CommentViewModel extends ChangeNotifier {
             final comment =
                 Comment.fromJson(data.data() as Map<String, dynamic>);
             comment.isLiked =
-                await _likeService.isLiked(comment.likedListId, userId);
+                await LikeRepository.isLiked(comment.likedListId, userId);
             return comment;
           },
         ),
@@ -140,7 +136,7 @@ class CommentViewModel extends ChangeNotifier {
       return;
     }
 
-    final docs = await _commentServices.getMoreComments(
+    final docs = await CommentRepository.getMoreComments(
       commentListId: commentListId,
       lastDocument: _lastDocument!,
       pageSize: pageSize,
@@ -157,7 +153,7 @@ class CommentViewModel extends ChangeNotifier {
 
     final comments = await Future.wait(docs.map((doc) async {
       final comment = Comment.fromJson(doc.data() as Map<String, dynamic>);
-      comment.isLiked = await _likeService.isLiked(comment.likedListId, userId);
+      comment.isLiked = await LikeRepository.isLiked(comment.likedListId, userId);
       return comment;
     }));
     _comments.addAll(comments);
@@ -179,7 +175,7 @@ class CommentViewModel extends ChangeNotifier {
     int pageSize = 5,
   }) async {
     try {
-      final docs = await _commentServices.getReplyComments(
+      final docs = await CommentRepository.getReplyComments(
           commentListId: commentListId,
           commentId: commentId,
           pageSize: pageSize,
@@ -213,7 +209,7 @@ class CommentViewModel extends ChangeNotifier {
         (data) async {
           final comment = Comment.fromJson(data.data() as Map<String, dynamic>);
           comment.isLiked =
-              await _likeService.isLiked(comment.likedListId, userId);
+              await LikeRepository.isLiked(comment.likedListId, userId);
           return comment;
         },
       ),
@@ -221,18 +217,18 @@ class CommentViewModel extends ChangeNotifier {
   }
 
   Future<void> likeComment(String commentListId, String commentId) async {
-    await _commentServices.likeComment(commentListId, commentId);
+    await CommentRepository.likeComment(commentListId, commentId);
   }
 
   Future<void> unlikeComment(String commentListId, String commentId) async {
-    await _commentServices.unlikeComment(commentListId, commentId);
+    await CommentRepository.unlikeComment(commentListId, commentId);
   }
 
   Future<bool> deleteComment(
       String commentListId, String commentId, String postId) async {
     try {
-      await _commentServices.deleteComment(commentListId, commentId);
-      await _postService.deleteComment(postId);
+      await CommentRepository.deleteComment(commentListId, commentId);
+      await PostRepository.deleteComment(postId);
       _comments.removeWhere((element) => element.uid == commentId);
       _commentController.sink.add([]);
       return true;

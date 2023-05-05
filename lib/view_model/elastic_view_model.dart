@@ -1,9 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:instagram/models/search_result.dart';
-import 'package:instagram/services/elastic_services.dart';
+import 'package:instagram/repository/elastic_repository.dart';
 
 class ElasticViewModel extends ChangeNotifier {
-  final ElasticService _elasticService = ElasticService();
   List<SearchResult> _searchResults = [];
 
   List<SearchResult> get searchResults => _searchResults;
@@ -13,12 +12,12 @@ class ElasticViewModel extends ChangeNotifier {
   }
 
   Future<void> searchData(String index, Map<String, dynamic> query) async {
-    final res = await _elasticService.searchData(index, query);
+    final res = await ElasticRepository.searchData(index, query);
     _searchResults = res.map((e) => SearchResult.fromJson(e)).toList();
   }
 
   Future<bool> isUsernameExists(String index, String username) async {
-    final result = await _elasticService.isUsernameExists(username);
+    final result = await ElasticRepository.isUsernameExists(username);
     return result;
   }
 }

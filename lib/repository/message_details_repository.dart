@@ -1,14 +1,12 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:instagram/interface/message_details_interface.dart';
 
-class MessageDetailsService implements IMessageDetailsService {
-  final _conversationsCollection = FirebaseFirestore.instance
+class MessageDetailsRepository {
+  static final _conversationsCollection = FirebaseFirestore.instance
       .collection('conversations');
 
-  @override
-  Stream<String> getMessageStatus({required String conversationId, required String messageId}) {
+  static Stream<String> getMessageStatus({required String conversationId, required String messageId}) {
     final messageDocument = _conversationsCollection
         .doc(conversationId)
         .collection('messages')
@@ -17,8 +15,7 @@ class MessageDetailsService implements IMessageDetailsService {
     return messageDocument.snapshots().map((snapshot) => snapshot.get('status'));
   }
 
-  @override
-  Future<void> updateStatus({required String conversationId, required String senderId}) async {
+  static Future<void> updateStatus({required String conversationId, required String senderId}) async {
     final messageCollection = _conversationsCollection
         .doc(conversationId)
         .collection('messages');

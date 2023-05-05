@@ -3,27 +3,14 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:instagram/interface/user_interface.dart';
 import 'package:instagram/models/user.dart' as model;
 
 import '../ultis/ultils.dart';
 
-class UserService implements IUserService {
-  final FirebaseAuth auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final CollectionReference _followerListCollection =
-      FirebaseFirestore.instance.collection('followerList');
-  final CollectionReference _followingListCollection =
-      FirebaseFirestore.instance.collection('followingList');
-  final CollectionReference _blockedListCollection =
-      FirebaseFirestore.instance.collection('blockedList');
-  final CollectionReference _usersListCollection =
-      FirebaseFirestore.instance.collection('users');
-  final _userStatusDatabaseRef =
-      FirebaseDatabase.instance.ref().child('userStatus');
+class UserRepository {
+  static final FirebaseAuth auth = FirebaseAuth.instance;
 
-  @override
-  Future<model.User> getUserDetails(String userId) async {
+  static Future<model.User> getUserDetails(String userId) async {
     try {
       DocumentSnapshot snap = await FirebaseFirestore.instance
           .collection('users')
@@ -36,9 +23,8 @@ class UserService implements IUserService {
     }
   }
 
-  @override
-  Stream<String> getOnlineStatus(String userId) {
-    return _userStatusDatabaseRef
+  static Stream<String> getOnlineStatus(String userId) {
+    return FirebaseDatabase.instance.ref().child('userStatus')
         .child("$userId/lastOnline")
         .onValue
         .map((event) => event.snapshot.value as int)
@@ -58,8 +44,7 @@ class UserService implements IUserService {
     }));
   }
 
-  @override
-  Future<bool> updatePostInformation(String postId) async {
+  static Future<bool> updatePostInformation(String postId) async {
     try {
       await FirebaseFirestore.instance
           .collection('users')
@@ -74,8 +59,7 @@ class UserService implements IUserService {
     }
   }
 
-  @override
-  Future<String> addNewUser(
+  static Future<String> addNewUser(
       {required String email,
       required String username,
       required String uid,
@@ -83,16 +67,17 @@ class UserService implements IUserService {
       String bio = '',
       String avatarUrl = ''}) async {
     try {
-      DocumentReference followerListRef = _followerListCollection.doc();
+
+      DocumentReference followerListRef = FirebaseFirestore.instance.collection('followerList').doc();
       followerListRef.set({"followerIds": [], "userId": uid});
 
-      DocumentReference followingListRef = _followingListCollection.doc();
+      DocumentReference followingListRef = FirebaseFirestore.instance.collection('followingList').doc();
       followingListRef.set({"followingIds": [], "userId": uid});
 
-      DocumentReference blockedListRef = _blockedListCollection.doc();
+      DocumentReference blockedListRef = FirebaseFirestore.instance.collection('blockedList').doc();
       blockedListRef.set({"blockedIds": [], "userId": uid});
 
-      DocumentReference newUserRef = _usersListCollection.doc(uid);
+      DocumentReference newUserRef = FirebaseFirestore.instance.collection('users').doc(uid);
 
       final user = model.User(
         uid: uid,
@@ -118,31 +103,27 @@ class UserService implements IUserService {
     }
   }
 
-  @override
-  Future<void> setOnlineStatus(bool isOnline) async {
+  static Future<void> setOnlineStatus({required String userId, required bool isOnline}) async {
     if (isOnline) {
-      _userStatusDatabaseRef
-          .child(FirebaseAuth.instance.currentUser!.uid)
+      FirebaseDatabase.instance.ref().child('userStatus')
+          .child(userId)
           .set({'online': isOnline, 'lastOnline': ServerValue.timestamp});
     }
   }
 
-  @override
-  Stream<int> getLastOnlineTime(String userId) {
-    return _userStatusDatabaseRef
+  static Stream<int> getLastOnlineTime(String userId) {
+    return FirebaseDatabase.instance.ref().child('userStatus')
         .child("$userId/lastOnline")
         .onValue
         .map((event) => event.snapshot.value as int);
   }
 
-  @override
-  Stream<bool> hasUnReadMessage(String conversationIds) {
+  static Stream<bool> hasUnReadMessage(String conversationIds) {
     // TODO: implement hasUnReadMessage
     throw UnimplementedError();
   }
 
-  @override
-  Future<void> updateUserInformationTransaction(
+ static Future<void> updateUserInformationTransaction(
       {required String userId,
         required String newAvatarUrl,
         required String newUsername,
@@ -168,9 +149,8 @@ class UserService implements IUserService {
     }
   }
 
-  @override
-  Future<List<String>> getFcmTokens(String userId) async {
-    final doc = await _usersListCollection.doc(userId).get();
+  static Future<List<String>> getFcmTokens(String userId) async {
+    final doc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
     return List<String>.from((doc.data() as Map<String, dynamic>)['fcmTokens']).toList();
   }
 

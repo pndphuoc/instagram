@@ -1,20 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_database/firebase_database.dart' as realtime;
-import 'package:instagram/interface/message_interface.dart';
 import 'package:instagram/models/message.dart';
 
-class MessageServices implements IMessageService {
-  final CollectionReference _conversationsCollection =
+class MessageRepository{
+  static final CollectionReference _conversationsCollection =
       FirebaseFirestore.instance.collection('conversations');
-  final CollectionReference _usersCollection =
+  static final CollectionReference _usersCollection =
       FirebaseFirestore.instance.collection('users');
-  final _userStatusDatabaseRef =
-      realtime.FirebaseDatabase.instance.ref().child('userStatus');
-  final _lastSeenMessageDatabaseRef =
-      realtime.FirebaseDatabase.instance.ref().child('lastSeenMessage');
 
-  @override
-  Stream<List<Message>> getStreamMessages(
+  static Stream<List<Message>> getStreamMessages(
       {required String conversationId,
       int pageSize = 10,
       DocumentSnapshot? lastDocument}) {
@@ -36,8 +29,7 @@ class MessageServices implements IMessageService {
         .toList());
   }
 
-  @override
-  Stream<List<Message>?> getNewMessage({
+  static Stream<List<Message>?> getNewMessage({
     required String conversationId,
     required DateTime? lastMessageTimestamp,
   }) {
@@ -65,7 +57,7 @@ class MessageServices implements IMessageService {
   }
 
 
-  Future<List<Message>> getOldMessages(
+  static Future<List<Message>> getOldMessages(
       {required String conversationId,
       required DateTime? lastMessageTimestamp,
       required limit}) async {
@@ -93,8 +85,7 @@ class MessageServices implements IMessageService {
     return messages;
   }
 
-  @override
-  Future<void> sendTextMessage(
+  static Future<void> sendTextMessage(
       {required String conversationId,
       required String senderId,
       required String messageContent,
@@ -122,8 +113,7 @@ class MessageServices implements IMessageService {
     }
   }
 
-  @override
-  Future<void> sendImageMessage(
+  static Future<void> sendImageMessage(
       {required String conversationId,
       required String senderId,
       required String messageContent,
@@ -151,8 +141,7 @@ class MessageServices implements IMessageService {
     }
   }
 
-  @override
-  Future<void> sendVideoMessage(
+  static Future<void> sendVideoMessage(
       {required String conversationId,
       required String senderId,
       required String messageContent,
@@ -180,8 +169,7 @@ class MessageServices implements IMessageService {
     }
   }
 
-  @override
-  Stream<bool> isTurnOffNotification({required String userId, required String conversationId}) {
+  static Stream<bool> isTurnOffNotification({required String userId, required String conversationId}) {
     return FirebaseFirestore.instance
         .collection('users')
         .doc(userId)
@@ -191,8 +179,7 @@ class MessageServices implements IMessageService {
         .map((docSnapshot) => docSnapshot.get('isTurnOffNotification') ?? true);
   }
 
-  @override
-  Future<void> changeNotificationSetting({required String userId, required String conversationId, required isTurnOffNotification}) async {
+  static Future<void> changeNotificationSetting({required String userId, required String conversationId, required isTurnOffNotification}) async {
     await _usersCollection.doc(userId).collection('conversations').doc(conversationId).update(
         {"isTurnOffNotification": isTurnOffNotification});
   }

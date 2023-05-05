@@ -4,7 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
-import 'package:instagram/services/notification_services.dart';
+import 'package:instagram/repository/notification_repository.dart';
 
 import '../main.dart';
 

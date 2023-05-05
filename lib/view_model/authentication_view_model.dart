@@ -2,22 +2,16 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:instagram/services/authentication_services.dart';
-import 'package:instagram/services/elastic_services.dart';
-import 'package:instagram/services/notification_services.dart';
-import 'package:instagram/services/user_services.dart';
-import 'package:instagram/ultis/ultils.dart';
+import 'package:instagram/repository/authentication_repository.dart';
+import 'package:instagram/repository/notification_repository.dart';
+import 'package:instagram/repository/user_repository.dart';
 
 import 'notification_controller.dart';
 
 class AuthenticationViewModel extends ChangeNotifier {
   final GlobalKey<ScaffoldMessengerState>? key;
-
   AuthenticationViewModel({this.key});
 
-  final AuthenticationService _service = AuthenticationService();
-  final ElasticService _elasticService = ElasticService();
-  final UserService _userService = UserService();
   final token = NotificationController().firebaseToken;
   final _loadingController = StreamController<bool>();
   Stream<bool> get loadingStream => _loadingController.stream;
@@ -26,10 +20,10 @@ class AuthenticationViewModel extends ChangeNotifier {
       {required String email, required String password}) async {
     _loadingController.sink.add(true);
 
-    String res = await _service.login(email: email, password: password);
+    String res = await AuthenticationRepository.login(email: email, password: password);
 
     if (res == 'Login successful') {
-      await NotificationServices.addFcmToken(FirebaseAuth.instance.currentUser!.uid, token!);
+      await NotificationRepository.addFcmToken(FirebaseAuth.instance.currentUser!.uid, token!);
     }
 
     _loadingController.sink.add(false);
@@ -38,23 +32,23 @@ class AuthenticationViewModel extends ChangeNotifier {
   }
 
   Future<void> logout() async {
-    await NotificationServices.removeFcmToken(FirebaseAuth.instance.currentUser!.uid, token);
-    await _service.logout();
+    await NotificationRepository.removeFcmToken(FirebaseAuth.instance.currentUser!.uid, token);
+    await AuthenticationRepository.logout();
   }
 
   Future<String?> signInWithGoogle() async {
     try {
-      final userCredential = await _service.signInWithGoogle();
+      final userCredential = await AuthenticationRepository.signInWithGoogle();
       final user = FirebaseAuth.instance.currentUser;
 
       if (user == null) {
         return null;
       }
 
-      await NotificationServices.addFcmToken(FirebaseAuth.instance.currentUser!.uid, token);
+      await NotificationRepository.addFcmToken(FirebaseAuth.instance.currentUser!.uid, token);
 
       if (userCredential.additionalUserInfo!.isNewUser) {
-        return await _userService.addNewUser(
+        return await UserRepository.addNewUser(
           uid: user.uid,
           email: user.email.toString(),
           username: user.email.toString().split('@').first,
@@ -77,12 +71,12 @@ class AuthenticationViewModel extends ChangeNotifier {
     }
     _loadingController.sink.add(true);
 
-    String result = await _service.signUp(
+    String result = await AuthenticationRepository.signUp(
         email: email,
         password: password);
 
     if (result == 'success') {
-      await NotificationServices.addFcmToken(FirebaseAuth.instance.currentUser!.uid, token!);
+      await NotificationRepository.addFcmToken(FirebaseAuth.instance.currentUser!.uid, token!);
     }
 
     _loadingController.sink.add(false);

@@ -1,14 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:instagram/interface/comment_interface.dart';
 import 'package:instagram/models/comment.dart';
 
-class CommentServices implements ICommentService {
-  final CollectionReference _commentListCollection =
+class CommentRepository {
+  static final CollectionReference _commentListCollection =
       FirebaseFirestore.instance.collection('commentList');
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  @override
-  Future<String> addComment(String commentListId, Comment comment) async {
+  static Future<String> addComment(String commentListId, Comment comment) async {
     DocumentReference cmtListRef = _commentListCollection.doc(commentListId);
     String? uid;
 
@@ -37,8 +35,7 @@ class CommentServices implements ICommentService {
     return uid ?? "";
   }
 
-  @override
-  Future<String> addReplyComment(
+  static Future<String> addReplyComment(
       String commentListId, String mainCommentId, Comment replyComment) async {
     try {
       CollectionReference replyCmtRef = _commentListCollection
@@ -72,8 +69,7 @@ class CommentServices implements ICommentService {
     }
   }
 
-  @override
-  Future<void> deleteComment(String commentListId, String commentId) async {
+  static Future<void> deleteComment(String commentListId, String commentId) async {
     try {
       await _commentListCollection
           .doc(commentListId)
@@ -85,8 +81,7 @@ class CommentServices implements ICommentService {
     }
   }
 
-  @override
-  Future<Comment> getComment(String commentListId, String uid) async {
+  static Future<Comment> getComment(String commentListId, String uid) async {
     DocumentSnapshot snapshot = await _commentListCollection
         .doc(commentListId)
         .collection("comments")
@@ -95,8 +90,7 @@ class CommentServices implements ICommentService {
     return Comment.fromJson(snapshot.data() as Map<String, dynamic>);
   }
 
-  @override
-  Future<Comment> getReplyComment(
+  static Future<Comment> getReplyComment(
       String commentListId, String commentId, String replyCommentId) async {
     DocumentSnapshot snapshot = await _commentListCollection
         .doc(commentListId)
@@ -108,8 +102,7 @@ class CommentServices implements ICommentService {
     return Comment.fromJson(snapshot.data() as Map<String, dynamic>);
   }
 
-  @override
-  Future<List<DocumentSnapshot>> getComments({
+  static Future<List<DocumentSnapshot>> getComments({
     required String commentListId,
     int pageSize = 10,
   }) async {
@@ -123,8 +116,7 @@ class CommentServices implements ICommentService {
     return snapshot.docs;
   }
 
-  @override
-  Future<List<DocumentSnapshot<Object?>>> getReplyComments({
+  static Future<List<DocumentSnapshot<Object?>>> getReplyComments({
     required String commentListId,
     required String commentId,
     int pageSize = 5,
@@ -147,8 +139,7 @@ class CommentServices implements ICommentService {
   }
 
 
-  @override
-  Future<List<DocumentSnapshot>> getMoreComments(
+  static Future<List<DocumentSnapshot>> getMoreComments(
       {required String commentListId,
       required DocumentSnapshot<Object?> lastDocument,
       int pageSize = 10}) async {
@@ -163,14 +154,12 @@ class CommentServices implements ICommentService {
     return snapshot.docs;
   }
 
-  @override
-  Future<void> updateComment(String commentListId, Comment comment) {
+  static Future<void> updateComment(String commentListId, Comment comment) {
     // TODO: implement updateComment
     throw UnimplementedError();
   }
 
-  @override
-  Future<void> likeComment(String commentListId, String commentId) async {
+  static Future<void> likeComment(String commentListId, String commentId) async {
     try {
       await _commentListCollection
           .doc(commentListId)
@@ -182,8 +171,7 @@ class CommentServices implements ICommentService {
     }
   }
 
-  @override
-  Future<void> unlikeComment(String commentListId, String commentId) async {
+  static Future<void> unlikeComment(String commentListId, String commentId) async {
     try {
       await _commentListCollection
           .doc(commentListId)
@@ -195,8 +183,7 @@ class CommentServices implements ICommentService {
     }
   }
 
-  @override
-  Future<void> updateReplyCount(
+  static Future<void> updateReplyCount(
       String commentListId, String commentId, bool isIncrease) async {
     try {
       print("aaaaaaaaaaa $commentListId");

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -9,19 +8,18 @@ import 'package:rxdart/rxdart.dart';
 import '../models/user_summary_information.dart';
 import '../models/post.dart';
 import '../models/user.dart' as model;
-import '../services/like_services.dart';
-import '../services/post_services.dart';
-import '../services/user_services.dart';
+import '../repository/like_repository.dart';
+import '../repository/post_repository.dart';
+import '../repository/user_repository.dart';
 
 class CurrentUserViewModel extends ChangeNotifier {
-  final UserService _userServices = UserService();
-  final PostService _postService = PostService();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final LikeService _likeService = LikeService();
 
   model.User? _user;
 
   List<Post> _posts = [];
+
+  bool isLoading = false;
 
   List<Post> get posts => _posts;
 
@@ -71,7 +69,6 @@ class CurrentUserViewModel extends ChangeNotifier {
                 displayName: _user!.displayName,
               );
               await getPosts();
-              print("hehe ${_posts.length}");
               sink.add(user!);
             },
             handleError: (error, stackTrace, sink) {
@@ -92,15 +89,11 @@ class CurrentUserViewModel extends ChangeNotifier {
     final endIndex = startIndex + _pageSize;
     _hasMorePosts = endIndex < _user!.postIds.length;
 
-/*    await Future.wait(_user!.postIds
-        .skip(startIndex)
-        .take(_pageSize)
-        .map((postId) => _postService.getPost(postId))
-        .toList());*/
     for (var uid in _user!.postIds.skip(startIndex).take(_pageSize)) {
       if (!_posts.any((element) => element.uid == uid)) {
-        final post = await _postService.getPost(uid);
-        post.isLiked = await _likeService.isLiked(post.likedListId, _user!.uid);
+        final post = await PostRepository.getPost(uid);
+        post.isLiked =
+            await LikeRepository.isLiked(post.likedListId, _user!.uid);
         _posts.add(post);
       }
     }
@@ -115,7 +108,8 @@ class CurrentUserViewModel extends ChangeNotifier {
     } else {
       _posts.removeWhere((element) => element.uid == postId);
     }
-    await _postService.toggleArchivePost(postId: postId, isArchive: isArchive);
+    await PostRepository.toggleArchivePost(
+        postId: postId, isArchive: isArchive);
   }
 
   List<Post> _archivedPost = [];
@@ -127,13 +121,13 @@ class CurrentUserViewModel extends ChangeNotifier {
   }
 
   Future<void> getArchivedPosts(String userId) async {
-    _archivedPost = await _postService.getArchivedPosts(userId: userId);
+    _archivedPost = await PostRepository.getArchivedPosts(userId: userId);
   }
 
   Future<void> getCurrentUserDetails() async {
     try {
-      _user = await _userServices
-          .getUserDetails(FirebaseAuth.instance.currentUser!.uid);
+      _user = await UserRepository.getUserDetails(
+          FirebaseAuth.instance.currentUser!.uid);
       _chatUser = UserSummaryInformation(
         userId: _user!.uid,
         username: _user!.username,
@@ -146,8 +140,20 @@ class CurrentUserViewModel extends ChangeNotifier {
   }
 
   Future<void> deletePost(String postId) async {
-    await _postService.deletePost(postId);
+    await PostRepository.deletePost(postId);
     _posts.removeWhere((element) => element.uid == postId);
     _postController.sink.add([]);
+  }
+
+  Future<void> updatePostCaption(
+      {required Post post, required String caption}) async {
+    if (post.caption == caption) return;
+    isLoading = true;
+    notifyListeners();
+
+    await PostRepository.updateCaption(postId: post.uid, caption: caption);
+    post.caption = caption;
+    isLoading = false;
+    notifyListeners();
   }
 }

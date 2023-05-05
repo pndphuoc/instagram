@@ -1,27 +1,23 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:instagram/interface/post_interface.dart';
-import 'package:instagram/models/comment.dart';
 
 import '../models/post.dart';
 
-class PostService implements IPostServices {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final CollectionReference _postsCollection =
+class PostRepository{
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  static final CollectionReference _postsCollection =
       FirebaseFirestore.instance.collection('posts');
 
-  final CollectionReference _likesCollection =
+  static final CollectionReference _likesCollection =
       FirebaseFirestore.instance.collection('likes');
 
-  final CollectionReference _commentListCollection =
+  static final CollectionReference _commentListCollection =
       FirebaseFirestore.instance.collection("commentList");
 
-  final CollectionReference _viewedListCollection =
+  static final CollectionReference _viewedListCollection =
       FirebaseFirestore.instance.collection("viewedList");
 
-  @override
-  Future<List<Post>> getPosts(List<String> followingIds) async {
+  static Future<List<Post>> getPosts(List<String> followingIds) async {
     QuerySnapshot snapshot = await _postsCollection
         .where('userId', whereIn: followingIds)
         .where('isDeleted', isEqualTo: false)
@@ -34,8 +30,7 @@ class PostService implements IPostServices {
         .toList();
   }
 
-  @override
-  Future<List<Post>> getDiscoverPosts(List<String> followingIds) async {
+  static Future<List<Post>> getDiscoverPosts(List<String> followingIds) async {
     followingIds.add(FirebaseAuth.instance.currentUser!.uid);
     QuerySnapshot snapshot = await _postsCollection
         .where('userId', whereNotIn: followingIds)
@@ -47,8 +42,7 @@ class PostService implements IPostServices {
     return posts;
   }
 
-  @override
-  Future<String> addPost(Post post) async {
+  static Future<String> addPost(Post post) async {
     DocumentReference docRef = _postsCollection.doc();
     String uid = docRef.id;
     post.uid = uid;
@@ -69,22 +63,17 @@ class PostService implements IPostServices {
     return uid;
   }
 
-  @override
-  Future<void> updatePost(Post post) async {
-    /*await _postsCollection.doc(post.postId).update({
-      'likesCount': post.likesCount,
-      'commentsCount': post.commentsCount,
-      'imageUrls': post.imageUrls,
-    });*/
+  static Future<void> updateCaption({required String postId, required String caption}) async {
+    await _postsCollection.doc(postId).update({
+      'caption': caption
+    });
   }
 
-  @override
-  Future<void> deletePost(String postId) async {
+  static Future<void> deletePost(String postId) async {
     await _postsCollection.doc(postId).update({'isDeleted': true});
   }
 
-  @override
-  Future<Post> getPost(String postId) async {
+  static Future<Post> getPost(String postId) async {
     DocumentSnapshot snapshot = await _postsCollection.doc(postId).get();
     if (snapshot.exists) {
       Post post = Post.fromJson(snapshot.data() as Map<String, dynamic>);
@@ -94,8 +83,7 @@ class PostService implements IPostServices {
     }
   }
 
-  @override
-  Future<void> addComment(String postId) async {
+  static Future<void> addComment(String postId) async {
     DocumentReference postRef = _firestore.collection('posts').doc(postId);
 
     await _firestore.runTransaction((transaction) async {
@@ -111,8 +99,7 @@ class PostService implements IPostServices {
     });
   }
 
-  @override
-  Future<void> deleteComment(String postId) async {
+  static Future<void> deleteComment(String postId) async {
     DocumentReference postRef = _firestore.collection('posts').doc(postId);
 
     await _firestore.runTransaction((transaction) async {
@@ -128,8 +115,7 @@ class PostService implements IPostServices {
     });
   }
 
-  @override
-  Future<void> updateOwnerInformation({required String userId, required String avatarUrl, required String username}) async {
+  static Future<void> updateOwnerInformation({required String userId, required String avatarUrl, required String username}) async {
     try {
       final posts = await _postsCollection.where('userId', isEqualTo: userId).get();
 
@@ -147,8 +133,7 @@ class PostService implements IPostServices {
     }
   }
 
-  @override
-  Future<List<Post>> getArchivedPosts({required String userId}) async {
+  static Future<List<Post>> getArchivedPosts({required String userId}) async {
     try {
       QuerySnapshot snapshot = await _postsCollection
           .where('userId', isEqualTo: userId)
@@ -163,8 +148,7 @@ class PostService implements IPostServices {
     }
   }
 
-  @override
-  Future<void> toggleArchivePost({required String postId, required bool isArchive}) async {
+  static Future<void> toggleArchivePost({required String postId, required bool isArchive}) async {
     await _postsCollection.doc(postId).update({'isArchived': isArchive});
   }
 

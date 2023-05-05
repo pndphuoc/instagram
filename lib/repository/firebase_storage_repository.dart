@@ -5,13 +5,11 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_compress/video_compress.dart';
 
-import '../interface/firestorage_interface.dart';
 
-class FireBaseStorageService implements IStorageService {
-  final FirebaseStorage _firebaseStorage = FirebaseStorage.instance;
+class FireBaseStorageRepository {
+  static final FirebaseStorage _firebaseStorage = FirebaseStorage.instance;
 
-  @override
-  Future<String> uploadFile(File file, String path,
+  static Future<String> uploadFile(File file, String path,
       {bool isVideo = false}) async {
     final ref = _firebaseStorage
         .ref()
@@ -63,14 +61,12 @@ class FireBaseStorageService implements IStorageService {
     return snapshot.ref.getDownloadURL();
   }
 
-  @override
-  Future<void> deleteFile(String path) async {
+  static Future<void> deleteFile(String path) async {
     final ref = _firebaseStorage.ref(path);
     await ref.delete();
   }
 
-  @override
-  Future<bool> downloadFile(String url, {bool isVideo = false}) async {
+  static Future<bool> downloadFile(String url, {bool isVideo = false}) async {
     try {
       final response = await http.get(Uri.parse(url));
 

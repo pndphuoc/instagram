@@ -4,16 +4,13 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:instagram/services/conversation_services.dart';
-import 'package:instagram/services/message_services.dart';
+import 'package:instagram/repository/conversation_repository.dart';
+import 'package:instagram/repository/message_repository.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../models/conversation.dart';
-import '../services/firebase_storage_services.dart';
 
 class ConversationViewModel extends ChangeNotifier {
-  final ConversationService _conversationService = ConversationService();
-  final MessageServices _messageServices = MessageServices();
 
   final _statusController = StreamController<bool>();
   final _unseenMessageController = StreamController<bool>();
@@ -21,7 +18,7 @@ class ConversationViewModel extends ChangeNotifier {
   Stream<bool> get statusStream => _statusController.stream;
 
   Stream<Conversation> getConversationData(String conversationId) {
-    Stream<Conversation> conversationStream = _conversationService
+    Stream<Conversation> conversationStream = ConversationRepository
         .getConversationData(conversationId: conversationId)
         .map((snapshot) {
           Conversation conversation =
@@ -30,7 +27,7 @@ class ConversationViewModel extends ChangeNotifier {
         })
         .distinct();
 
-    Stream<bool> seenStatusStream = _conversationService.seenStatusStream(
+    Stream<bool> seenStatusStream = ConversationRepository.seenStatusStream(
         conversationId: conversationId,
         userId: FirebaseAuth.instance.currentUser!.uid);
 
@@ -42,18 +39,18 @@ class ConversationViewModel extends ChangeNotifier {
   }
 
   Stream<bool> isTurnOffNotificationStream({required String conversationId}) {
-    return _messageServices.isTurnOffNotification(userId: FirebaseAuth.instance.currentUser!.uid, conversationId: conversationId);
+    return MessageRepository.isTurnOffNotification(userId: FirebaseAuth.instance.currentUser!.uid, conversationId: conversationId);
   }
 
   Future<void> changeNotificationSetting({required String conversationId, required isTurnOffNotification}) async {
-    await _messageServices.changeNotificationSetting(userId: FirebaseAuth.instance.currentUser!.uid, conversationId: conversationId, isTurnOffNotification: isTurnOffNotification);
+    await MessageRepository.changeNotificationSetting(userId: FirebaseAuth.instance.currentUser!.uid, conversationId: conversationId, isTurnOffNotification: isTurnOffNotification);
   }
 
   Stream<List<String>> getConversationIds(
       {required String userId,
       int pageSize = 20,
       DocumentSnapshot<Object?>? lastDocument}) {
-    return _conversationService.getConversationIds(userId: userId);
+    return ConversationRepository.getConversationIds(userId: userId);
   }
 
   Future<void> updateLastMessageOfConversation(
@@ -66,7 +63,7 @@ class ConversationViewModel extends ChangeNotifier {
     } else if (type == 'video') {
       content = 'Sent a video';
     }
-    _conversationService.updateLastMessageOfConversation(
+    ConversationRepository.updateLastMessageOfConversation(
         conversationId: conversationId,
         content: content,
         timestamp: timestamp,

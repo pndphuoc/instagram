@@ -2,10 +2,11 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:instagram/services/comment_services.dart';
-import 'package:instagram/services/like_services.dart';
+import 'package:instagram/repository/comment_repository.dart';
+import 'package:instagram/repository/like_repository.dart';
 
 import '../models/comment.dart';
+
 class ReplyCommentViewModel {
   String commentListId;
   String commentId;
@@ -13,9 +14,6 @@ class ReplyCommentViewModel {
   ReplyCommentViewModel(this.commentListId, this.commentId) {
     userId = FirebaseAuth.instance.currentUser!.uid;
   }
-
-  final CommentServices _commentServices = CommentServices();
-  final LikeService _likeService = LikeService();
 
   List<Comment> _replyComments = [];
 
@@ -40,7 +38,7 @@ class ReplyCommentViewModel {
     int pageSize = 5,
   }) async {
     try {
-      final docs = await _commentServices.getReplyComments(
+      final docs = await CommentRepository.getReplyComments(
           commentListId: commentListId,
           commentId: commentId,
           pageSize: pageSize,
@@ -68,11 +66,11 @@ class ReplyCommentViewModel {
   }
 
   Future<String> addReplyComment(String commentId, Comment replyComment) async {
-    String uid = await _commentServices.addReplyComment(
+    String uid = await CommentRepository.addReplyComment(
         commentListId, commentId, replyComment);
 
     replyComment =
-    await _commentServices.getReplyComment(commentListId, commentId, uid);
+    await CommentRepository.getReplyComment(commentListId, commentId, uid);
 
     _replyCommentController.sink.add([replyComment]);
 
@@ -86,7 +84,7 @@ class ReplyCommentViewModel {
             (data) async {
           final comment = Comment.fromJson(data.data() as Map<String, dynamic>);
           comment.isLiked =
-          await _likeService.isLiked(comment.likedListId, userId);
+          await LikeRepository.isLiked(comment.likedListId, userId);
           return comment;
         },
       ),

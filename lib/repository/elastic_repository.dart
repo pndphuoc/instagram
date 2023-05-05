@@ -1,19 +1,17 @@
 import 'dart:convert';
 
-import 'package:instagram/interface/elastic_interface.dart';
 import 'package:http/http.dart' as http;
 
-class ElasticService implements IElasticService {
-  String endpoint = "https://a5e8ec9e4bf44999a1fe005d7925db89.ent-search.us-central1.gcp.cloud.es.io";
-  String privateKey = "private-rnmssjj681asgqft7hqqx8pq";
-  String apiKey = "cmRwMWI0Y0JnbE5tZlI3aV9mMEw6MVFZeW5qUTNTRFMzSzdzRE5scmUtdw==";
-  String usersIndex = ".ent-search-engine-documents-users";
+class ElasticRepository {
+  static String endpoint = "https://a5e8ec9e4bf44999a1fe005d7925db89.ent-search.us-central1.gcp.cloud.es.io";
+  static String privateKey = "private-rnmssjj681asgqft7hqqx8pq";
+  static String apiKey = "cmRwMWI0Y0JnbE5tZlI3aV9mMEw6MVFZeW5qUTNTRFMzSzdzRE5scmUtdw==";
+  static String usersIndex = ".ent-search-engine-documents-users";
 
-  String username = "duyphuoc";
-  String password = "duyphuoc313";
+  static String username = "duyphuoc";
+  static String password = "duyphuoc313";
 
-  @override
-  Future<List<Map<String, dynamic>>> searchData(
+  static Future<List<Map<String, dynamic>>> searchData(
       String index, Map<String, dynamic> query) async {
     final response = await http.post(
       Uri.parse(
@@ -36,8 +34,7 @@ class ElasticService implements IElasticService {
     return results;
   }
 
-  @override
-  Future<bool> isUsernameExists(String usernameQuery) async {
+  static Future<bool> isUsernameExists(String usernameQuery) async {
     final bytes = utf8.encode('$username:$password');
     final base64Str = base64.encode(bytes);
     final response = await http.post(

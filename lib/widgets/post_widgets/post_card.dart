@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:instagram/screens/post_screens/comment_reading_screen.dart';
 import 'package:instagram/screens/like_list_screen.dart';
+import 'package:instagram/screens/post_screens/edit_post_screen.dart';
 import 'package:instagram/screens/profile_screens/profile_screen.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/ultis/global_variables.dart';
@@ -38,7 +39,7 @@ class _PostCardState extends State<PostCard> {
   late CurrentUserViewModel _currentUserViewModel;
   bool isEnableShimmer = true;
   List<VideoPlayerController?> _currentControllers = [];
-
+  int currentIndex = 0;
   @override
   void initState() {
     super.initState();
@@ -294,52 +295,71 @@ class _PostCardState extends State<PostCard> {
         onDoubleTap: () {
           if (!widget.post.isLiked) _likeViewModel.toggleLikePost(widget.post);
         },
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(25),
-          child: CarouselSlider(
-            options: CarouselOptions(
-                aspectRatio: 1,
-                reverse: false,
-                scrollPhysics: const BouncingScrollPhysics(),
-                enableInfiniteScroll: false,
-                viewportFraction: 1,
-                onPageChanged: (index, reason) async {
-                  //_onPageChanged(index);
-                }),
-            items: widget.post.medias.map((e) {
-              if (e.type == 'image') {
-                return CachedNetworkImage(
-                    imageUrl: e.url,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    fadeInDuration: const Duration(milliseconds: 100),
-                    placeholder: (_, __) =>
-                        Shimmer.fromColors(
-                          baseColor:
-                          const Color.fromARGB(255, 39, 39, 39),
-                          highlightColor:
-                          const Color.fromARGB(255, 86, 86, 86),
-                          child: const SizedBox(
-                            width: double.infinity,
-                            height: double.infinity,
-                          ),
-                        ));
-              } else {
-                final index = widget.post.medias.indexOf(e);
-                return _currentControllers[index]!.value.isInitialized ? VisibilityDetector(
-                    key: Key(e.url),
-                    onVisibilityChanged: (info) {
-                      if(info.visibleFraction == 0){
-                        _currentControllers[index]!.pause();
-                      }
-                      else{
-                        _currentControllers[index]!.play();
-                      }
-                    },
-                    child: VideoPlayerWidget(videoUrl: e.url, controller: _currentControllers[index])) : const Center(child: CircularProgressIndicator(),) ;
-              }
-            }).toList(),
-          ),
+        child: Stack(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(25),
+              child: CarouselSlider(
+                options: CarouselOptions(
+                    aspectRatio: 1,
+                    reverse: false,
+                    scrollPhysics: const BouncingScrollPhysics(),
+                    enableInfiniteScroll: false,
+                    viewportFraction: 1,
+                    onPageChanged: (index, reason) async {
+                      setState(() {
+                        currentIndex = index;
+                      });
+                    }),
+                items: widget.post.medias.map((e) {
+                  if (e.type == 'image') {
+                    return CachedNetworkImage(
+                        imageUrl: e.url,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        fadeInDuration: const Duration(milliseconds: 100),
+                        placeholder: (_, __) =>
+                            Shimmer.fromColors(
+                              baseColor:
+                              const Color.fromARGB(255, 39, 39, 39),
+                              highlightColor:
+                              const Color.fromARGB(255, 86, 86, 86),
+                              child: const SizedBox(
+                                width: double.infinity,
+                                height: double.infinity,
+                              ),
+                            ));
+                  } else {
+                    final index = widget.post.medias.indexOf(e);
+                    return _currentControllers[index]!.value.isInitialized ? VisibilityDetector(
+                        key: Key(e.url),
+                        onVisibilityChanged: (info) {
+                          if(info.visibleFraction == 0){
+                            _currentControllers[index]!.pause();
+                          }
+                          else{
+                            _currentControllers[index]!.play();
+                          }
+                        },
+                        child: VideoPlayerWidget(videoUrl: e.url, controller: _currentControllers[index])) : const Center(child: CircularProgressIndicator(),) ;
+                  }
+                }).toList(),
+              ),
+            ),
+            if (widget.post.medias.length > 1)
+            Positioned(
+              right: 10,
+              top: 10,
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(15),
+                  color: Colors.black54
+                ),
+                padding: const EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
+                child: Text("${currentIndex+1}/${widget.post.medias.length}", style: Theme.of(context).textTheme.labelMedium,),
+              ),
+            )
+          ],
         ),
       ),
     );
@@ -434,7 +454,7 @@ class _PostCardState extends State<PostCard> {
                           Text("Archive", style: Theme.of(context).textTheme.titleLarge,),
                         ],
                       )),
-                ) :                 InkWell(
+                ) : InkWell(
                   onTap: () {
                     _currentUserViewModel.toggleArchivePost(widget.post.uid, false).whenComplete(() => Navigator.pop(context)).whenComplete(() => Navigator.pop(context));
                   },
@@ -452,7 +472,9 @@ class _PostCardState extends State<PostCard> {
                       )),
                 ),
                 InkWell(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => EditPostScreen(post: widget.post),));
+                  },
                   child: Container(
                       color: Colors.transparent,
                       width: MediaQuery.of(context).size.width,

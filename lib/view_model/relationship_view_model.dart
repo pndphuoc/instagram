@@ -1,10 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
-import 'package:instagram/services/relationship_services.dart';
+import 'package:instagram/repository/relationship_repository.dart';
 
 class RelationshipViewModel extends ChangeNotifier {
-  final RelationshipService _relationshipService = RelationshipService();
   List<String> _followerIds = [];
 
   List<String> get followerIds => _followerIds;
@@ -29,25 +28,25 @@ class RelationshipViewModel extends ChangeNotifier {
 
 
   Future<void> follow(String currentUserId, String currentUserFollowingListId, String targetUserId, String targetUserFollowerListId) async {
-    await _relationshipService.followUser(currentUserId, currentUserFollowingListId, targetUserId, targetUserFollowerListId);
+    await RelationshipRepository.followUser(currentUserId, currentUserFollowingListId, targetUserId, targetUserFollowerListId);
   }
 
   Future<void> unfollow(String currentUserId, String currentUserFollowingListId, String targetUserId, String targetUserFollowerListId) async {
-    await _relationshipService.unfollowUser(currentUserId, currentUserFollowingListId, targetUserId, targetUserFollowerListId);
+    await RelationshipRepository.unfollowUser(currentUserId, currentUserFollowingListId, targetUserId, targetUserFollowerListId);
 
     _rebuildController.sink.add(true);
   }
 
   Future<bool> isFollowing(String userId, String targetUserId) async {
-    return await _relationshipService.isFollowing(userId, targetUserId);
+    return await RelationshipRepository.isFollowing(userId, targetUserId);
   }
 
   Future<List<String>> getFollowingIds(String followingListId) async {
-    return await _relationshipService.getFollowingIds(followingListId);
+    return await RelationshipRepository.getFollowingIds(followingListId);
   }
 
   Future<List<String>> getFollowerIds(String followerListId) async {
-    return await _relationshipService.getFollowerIds(followerListId);
+    return await RelationshipRepository.getFollowerIds(followerListId);
   }
 
   Future<void> getFollowerAndFollowingIds({required String followerListId, required String followingListId}) async {

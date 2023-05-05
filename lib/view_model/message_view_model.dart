@@ -4,11 +4,11 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:instagram/services/conversation_services.dart';
-import 'package:instagram/services/message_details_services.dart';
-import 'package:instagram/services/message_services.dart';
-import 'package:instagram/services/notification_services.dart';
-import 'package:instagram/services/user_services.dart';
+import 'package:instagram/repository/conversation_repository.dart';
+import 'package:instagram/repository/message_details_repository.dart';
+import 'package:instagram/repository/message_repository.dart';
+import 'package:instagram/repository/notification_repository.dart';
+import 'package:instagram/repository/user_repository.dart';
 import 'package:instagram/ultis/ultils.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -16,8 +16,8 @@ import 'package:rxdart/rxdart.dart';
 
 import '../models/user_summary_information.dart';
 import '../models/message.dart';
-import '../services/asset_services.dart';
-import '../services/firebase_storage_services.dart';
+import '../repository/asset_repository.dart';
+import '../repository/firebase_storage_repository.dart';
 
 class MessageViewModel extends ChangeNotifier {
   MessageViewModel(List<UserSummaryInformation> users) {
@@ -28,7 +28,7 @@ class MessageViewModel extends ChangeNotifier {
     _currentUser = _users.firstWhere(
         (user) => user.userId == FirebaseAuth.instance.currentUser!.uid);
     createConversationIdFromUsers();
-    _messageDetailsService.updateStatus(
+    MessageDetailsRepository.updateStatus(
         conversationId: _conversationId,
         senderId: _users
             .where((element) =>
@@ -43,11 +43,6 @@ class MessageViewModel extends ChangeNotifier {
 
   late UserSummaryInformation _restUser;
   late UserSummaryInformation _currentUser;
-  final ConversationService _conversationService = ConversationService();
-  final MessageServices _messageServices = MessageServices();
-  final MessageDetailsService _messageDetailsService = MessageDetailsService();
-  final NotificationServices _notificationServices = NotificationServices();
-  final UserService _userService = UserService();
   final StreamController<bool> _writingMessageController =
       StreamController<bool>();
   late List<String> _restUserTokens = [];
@@ -87,9 +82,7 @@ class MessageViewModel extends ChangeNotifier {
 
   Stream<List<UserSummaryInformation>> get usersStream => _usersList.stream;
 
-  final AssetService _assetService = AssetService();
-  final FireBaseStorageService _fireBaseStorageService =
-      FireBaseStorageService();
+  final AssetRepository _assetService = AssetRepository();
 
   List<AssetEntity> _selectedEntities = [];
 
@@ -154,7 +147,7 @@ class MessageViewModel extends ChangeNotifier {
   }
 
   Future<void> getRestUserTokens() async {
-    _restUserTokens = await _userService.getFcmTokens(_restUser.userId);
+    _restUserTokens = await UserRepository.getFcmTokens(_restUser.userId);
   }
 
   void onChange(String value) {
@@ -171,7 +164,7 @@ class MessageViewModel extends ChangeNotifier {
   }
 
   void listenToNotificationSettingOfRestUser() {
-    _messageServices.isTurnOffNotification(userId: _restUser.userId, conversationId: _conversationId).listen((conversationSnapshot) {
+    MessageRepository.isTurnOffNotification(userId: _restUser.userId, conversationId: _conversationId).listen((conversationSnapshot) {
       _isRestUserTurnOffNotification = conversationSnapshot;
     });
   }
@@ -182,21 +175,21 @@ class MessageViewModel extends ChangeNotifier {
       required String messageContent,
       required DateTime timestamp}) async {
     _writingMessageController.sink.add(true);
-    if (await _conversationService
+    if (await ConversationRepository
             .isExistsConversation(_users.map((e) => e.userId).toList()) ==
         false) {
-      await _conversationService.createConversation(
+      await ConversationRepository.createConversation(
           users: _users,
           conversationId: _conversationId,
           messageContent: messageContent,
           messageTime: timestamp);
     }
-    await _messageServices.sendTextMessage(
+    await MessageRepository.sendTextMessage(
         conversationId: _conversationId,
         senderId: senderId,
         messageContent: messageContent,
         timestamp: timestamp);
-    await _conversationService.updateLastMessageOfConversation(
+    await ConversationRepository.updateLastMessageOfConversation(
         conversationId: _conversationId,
         content: messageContent,
         type: messageType,
@@ -216,7 +209,7 @@ class MessageViewModel extends ChangeNotifier {
         conversationId: _conversationId,
         avatarUrl: _currentUser.avatarUrl);
 
-    await _notificationServices.sendMessageNotification(jsonData);
+    await NotificationRepository.sendMessageNotification(jsonData);
   }
 
   final _messageController = StreamController<List<Message>>.broadcast();
@@ -238,7 +231,7 @@ class MessageViewModel extends ChangeNotifier {
   }
 
   void listenToMessages() {
-    _messagesSubscription = _messageServices
+    _messagesSubscription = MessageRepository
         .getNewMessage(
             conversationId: _conversationId,
             lastMessageTimestamp:
@@ -281,7 +274,7 @@ class MessageViewModel extends ChangeNotifier {
             element.senderId == _restUser.userId && element.status == 'sent')
         .map((e) => e.status = 'seen');
 
-    await _messageDetailsService.updateStatus(
+    await MessageDetailsRepository.updateStatus(
         conversationId: _conversationId, senderId: _restUser.userId);
   }
 
@@ -298,7 +291,7 @@ class MessageViewModel extends ChangeNotifier {
       _oldestMessageTimestamp = null;
     }
 
-    final oldMessages = await _messageServices.getOldMessages(
+    final oldMessages = await MessageRepository.getOldMessages(
         conversationId: _conversationId,
         lastMessageTimestamp: _oldestMessageTimestamp,
         limit: 20);
@@ -323,7 +316,7 @@ class MessageViewModel extends ChangeNotifier {
 
   Future<void> loadAssetPathList() async {
     try {
-      _paths = await _assetService.loadAssetPathList();
+      _paths = await AssetRepository.loadAssetPathList();
 
       notifyListeners();
     } catch (e) {
@@ -333,7 +326,7 @@ class MessageViewModel extends ChangeNotifier {
   }
 
   Future<void> loadAssetsOfPath({int sizePerPage = 50}) async {
-    _entities.addAll(await _assetService.loadAssetsOfPath(_selectedPath,
+    _entities.addAll(await AssetRepository.loadAssetsOfPath(_selectedPath,
         page: page, sizePerPage: sizePerPage));
 
     entitiesCount = await _selectedPath.assetCountAsync;
@@ -369,29 +362,29 @@ class MessageViewModel extends ChangeNotifier {
     DateTime time = DateTime.now();
 
     if (isVideo) {
-      url = await FireBaseStorageService()
+      url = await FireBaseStorageRepository
           .uploadFile(file, 'messages/$conversationId/videos', isVideo: true);
       lastMessageContent = "Sent a video";
 
-      MessageServices().sendVideoMessage(
+      MessageRepository.sendVideoMessage(
           conversationId: conversationId,
           senderId: FirebaseAuth.instance.currentUser!.uid,
           messageContent: url,
           timestamp: time);
 
     } else {
-      url = await FireBaseStorageService()
+      url = await FireBaseStorageRepository
           .uploadFile(file, 'messages/$conversationId/videos', isVideo: false);
       lastMessageContent = "Sent a image";
 
-      MessageServices().sendImageMessage(
+      MessageRepository.sendImageMessage(
           conversationId: conversationId,
           senderId: FirebaseAuth.instance.currentUser!.uid,
           messageContent: url,
           timestamp: time);
     }
 
-    ConversationService().updateLastMessageOfConversation(
+    ConversationRepository.updateLastMessageOfConversation(
         conversationId: conversationId,
         content: lastMessageContent,
         type: isVideo ? 'video' : 'image',
@@ -400,10 +393,10 @@ class MessageViewModel extends ChangeNotifier {
   }
 
   void onTapSendImageMessages() async {
-    if (await _conversationService
+    if (await ConversationRepository
             .isExistsConversation(_users.map((e) => e.userId).toList()) ==
         false) {
-      await _conversationService.createConversation(
+      await ConversationRepository.createConversation(
           users: _users,
           conversationId: _conversationId,
           messageContent: '',
@@ -419,14 +412,14 @@ class MessageViewModel extends ChangeNotifier {
         continue;
       }
       if (entity.type == AssetType.image) {
-        url = await _fireBaseStorageService.uploadFile(
+        url = await FireBaseStorageRepository.uploadFile(
           file,
           'messages/$conversationId/photos',
         );
         type = "image";
         lastMessageContent = "Sent a image";
       } else if (entity.type == AssetType.video) {
-        url = await _fireBaseStorageService
+        url = await FireBaseStorageRepository
             .uploadFile(file, 'messages/$conversationId/videos', isVideo: true);
         type = "video";
         lastMessageContent = "Sent a video";
@@ -434,19 +427,19 @@ class MessageViewModel extends ChangeNotifier {
       DateTime time = DateTime.now();
 
       if (type == "image") {
-        _messageServices.sendImageMessage(
+        MessageRepository.sendImageMessage(
             conversationId: conversationId,
             senderId: FirebaseAuth.instance.currentUser!.uid,
             messageContent: url,
             timestamp: time);
       } else {
-        _messageServices.sendVideoMessage(
+        MessageRepository.sendVideoMessage(
             conversationId: conversationId,
             senderId: FirebaseAuth.instance.currentUser!.uid,
             messageContent: url,
             timestamp: time);
       }
-      _conversationService.updateLastMessageOfConversation(
+      ConversationRepository.updateLastMessageOfConversation(
           conversationId: _conversationId,
           content: lastMessageContent,
           type: type,
@@ -461,7 +454,7 @@ class MessageViewModel extends ChangeNotifier {
     if (status == PermissionStatus.granted) {
       _requestPermission();
     }
-    return _fireBaseStorageService.downloadFile(url);
+    return FireBaseStorageRepository.downloadFile(url);
   }
 
   Future<bool> _requestPermission() async {
