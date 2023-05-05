@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/route/route_name.dart';
-import 'package:instagram/screens/post_screens/post_details_screen.dart';
+import 'package:instagram/screens/post_screens/post_list_screen.dart';
 import 'package:instagram/screens/search_screen.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/widgets/post_widgets/video_player_widget.dart';
@@ -135,7 +135,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
         }
         return GestureDetector(
           onTap: (){
-            Navigator.push(context, MaterialPageRoute(builder: (context) => PostDetailsScreen(posts: posts, index: index),));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => PostListScreen(posts: posts, index: index),));
           },
           child: Stack(
             children: [

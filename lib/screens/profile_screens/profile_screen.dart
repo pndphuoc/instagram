@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/screens/message_screens/conversation_screen.dart';
 import 'package:instagram/screens/profile_screens/personal_profile_screen.dart';
-import 'package:instagram/screens/post_screens/post_details_screen.dart';
+import 'package:instagram/screens/post_screens/post_list_screen.dart';
 import 'package:instagram/ultis/global_variables.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/user_view_model.dart';
@@ -218,7 +218,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                       context,
                       PageRouteBuilder(
                         pageBuilder: (context, animation, secondaryAnimation) =>
-                            PostDetailsScreen(
+                            PostListScreen(
                           posts: posts,
                           index: index,
                         ),

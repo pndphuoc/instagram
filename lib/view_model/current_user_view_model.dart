@@ -108,6 +108,28 @@ class CurrentUserViewModel extends ChangeNotifier {
     _postController.sink.add([]);
   }
 
+  Future<void> toggleArchivePost(String postId, bool isArchive) async {
+    if (isArchive == false) {
+      _archivedPost.removeWhere((element) => element.uid == postId);
+      notifyListeners();
+    } else {
+      _posts.removeWhere((element) => element.uid == postId);
+    }
+    await _postService.toggleArchivePost(postId: postId, isArchive: isArchive);
+  }
+
+  List<Post> _archivedPost = [];
+
+  List<Post> get archivedPost => _archivedPost;
+
+  set archivedPost(List<Post> value) {
+    _archivedPost = value;
+  }
+
+  Future<void> getArchivedPosts(String userId) async {
+    _archivedPost = await _postService.getArchivedPosts(userId: userId);
+  }
+
   Future<void> getCurrentUserDetails() async {
     try {
       _user = await _userServices
@@ -121,5 +143,11 @@ class CurrentUserViewModel extends ChangeNotifier {
     } catch (e) {
       rethrow;
     }
+  }
+
+  Future<void> deletePost(String postId) async {
+    await _postService.deletePost(postId);
+    _posts.removeWhere((element) => element.uid == postId);
+    _postController.sink.add([]);
   }
 }

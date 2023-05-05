@@ -131,7 +131,7 @@ class _FollowerCardState extends State<FollowerCard> {
         confirmText: "Delete this follower?",
         description:
         "instagram won't let ${snapshot.data.username} know you removed them from your follower list",
-        avatarUrl: snapshot.data.avatarUrl,
+        imageUrl: snapshot.data.avatarUrl,
       ),
     );
 

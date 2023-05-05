@@ -54,6 +54,7 @@ class PostViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+
   Future<Post> getPost(String postId, LikeViewModel likeViewModel, String userId) async {
     final post = await _postService.getPost(postId);
     post.isLiked = await likeViewModel.getIsLiked(post.likedListId, userId);

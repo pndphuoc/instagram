@@ -5,14 +5,15 @@ import 'package:instagram/ultis/colors.dart';
 
 
 class ConfirmDialog extends StatefulWidget {
-  final String avatarUrl;
+  final String? imageUrl;
   final String confirmText;
   final String description;
+  final bool isUnfollow;
   final String confirmButtonText;
 
   const ConfirmDialog(
       {super.key,
-      required this.avatarUrl, required this.confirmText, required this.description, required this.confirmButtonText});
+      this.imageUrl, required this.confirmText, required this.description, required this.confirmButtonText, this.isUnfollow = true});
 
   @override
   State<ConfirmDialog> createState() => _ConfirmDialogState();
@@ -48,13 +49,14 @@ class _ConfirmDialogState extends State<ConfirmDialog>
               const SizedBox(
                 height: 20,
               ),
+              widget.isUnfollow ?
               CircleAvatar(
-                backgroundImage: widget.avatarUrl.isNotEmpty
-                    ? CachedNetworkImageProvider(widget.avatarUrl)
+                backgroundImage: widget.imageUrl!.isNotEmpty
+                    ? CachedNetworkImageProvider(widget.imageUrl!)
                     : const AssetImage('assets/default_avatar.png')
                         as ImageProvider,
                 radius: 40,
-              ),
+              ) : Container(),
               const SizedBox(height: 10,),
               Column(
                 children: [

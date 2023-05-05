@@ -25,6 +25,7 @@ class PostService implements IPostServices {
     QuerySnapshot snapshot = await _postsCollection
         .where('userId', whereIn: followingIds)
         .where('isDeleted', isEqualTo: false)
+        .where('isArchived', isEqualTo: false)
         .orderBy('createAt', descending: true)
         .orderBy('likeCount', descending: true)
         .get();
@@ -79,7 +80,7 @@ class PostService implements IPostServices {
 
   @override
   Future<void> deletePost(String postId) async {
-    await _postsCollection.doc(postId).delete();
+    await _postsCollection.doc(postId).update({'isDeleted': true});
   }
 
   @override
@@ -145,4 +146,26 @@ class PostService implements IPostServices {
       rethrow;
     }
   }
+
+  @override
+  Future<List<Post>> getArchivedPosts({required String userId}) async {
+    try {
+      QuerySnapshot snapshot = await _postsCollection
+          .where('userId', isEqualTo: userId)
+          .where('isArchived', isEqualTo: true)
+          .orderBy('createAt', descending: true)
+          .get();
+      return snapshot.docs
+          .map((doc) => Post.fromJson(doc.data() as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> toggleArchivePost({required String postId, required bool isArchive}) async {
+    await _postsCollection.doc(postId).update({'isArchived': isArchive});
+  }
+
 }

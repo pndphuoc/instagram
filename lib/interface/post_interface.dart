@@ -24,4 +24,7 @@ abstract class IPostServices {
   Future<void> updateOwnerInformation(
       {required String userId, required String avatarUrl, required String username});
 
+  Future<List<Post>> getArchivedPosts({required String userId});
+
+  Future<void> toggleArchivePost({required String postId, required bool isArchive});
 }

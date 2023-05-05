@@ -144,7 +144,7 @@ class _FollowingCardState extends State<FollowingCard> {
             description:
             "Are you sure to unfollow ${snapshot.data
                 .username}?",
-            avatarUrl: snapshot.data.avatarUrl,
+            imageUrl: snapshot.data.avatarUrl,
           ),
     );
     if (result) {

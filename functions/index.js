@@ -69,37 +69,6 @@ exports.updateReplyCount = functions.firestore
         return db.collection('commentList').doc(commentListId).collection('comments').doc(commentId).update({replyCount});
     });
 
-//Tự động tăng, giảm số lượng following của user thực hiện follow/unfollow
-exports.updateFollowingCount = functions.firestore.document('followingList/{followingListId}')
-    .onWrite(async (change, context) => {
-        const userId = change.after.data().userId;
-        const followingIds = change.after.data().followingIds;
-
-        const userRef = db.collection('users').doc(userId);
-
-        await db.runTransaction(async (transaction) => {
-            const followingCount = followingIds.length;
-
-            transaction.update(userRef, { followingCount });
-        })
-    
-    });
-
-//Tự động tăng/giảm số lượng follower của user được follow/unfollw
-exports.updateFollowerCount = functions.firestore.document('followerList/{followerListId}')
-    .onWrite(async (change, context) => {
-        const userId = change.after.data().userId;
-        const followerIds = change.after.data().followerIds;
-
-        const userRef = db.collection('users').doc(userId);
-
-        await db.runTransaction(async (transaction) => {
-            const followerCount = followerIds.length;
-
-            transaction.update(userRef, { followerCount });
-        })
-    
-    });
 
  exports.updateUserInfo = functions.firestore.document('users/{uid}').onUpdate((change, context) => {
   const newData = change.after.data();
@@ -147,65 +116,47 @@ exports.updateFollowerCount = functions.firestore.document('followerList/{follow
   });
 });
 
-exports.sendNotification = functions.firestore
-  .document("conversations/{conversationId}/messages/{messageId}")
-  .onCreate((snap, context) => {
-    const conversationId = context.params.conversationId;
-    const messageId = context.params.messageId;
-    const messageData = snap.data();
 
-    const content = messageData.content;
-    const senderId = messageData.senderId;
+exports.updateUserPostCount = functions.firestore
+   .document('posts/{postId}')
+   .onUpdate(async (change, context) => {
+     const postId = context.params.postId;
+     const postBefore = change.before.data();
+     const postAfter = change.after.data();
 
-    const conversationRef = admin.firestore()
-      .collection("conversations")
-      .doc(conversationId);
+     const userId = postBefore.userId;
+     const userRef = admin.firestore().collection('users').doc(userId);
 
-    conversationRef.get().then((conversationSnapshot) => {
-      if (conversationSnapshot.exists) {
-        const userIds = conversationSnapshot.data().userIds;
+     const user = await userRef.get();
+     if (!user.exists) {
+       return null;
+     }
 
-        const usersRef = admin.firestore().collection("users");
+     const userData = user.data();
+     const postCount = userData.postsCount;
+     const postIds = userData.postIds || [];
 
-        const fcmTokensPromises = [];
+     // Check if isArchived or isDeleted field changed
+     const isArchivedBefore = postBefore.isArchived || false;
+     const isArchivedAfter = postAfter.isArchived || false;
+     const isDeletedBefore = postBefore.isDeleted || false;
+     const isDeletedAfter = postAfter.isDeleted || false;
 
-        userIds.forEach((targetUserId) => {
-          if (targetUserId !== senderId) {
-            const fcmTokensPromise = usersRef.doc(targetUserId).get().then((userSnapshot) => {
-              if (userSnapshot.exists) {
-                const fcmTokens = userSnapshot.data().fcmTokens;
-                return fcmTokens;
-              }
-            });
-            fcmTokensPromises.push(fcmTokensPromise);
-          }
-        });
+     if (isArchivedBefore !== isArchivedAfter) {
+       const newPostCount = !isArchivedAfter ? postCount + 1 : postCount - 1;
+       const newPostIds = !isArchivedAfter ? [...postIds, postId] : postIds.filter((id) => id !== postId);
+       await userRef.update({ postsCount: newPostIds.length, postIds: newPostIds });
+     }
 
-        Promise.all(fcmTokensPromises).then((fcmTokensArray) => {
-          const registrationTokens = fcmTokensArray.flat().filter((token) => token !== null);
+     if (isDeletedBefore !== isDeletedAfter) {
+       const newPostCount = isDeletedAfter ? postCount - 1 : postCount + 1;
+       const newPostIds = isDeletedAfter ? postIds.filter((id) => id !== postId) : [...postIds, postId];
+       await userRef.update({ postsCount: newPostIds.length, postIds: newPostIds });
+     }
 
-          if (registrationTokens.length > 0) {
-            const message = {
-              notification: {
-                title: "New message",
-                body: content,
-              },
-              priority: "high",
-              tokens: registrationTokens,
-            };
+     return null;
+   });
 
-            admin.messaging().sendMulticast(message)
-              .then((response) => {
-                console.log("Notification sent successfully:", response);
-              })
-              .catch((error) => {
-                console.log("Error sending notification:", error);
-              });
-          }
-        });
-      }
-    });
-  });
 
 
     

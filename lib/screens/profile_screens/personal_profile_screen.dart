@@ -1,7 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:instagram/screens/post_screens/post_details_screen.dart';
+import 'package:instagram/screens/post_screens/post_list_screen.dart';
+import 'package:instagram/screens/profile_screens/archive_screen.dart';
 import 'package:instagram/screens/profile_screens/edit_profile_screen.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/asset_message_view_model.dart';
@@ -248,7 +249,9 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
           width: 20,
         ),
         GestureDetector(
-          onTap: () {},
+          onTap: () {
+            _showModal(context);
+          },
           child: const Icon(Icons.list_sharp),
         ),
         const SizedBox(
@@ -321,7 +324,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
                       PageRouteBuilder(
                         pageBuilder:
                             (context, animation, secondaryAnimation) =>
-                            PostDetailsScreen(posts: _currentUserViewModel.posts, index: index,),
+                            PostListScreen(posts: _currentUserViewModel.posts, index: index,),
                         transitionsBuilder: (context, animation,
                             secondaryAnimation, child) {
                           return buildSlideTransition(animation, child);
@@ -366,6 +369,85 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
 
   Widget _videosGrid(BuildContext context) {
     return Container();
+  }
+
+  _showModal(BuildContext context) {
+    return showModalBottomSheet(context: context,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(topRight: Radius.circular(20), topLeft: Radius.circular(20))
+        ),
+        builder: (context) {
+          return IntrinsicHeight(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Center(child: Icon(Icons.remove_rounded, size: 40,),),
+                InkWell(
+                  onTap: () {},
+                  child: Container(
+                      color: Colors.transparent,
+                      width: MediaQuery.of(context).size.width,
+                      height: 50,
+                      child: Row(
+                        children: [
+                          const SizedBox(width: 10,),
+                          const Icon(Icons.settings_outlined, size: 35,),
+                          const SizedBox(width: 10,),
+                          Text("Settings", style: Theme.of(context).textTheme.titleLarge,),
+                        ],
+                      )),
+                ),
+                InkWell(
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const ArchiveScreen(),));
+                  },
+                  child: Container(
+                      color: Colors.transparent,
+                      width: MediaQuery.of(context).size.width,
+                      height: 50,
+                      child: Row(
+                        children: [
+                          const SizedBox(width: 10,),
+                          const Icon(Icons.archive_outlined, size: 35),
+                          const SizedBox(width: 10,),
+                          Text("Archive", style: Theme.of(context).textTheme.titleLarge,),
+                        ],
+                      )),
+                ),
+                InkWell(
+                  onTap: () {},
+                  child: Container(
+                      color: Colors.transparent,
+                      width: MediaQuery.of(context).size.width,
+                      height: 50,
+                      child: Row(
+                        children: [
+                          const SizedBox(width: 10,),
+                          const Icon(Icons.storage_outlined, size: 35),
+                          const SizedBox(width: 10,),
+                          Text("Saved", style: Theme.of(context).textTheme.titleLarge,),
+                        ],
+                      )),
+                ),
+                InkWell(
+                  onTap: () {},
+                  child: Container(
+                      color: Colors.transparent,
+                      width: MediaQuery.of(context).size.width,
+                      height: 50,
+                      child: Row(
+                        children: [
+                          const SizedBox(width: 10,),
+                          const Icon(Icons.logout, size: 35, ),
+                          const SizedBox(width: 10,),
+                          Text("Log out", style: Theme.of(context).textTheme.titleLarge,),
+                        ],
+                      )),
+                ),
+              ],
+            ),
+          );
+        },);
   }
 
 

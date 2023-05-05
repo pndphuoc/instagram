@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:expandable_text/expandable_text.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -20,6 +21,7 @@ import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../models/post.dart';
 import '../../ultis/ultils.dart';
+import '../confirm_dialog.dart';
 
 class PostCard extends StatefulWidget {
   final Post post;
@@ -155,7 +157,9 @@ class _PostCardState extends State<PostCard> {
               ),
             ),
             IconButton(
-              onPressed: () {},
+              onPressed: () {
+                _showModal(context, widget.post.uid);
+              },
               padding: EdgeInsets.zero,
               icon: const Icon(Icons.more_horiz),
             ),
@@ -385,5 +389,124 @@ class _PostCardState extends State<PostCard> {
         ),
       ),
     );
+  }
+
+  _showModal(BuildContext context, String postId) {
+    return showModalBottomSheet(context: context,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(topRight: Radius.circular(20), topLeft: Radius.circular(20))
+        ),
+        builder: (context) => IntrinsicHeight(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Center(child: Icon(Icons.remove_rounded, size: 40,),),
+              InkWell(
+                onTap: () {},
+                child: Container(
+                    color: Colors.transparent,
+                    width: MediaQuery.of(context).size.width,
+                    height: 50,
+                    child: Row(
+                      children: [
+                        const SizedBox(width: 10,),
+                        const Icon(Icons.bookmark_border_rounded, size: 35,),
+                        const SizedBox(width: 10,),
+                        Text("Save", style: Theme.of(context).textTheme.titleLarge,),
+                      ],
+                    )),
+              ),
+              if (widget.post.userId == FirebaseAuth.instance.currentUser!.uid) ...[
+                _currentUserViewModel.user!.postIds.contains(widget.post.uid) ?
+                InkWell(
+                  onTap: () {
+                    _currentUserViewModel.toggleArchivePost(widget.post.uid, true).whenComplete(() => Navigator.pop(context)).whenComplete(() => Navigator.pop(context));
+                  },
+                  child: Container(
+                      color: Colors.transparent,
+                      width: MediaQuery.of(context).size.width,
+                      height: 50,
+                      child: Row(
+                        children: [
+                          const SizedBox(width: 10,),
+                          const Icon(Icons.archive_outlined, size: 35),
+                          const SizedBox(width: 10,),
+                          Text("Archive", style: Theme.of(context).textTheme.titleLarge,),
+                        ],
+                      )),
+                ) :                 InkWell(
+                  onTap: () {
+                    _currentUserViewModel.toggleArchivePost(widget.post.uid, false).whenComplete(() => Navigator.pop(context)).whenComplete(() => Navigator.pop(context));
+                  },
+                  child: Container(
+                      color: Colors.transparent,
+                      width: MediaQuery.of(context).size.width,
+                      height: 50,
+                      child: Row(
+                        children: [
+                          const SizedBox(width: 10,),
+                          const Icon(Icons.archive_outlined, size: 35),
+                          const SizedBox(width: 10,),
+                          Text("Unarchive", style: Theme.of(context).textTheme.titleLarge,),
+                        ],
+                      )),
+                ),
+                InkWell(
+                  onTap: () {},
+                  child: Container(
+                      color: Colors.transparent,
+                      width: MediaQuery.of(context).size.width,
+                      height: 50,
+                      child: Row(
+                        children: [
+                          const SizedBox(width: 10,),
+                          const Icon(Icons.edit_outlined, size: 35),
+                          const SizedBox(width: 10,),
+                          Text("Edit", style: Theme.of(context).textTheme.titleLarge,),
+                        ],
+                      )),
+                ),
+                InkWell(
+                  onTap: () {
+                    _onTap();
+                  },
+                  child: Container(
+                      color: Colors.transparent,
+                      width: MediaQuery.of(context).size.width,
+                      height: 50,
+                      child: Row(
+                        children: [
+                          const SizedBox(width: 10,),
+                          const Icon(Icons.delete_outline_rounded, size: 35, ),
+                          const SizedBox(width: 10,),
+                          Text("Delete", style: Theme.of(context).textTheme.titleLarge,),
+                        ],
+                      )),
+                ),
+              ],
+              const SizedBox(height: 10,)
+            ],
+          ),
+        ),);
+  }
+
+  _onTap() async {
+    final result = await showDialog(
+      context: context,
+      builder: (context) =>
+          const ConfirmDialog(
+            confirmButtonText: "Delete",
+            confirmText: "Delete this post?",
+            description:
+            "Are you sure to delete this post? This action cannot be undone.",
+            isUnfollow: false,
+          ),
+    );
+    if (result) {
+      _currentUserViewModel.deletePost(widget.post.uid).whenComplete(() {
+        Navigator.pop(context);
+        Navigator.pop(context);
+      });
+    }
   }
 }
