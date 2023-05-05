@@ -17,6 +17,7 @@ import 'package:instagram/view_model/asset_view_model.dart';
 import 'package:instagram/view_model/conversation_view_model.dart';
 import 'package:instagram/view_model/elastic_view_model.dart';
 import 'package:instagram/view_model/notification_controller.dart';
+import 'package:instagram/view_model/notification_view_model.dart';
 import 'package:instagram/view_model/post_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/user_view_model.dart';
@@ -91,6 +92,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         ChangeNotifierProvider(create: (context) => UserViewModel()),
         ChangeNotifierProvider(create: (context) => AssetMessageViewModel()),
         ChangeNotifierProvider(create: (context) => ConversationViewModel()),
+        ChangeNotifierProvider(create: (context) => NotificationViewModel(),)
       ],
       builder: (context, child) {
         return MaterialApp(
@@ -119,9 +121,12 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.done) {
-                            return const ResponsiveLayout(
-                              webScreenLayout: WebScreenLayout(),
-                              mobileScreenLayout: MobileScreenLayout(),
+                            NotificationViewModel notificationViewModel = NotificationViewModel(userId: value.user!.uid);
+                            return ChangeNotifierProvider<NotificationViewModel>(create: (context) => notificationViewModel,
+                              builder: (context, child) => const ResponsiveLayout(
+                                webScreenLayout: WebScreenLayout(),
+                                mobileScreenLayout: MobileScreenLayout(),
+                              ),
                             );
                           } else {
                             return const Center(

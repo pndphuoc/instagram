@@ -58,14 +58,14 @@ class LikeViewModel extends ChangeNotifier {
     _likeController.sink.add(!cmt.isLiked);
   }
 
-  toggleLikePost(Post post) {
+  Future<bool> toggleLikePost(Post post) async {
     if (!post.isLiked) {
-      LikeRepository.like(
+      await LikeRepository.like(
           post.likedListId, _auth.currentUser!.uid);
       post.likeCount++;
       post.isLiked = true;
     } else {
-      LikeRepository.unlike(
+      await LikeRepository.unlike(
         post.likedListId,
         _auth.currentUser!.uid,
       );
@@ -73,6 +73,7 @@ class LikeViewModel extends ChangeNotifier {
       post.isLiked = false;
     }
     _likeController.sink.add(post.isLiked);
+    return post.isLiked;
   }
 
 }

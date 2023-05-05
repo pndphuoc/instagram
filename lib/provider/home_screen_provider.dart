@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:instagram/route/route_name.dart';
+import 'package:instagram/screens/notification_screens/notifications_screen.dart';
 import 'package:instagram/screens/post_screens/discover_screen.dart';
 
 import '../screens/post_screens/add_post_screen.dart';
@@ -14,7 +15,7 @@ class HomeScreenProvider with ChangeNotifier {
     const NewsFeedScreen(),
     const DiscoverScreen(),
     Container(),
-    const Center(child: Text("notifications", style: TextStyle(color: Colors.white),)),
+    const NotificationsScreen(),
     const PersonalProfileScreen()
   ];
   final PageController pageController = PageController();
