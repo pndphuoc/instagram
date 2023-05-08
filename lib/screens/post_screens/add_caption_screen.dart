@@ -31,6 +31,7 @@ class _AddCaptionScreenState extends State<AddCaptionScreen> {
   late String? mimeType;
   late VideoPlayerController _videoController;
   bool _isVideoFromCamera = false;
+
   @override
   void initState() {
     if (widget.media != null) {
@@ -48,7 +49,7 @@ class _AddCaptionScreenState extends State<AddCaptionScreen> {
 
   @override
   void dispose() {
-    if (_videoController.value.isInitialized) {
+    if (_isVideoFromCamera) {
       _videoController.dispose();
     }
     _controller.dispose();

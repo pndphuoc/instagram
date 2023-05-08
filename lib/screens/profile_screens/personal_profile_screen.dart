@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:instagram/provider/home_screen_provider.dart';
 import 'package:instagram/screens/post_screens/post_list_screen.dart';
 import 'package:instagram/screens/profile_screens/archive_screen.dart';
 import 'package:instagram/screens/profile_screens/edit_profile_screen.dart';
@@ -12,6 +13,7 @@ import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/post_view_model.dart';
 import 'package:instagram/widgets/post_widgets/video_player_widget.dart';
 import 'package:provider/provider.dart';
+import '../../main.dart';
 import '../../models/post.dart';
 import '../../models/user.dart' as model;
 import '../../ultis/ultils.dart';
@@ -82,20 +84,20 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
                         ),
                         _currentUserViewModel.user!.avatarUrl.isNotEmpty
                             ? Hero(
-                          tag: 'avatar',
-                              child: CircleAvatar(
+                                tag: 'avatar',
+                                child: CircleAvatar(
                                   radius: avatarSize,
                                   backgroundImage: CachedNetworkImageProvider(
                                       _currentUserViewModel.user!.avatarUrl),
                                 ),
-                            )
+                              )
                             : Hero(
-                          tag: 'avatar',
-                              child: CircleAvatar(
-                                  radius: avatarSize,
-                                  backgroundImage: const AssetImage(
-                                      "assets/default_avatar.png")),
-                            ),
+                                tag: 'avatar',
+                                child: CircleAvatar(
+                                    radius: avatarSize,
+                                    backgroundImage: const AssetImage(
+                                        "assets/default_avatar.png")),
+                              ),
                         const SizedBox(
                           height: 15,
                         ),
@@ -167,11 +169,12 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
                         const EditProfileScreen(),
                     transitionsBuilder:
                         (context, animation, secondaryAnimation, child) {
-                      return buildSlideTransition(animation, child, offset: const Offset(0.0, 1.0));
+                      return buildSlideTransition(animation, child,
+                          offset: const Offset(0.0, 1.0));
                     },
                     transitionDuration: const Duration(milliseconds: 150),
                     reverseTransitionDuration:
-                    const Duration(milliseconds: 150),
+                        const Duration(milliseconds: 150),
                   ),
                 );
               },
@@ -189,10 +192,17 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
         ),
         Expanded(
           child: ElevatedButton(
-              onPressed: () {
-                context.read<PostViewModel>().posts = [];
-                context.read<CurrentUserViewModel>().posts = [];
-                AuthenticationViewModel.logout();
+              onPressed: () async {
+                await AuthenticationViewModel.logout().whenComplete(
+                  () {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        builder: (_) => const MyApp(),
+                      ),
+                      (_) => false,
+                    );
+                  },
+                );
               },
               style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(
@@ -217,12 +227,32 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
           width: 20,
         ),
         _statsBlock(name: 'Posts', count: user.postIds.length),
-        _statsBlock(name: 'Followers', count: user.followerCount, onTap: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => FollowerFollowingListScreen(followerListId: user.followerListId, followingListId: user.followerListId),));
-        }),
-        _statsBlock(name: 'Following', count: user.followingCount, onTap: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => FollowerFollowingListScreen(followerListId: user.followerListId, followingListId: user.followerListId, initialIndex: 1,),));
-        }),
+        _statsBlock(
+            name: 'Followers',
+            count: user.followerCount,
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FollowerFollowingListScreen(
+                        followerListId: user.followerListId,
+                        followingListId: user.followerListId),
+                  ));
+            }),
+        _statsBlock(
+            name: 'Following',
+            count: user.followingCount,
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FollowerFollowingListScreen(
+                      followerListId: user.followerListId,
+                      followingListId: user.followerListId,
+                      initialIndex: 1,
+                    ),
+                  ));
+            }),
         const SizedBox(
           width: 20,
         ),
@@ -294,9 +324,10 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
               child: Text(snapshot.error.toString()),
             );
           } else if (!snapshot.hasData) {
-            return const Center(child: Text("No Post"),);
-          }
-          else {
+            return const Center(
+              child: Text("No Post"),
+            );
+          } else {
             return GridView.builder(
               cacheExtent: 1000,
               physics: const NeverScrollableScrollPhysics(),
@@ -317,46 +348,64 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
                   );
                 }
                 return GestureDetector(
-                  onTap: (){
+                  onTap: () {
                     Navigator.push(
                       context,
                       PageRouteBuilder(
-                        pageBuilder:
-                            (context, animation, secondaryAnimation) =>
-                            PostListScreen(posts: _currentUserViewModel.posts, index: index,),
-                        transitionsBuilder: (context, animation,
-                            secondaryAnimation, child) {
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            PostListScreen(
+                          posts: _currentUserViewModel.posts,
+                          index: index,
+                        ),
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
                           return buildSlideTransition(animation, child);
                         },
-                        transitionDuration:
-                        const Duration(milliseconds: 150),
-                        reverseTransitionDuration:  const Duration(milliseconds: 150),
+                        transitionDuration: const Duration(milliseconds: 150),
+                        reverseTransitionDuration:
+                            const Duration(milliseconds: 150),
                       ),
                     );
                   },
                   child: Stack(
                     children: [
-                      if (_currentUserViewModel.posts[index].medias.first.type == 'image')
+                      if (_currentUserViewModel
+                              .posts[index].medias.first.type ==
+                          'image')
                         CachedNetworkImage(
-                          imageUrl: _currentUserViewModel.posts[index].medias.first.url,
+                          imageUrl: _currentUserViewModel
+                              .posts[index].medias.first.url,
                           fit: BoxFit.cover,
                           width: double.infinity,
                           height: double.infinity,
                           fadeInDuration: const Duration(milliseconds: 100),
                         )
                       else
-                        Positioned.fill(child: VideoPlayerWidget.network(url: _currentUserViewModel.posts[index].medias.first.url, isPlay: false,),),
-
+                        Positioned.fill(
+                          child: VideoPlayerWidget.network(
+                            url: _currentUserViewModel
+                                .posts[index].medias.first.url,
+                            isPlay: false,
+                          ),
+                        ),
                       if (_currentUserViewModel.posts[index].medias.length > 1)
                         const Positioned(
                             top: 5,
                             right: 5,
-                            child: Icon(Icons.layers_rounded, color: Colors.white,))
-                      else if (_currentUserViewModel.posts[index].medias.first.type == 'video')
+                            child: Icon(
+                              Icons.layers_rounded,
+                              color: Colors.white,
+                            ))
+                      else if (_currentUserViewModel
+                              .posts[index].medias.first.type ==
+                          'video')
                         const Positioned(
                             top: 5,
                             right: 5,
-                            child: Icon(Icons.slow_motion_video_rounded, color: Colors.white,))
+                            child: Icon(
+                              Icons.slow_motion_video_rounded,
+                              color: Colors.white,
+                            ))
                     ],
                   ),
                 );
@@ -371,83 +420,126 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
   }
 
   _showModal(BuildContext context) {
-    return showModalBottomSheet(context: context,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(topRight: Radius.circular(20), topLeft: Radius.circular(20))
-        ),
-        builder: (context) {
-          return IntrinsicHeight(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Center(child: Icon(Icons.remove_rounded, size: 40,),),
-                InkWell(
-                  onTap: () {},
-                  child: Container(
-                      color: Colors.transparent,
-                      width: MediaQuery.of(context).size.width,
-                      height: 50,
-                      child: Row(
-                        children: [
-                          const SizedBox(width: 10,),
-                          const Icon(Icons.settings_outlined, size: 35,),
-                          const SizedBox(width: 10,),
-                          Text("Settings", style: Theme.of(context).textTheme.titleLarge,),
-                        ],
-                      )),
+    return showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+              topRight: Radius.circular(20), topLeft: Radius.circular(20))),
+      builder: (context) {
+        return IntrinsicHeight(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Center(
+                child: Icon(
+                  Icons.remove_rounded,
+                  size: 40,
                 ),
-                InkWell(
-                  onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const ArchiveScreen(),));
-                  },
-                  child: Container(
-                      color: Colors.transparent,
-                      width: MediaQuery.of(context).size.width,
-                      height: 50,
-                      child: Row(
-                        children: [
-                          const SizedBox(width: 10,),
-                          const Icon(Icons.archive_outlined, size: 35),
-                          const SizedBox(width: 10,),
-                          Text("Archive", style: Theme.of(context).textTheme.titleLarge,),
-                        ],
-                      )),
-                ),
-                InkWell(
-                  onTap: () {},
-                  child: Container(
-                      color: Colors.transparent,
-                      width: MediaQuery.of(context).size.width,
-                      height: 50,
-                      child: Row(
-                        children: [
-                          const SizedBox(width: 10,),
-                          const Icon(Icons.storage_outlined, size: 35),
-                          const SizedBox(width: 10,),
-                          Text("Saved", style: Theme.of(context).textTheme.titleLarge,),
-                        ],
-                      )),
-                ),
-                InkWell(
-                  onTap: () {},
-                  child: Container(
-                      color: Colors.transparent,
-                      width: MediaQuery.of(context).size.width,
-                      height: 50,
-                      child: Row(
-                        children: [
-                          const SizedBox(width: 10,),
-                          const Icon(Icons.logout, size: 35, ),
-                          const SizedBox(width: 10,),
-                          Text("Log out", style: Theme.of(context).textTheme.titleLarge,),
-                        ],
-                      )),
-                ),
-              ],
-            ),
-          );
-        },);
+              ),
+              InkWell(
+                onTap: () {},
+                child: Container(
+                    color: Colors.transparent,
+                    width: MediaQuery.of(context).size.width,
+                    height: 50,
+                    child: Row(
+                      children: [
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        const Icon(
+                          Icons.settings_outlined,
+                          size: 35,
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        Text(
+                          "Settings",
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                      ],
+                    )),
+              ),
+              InkWell(
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ArchiveScreen(),
+                      ));
+                },
+                child: Container(
+                    color: Colors.transparent,
+                    width: MediaQuery.of(context).size.width,
+                    height: 50,
+                    child: Row(
+                      children: [
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        const Icon(Icons.archive_outlined, size: 35),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        Text(
+                          "Archive",
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                      ],
+                    )),
+              ),
+              InkWell(
+                onTap: () {},
+                child: Container(
+                    color: Colors.transparent,
+                    width: MediaQuery.of(context).size.width,
+                    height: 50,
+                    child: Row(
+                      children: [
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        const Icon(Icons.storage_outlined, size: 35),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        Text(
+                          "Saved",
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                      ],
+                    )),
+              ),
+              InkWell(
+                onTap: () {},
+                child: Container(
+                    color: Colors.transparent,
+                    width: MediaQuery.of(context).size.width,
+                    height: 50,
+                    child: Row(
+                      children: [
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        const Icon(
+                          Icons.logout,
+                          size: 35,
+                        ),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        Text(
+                          "Log out",
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                      ],
+                    )),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
-
-
 }

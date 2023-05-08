@@ -21,14 +21,12 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
   final AuthenticationViewModel _authViewModel = AuthenticationViewModel();
-  late CurrentUserViewModel _currentUserViewModel;
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
 
   @override
   void initState() {
     super.initState();
-    _currentUserViewModel = context.read<CurrentUserViewModel>();
   }
 
   @override
