@@ -1,11 +1,15 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:instagram/repository/authentication_repository.dart';
+import 'package:instagram/repository/firebase_storage_repository.dart';
 import 'package:instagram/repository/notification_repository.dart';
 import 'package:instagram/repository/user_repository.dart';
 
+import '../ultis/global_variables.dart';
 import 'notification_controller.dart';
 
 class AuthenticationViewModel extends ChangeNotifier {
@@ -23,7 +27,7 @@ class AuthenticationViewModel extends ChangeNotifier {
     String res = await AuthenticationRepository.login(email: email, password: password);
 
     if (res == 'Login successful') {
-      await NotificationRepository.addFcmToken(FirebaseAuth.instance.currentUser!.uid, token!);
+      await NotificationRepository.addFcmToken(FirebaseAuth.instance.currentUser!.uid, token);
     }
 
     _loadingController.sink.add(false);
@@ -31,8 +35,8 @@ class AuthenticationViewModel extends ChangeNotifier {
     return res;
   }
 
-  Future<void> logout() async {
-    await NotificationRepository.removeFcmToken(FirebaseAuth.instance.currentUser!.uid, token);
+  static Future<void> logout() async {
+    await NotificationRepository.removeFcmToken(FirebaseAuth.instance.currentUser!.uid, NotificationController().firebaseToken);
     await AuthenticationRepository.logout();
   }
 
@@ -65,24 +69,60 @@ class AuthenticationViewModel extends ChangeNotifier {
   Future<String> signUp(
       {required String email,
       required String password,
-      required String username,}) async {
+      required String username,
+      String bio = '',
+        String displayName = ''
+      }) async {
     if (email.isEmpty || password.isEmpty || username.isEmpty) {
       return "Please enter all fields";
     }
-    _loadingController.sink.add(true);
+    isLoading = true;
+    notifyListeners();
 
     String result = await AuthenticationRepository.signUp(
         email: email,
         password: password);
 
+
+
     if (result == 'success') {
-      await NotificationRepository.addFcmToken(FirebaseAuth.instance.currentUser!.uid, token!);
+      String? avatarUrl = await _uploadAvatar();
+      await UserRepository.addNewUser(
+          email: email,
+          username: username,
+          uid: FirebaseAuth.instance.currentUser!.uid,
+          bio: bio,
+          displayName: displayName,
+          avatarUrl: avatarUrl ?? "");
+      await NotificationRepository.addFcmToken(FirebaseAuth.instance.currentUser!.uid, token);
     }
 
-    _loadingController.sink.add(false);
+    isLoading = false;
+    notifyListeners();
 
     return result;
   }
 
+  Future<String?> _uploadAvatar() async {
+    if (_image == null) return null;
+    return await FireBaseStorageRepository.uploadFile(_image!, profilePicturesPath);
+  }
+
+  File? _image;
+
+  File? get image => _image;
+  bool isLoading = false;
+
+  void selectImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(
+        source: ImageSource.gallery, maxHeight: 1080, maxWidth: 1080);
+
+    if (pickedFile != null) {
+      final File image = File(pickedFile.path);
+        _image = image;
+        notifyListeners();
+    }
+  }
 
 }

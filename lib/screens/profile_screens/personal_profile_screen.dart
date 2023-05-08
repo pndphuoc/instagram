@@ -190,10 +190,9 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
         Expanded(
           child: ElevatedButton(
               onPressed: () {
-                final AuthenticationViewModel auth = AuthenticationViewModel();
                 context.read<PostViewModel>().posts = [];
                 context.read<CurrentUserViewModel>().posts = [];
-                auth.logout();
+                AuthenticationViewModel.logout();
               },
               style: ElevatedButton.styleFrom(
                   shape: RoundedRectangleBorder(

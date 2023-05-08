@@ -12,8 +12,7 @@ class NotificationViewModel extends ChangeNotifier {
 
   List<model.Notification> get notifications => _notifications;
 
-  NotificationViewModel({String? userId}) {
-    if (userId == null) return;
+  NotificationViewModel({required String userId}) {
     isLoading = true;
     notifyListeners();
 
@@ -37,15 +36,15 @@ class NotificationViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addInteractiveNotification(
+  static Future<void> addInteractiveNotification(
       {required String interactiveUserAvatarUrl,
-        required String userId,
+        required String receiverId,
         required String interactiveUsername,
         required model.NotificationType notificationType,
         required String postId, required String firstImage}) async {
 
     model.Notification notification = model.Notification(
-      userId: userId,
+      userId: receiverId,
         title: model.NotificationMessages.getTitle(notificationType.name),
         interactiveUsername: interactiveUsername,
         message: model.NotificationMessages.getMessage(

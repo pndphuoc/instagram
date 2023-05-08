@@ -5,6 +5,7 @@ import 'package:camera/camera.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:instagram/screens/profile_screens/change_password_screen.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/ultis/global_variables.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
@@ -93,7 +94,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
             FirebaseAuth.instance.currentUser!.providerData.first.providerId == EmailAuthProvider.PROVIDER_ID ?
             InkWell(
-              onTap: () {},
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const ChangePasswordScreen(),));
+              },
               child: Container(
                 decoration: const BoxDecoration(
                     border: Border(

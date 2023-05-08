@@ -18,20 +18,23 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return Scaffold(
       appBar: _buildAppBar(context),
       body: SingleChildScrollView(
-        child: Consumer<NotificationViewModel>(
-          builder: (context, value, child) {
-            switch (value.isLoading) {
-              case false:
-                return ListView.separated(
-                  separatorBuilder: (context, index) => const SizedBox(height: 10,),
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: value.notifications.length,
-                  itemBuilder: (context, index) => NotificationCard(notification: value.notifications[index]),);
-              default:
-                return const Center(child: CircularProgressIndicator(),);
+        child: ListenableProvider<NotificationViewModel>(
+          create: (_) => NotificationViewModel(userId: FirebaseAuth.instance.currentUser!.uid),
+          child: Consumer<NotificationViewModel>(
+            builder: (context, value, child) {
+              switch (value.isLoading) {
+                case false:
+                  return ListView.separated(
+                    separatorBuilder: (context, index) => const SizedBox(height: 10,),
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: value.notifications.length,
+                    itemBuilder: (context, index) => NotificationCard(notification: value.notifications[index]),);
+                default:
+                  return const Center(child: CircularProgressIndicator(),);
+              }
             }
-          }
+          ),
         ),
       ),
     );

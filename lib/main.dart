@@ -6,6 +6,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/config/route/routes.dart';
 import 'package:instagram/provider/home_screen_provider.dart';
+import 'package:instagram/repository/authentication_repository.dart';
 import 'package:instagram/responsive/mobile_screen_layout.dart';
 import 'package:instagram/responsive/responsive_layout_screen.dart';
 import 'package:instagram/responsive/web_screen_layout.dart';
@@ -14,6 +15,7 @@ import 'package:instagram/theme.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/asset_message_view_model.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
+import 'package:instagram/view_model/authentication_view_model.dart';
 import 'package:instagram/view_model/conversation_view_model.dart';
 import 'package:instagram/view_model/elastic_view_model.dart';
 import 'package:instagram/view_model/notification_controller.dart';
@@ -92,7 +94,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         ChangeNotifierProvider(create: (context) => UserViewModel()),
         ChangeNotifierProvider(create: (context) => AssetMessageViewModel()),
         ChangeNotifierProvider(create: (context) => ConversationViewModel()),
-        ChangeNotifierProvider(create: (context) => NotificationViewModel(),)
       ],
       builder: (context, child) {
         return MaterialApp(
@@ -120,19 +121,16 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                         future: value.getCurrentUserDetails(),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
-                              ConnectionState.done) {
-                            NotificationViewModel notificationViewModel = NotificationViewModel(userId: value.user!.uid);
-                            return ChangeNotifierProvider<NotificationViewModel>(create: (context) => notificationViewModel,
-                              builder: (context, child) => const ResponsiveLayout(
-                                webScreenLayout: WebScreenLayout(),
-                                mobileScreenLayout: MobileScreenLayout(),
-                              ),
+                              ConnectionState.waiting) {
+                              return const Center(child: CircularProgressIndicator(),);
+                          } else if (snapshot.data!) {
+                            return const ResponsiveLayout(
+                              webScreenLayout: WebScreenLayout(),
+                              mobileScreenLayout: MobileScreenLayout(),
                             );
                           } else {
-                            return const Center(
-                              child: CircularProgressIndicator(
-                                  color: primaryColor),
-                            );
+                            AuthenticationViewModel.logout();
+                            return Container();
                           }
                         },
                       );

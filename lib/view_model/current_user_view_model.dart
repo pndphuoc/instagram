@@ -124,16 +124,21 @@ class CurrentUserViewModel extends ChangeNotifier {
     _archivedPost = await PostRepository.getArchivedPosts(userId: userId);
   }
 
-  Future<void> getCurrentUserDetails() async {
+  Future<bool> getCurrentUserDetails() async {
     try {
       _user = await UserRepository.getUserDetails(
           FirebaseAuth.instance.currentUser!.uid);
+
+      if (_user == null) return false;
+
       _chatUser = UserSummaryInformation(
         userId: _user!.uid,
         username: _user!.username,
         avatarUrl: _user!.avatarUrl,
         displayName: _user!.displayName,
       );
+
+      return true;
     } catch (e) {
       rethrow;
     }

@@ -39,7 +39,6 @@ class _PostCardState extends State<PostCard> {
   late double imageWidth;
   final LikeViewModel _likeViewModel = LikeViewModel();
   late CurrentUserViewModel _currentUserViewModel;
-  late NotificationViewModel _notificationViewModel;
   bool isEnableShimmer = true;
   List<VideoPlayerController?> _currentControllers = [];
   int currentIndex = 0;
@@ -48,7 +47,6 @@ class _PostCardState extends State<PostCard> {
   void initState() {
     super.initState();
     _currentUserViewModel = context.read<CurrentUserViewModel>();
-    _notificationViewModel = context.read<NotificationViewModel>();
     for (int i = 0; i < widget.post.medias.length; i++) {
       if (widget.post.medias[i].type == 'video') {
         _currentControllers
@@ -181,8 +179,8 @@ class _PostCardState extends State<PostCard> {
               onTap: () {
                 _likeViewModel.toggleLikePost(widget.post).then((value) {
                   if (value) {
-                    _notificationViewModel.addInteractiveNotification(
-                        userId: widget.post.userId,
+                    NotificationViewModel.addInteractiveNotification(
+                        receiverId: widget.post.userId,
                         interactiveUserAvatarUrl:
                             _currentUserViewModel.user!.avatarUrl,
                         interactiveUsername:

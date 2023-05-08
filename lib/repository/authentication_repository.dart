@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 
@@ -86,5 +87,24 @@ class AuthenticationRepository {
 
       final List<DocumentSnapshot> documents = result.docs;
       return documents.isNotEmpty;
+  }
+
+  static Future<bool> changePassword(String email, String oldPassword, String newPassword) async {
+    try {
+      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: oldPassword,
+      );
+      await userCredential.user?.updatePassword(newPassword);
+      Fluttertoast.showToast(msg: 'Password changed successfully');
+      return true;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        Fluttertoast.showToast(msg: 'User not found');
+      } else if (e.code == 'wrong-password') {
+        Fluttertoast.showToast(msg: 'Wrong password provided');
+      }
+      return false;
+    }
   }
 }

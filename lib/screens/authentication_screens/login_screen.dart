@@ -47,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
         showSnackBar(context, value);
       } else {
         final newUserProvider = CurrentUserViewModel();
-        Provider<CurrentUserViewModel>.value(
+        ListenableProvider<CurrentUserViewModel>.value(
           value: newUserProvider,
         );
       }
