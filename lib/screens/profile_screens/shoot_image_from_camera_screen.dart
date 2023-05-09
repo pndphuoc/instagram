@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:instagram/screens/post_screens/camera_preview_screen.dart';
 
 class ShootImageFromCameraScreen extends StatefulWidget {
   const ShootImageFromCameraScreen({Key? key}) : super(key: key);

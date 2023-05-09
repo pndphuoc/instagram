@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:instagram/ultis/global_variables.dart';
 import 'package:shimmer/shimmer.dart';
 

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:instagram/ultis/colors.dart';
 
 class StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
   StickyTabBarDelegate({required this.child});

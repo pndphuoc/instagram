@@ -1,10 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/ultis/colors.dart';
-import 'package:instagram/view_model/current_user_view_model.dart';
-import 'package:instagram/view_model/message_view_model.dart';
 import 'package:instagram/view_model/user_view_model.dart';
-import 'package:provider/provider.dart';
 
 class AvatarWithStatus extends StatelessWidget {
   final String userId;

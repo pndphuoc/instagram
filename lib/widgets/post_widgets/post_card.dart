@@ -24,7 +24,7 @@ import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../models/post.dart';
 import '../../ultis/ultils.dart';
-import '../confirm_dialog.dart';
+import '../common_widgets/confirm_dialog.dart';
 
 class PostCard extends StatefulWidget {
   final Post post;
@@ -405,7 +405,7 @@ class _PostCardState extends State<PostCard> {
               linkColor: Colors.grey,
               linkStyle: GoogleFonts.readexPro(fontWeight: FontWeight.w200),
               animationDuration: const Duration(milliseconds: 500),
-              style: GoogleFonts.readexPro(color: Colors.white),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white),
             ),
             const SizedBox(
               height: 30,

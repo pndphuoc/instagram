@@ -3,7 +3,6 @@ import 'package:video_player/video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/models/user_summary_information.dart';
 import 'package:instagram/screens/message_screens/view_full_media_screen.dart';
-import 'package:instagram/widgets/avatar_with_status.dart';
 
 import '../../models/message.dart';
 

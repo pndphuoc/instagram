@@ -8,13 +8,12 @@ import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
 import 'package:instagram/view_model/post_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
-import 'package:instagram/widgets/image_thumbail.dart';
+import 'package:instagram/widgets/common_widgets/image_thumbail.dart';
 import 'package:mime/mime.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
-import '../../models/post.dart';
 
 class AddCaptionScreen extends StatefulWidget {
   final File? media;

@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:instagram/models/user_summary_information.dart';
-import 'package:instagram/screens/message_screens/messaging_camera_preview_screen.dart';
 import 'package:instagram/screens/post_screens/camera_preview_screen.dart';
 import 'package:instagram/view_model/conversation_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
@@ -14,7 +13,7 @@ import 'package:provider/provider.dart';
 import '../../screens/message_screens/conversation_screen.dart';
 import '../../ultis/colors.dart';
 import '../../ultis/ultils.dart';
-import '../avatar_with_status.dart';
+import '../common_widgets/avatar_with_status.dart';
 import '../shimmer_widgets/conversation_card_shimmer.dart';
 
 class ConversationCard extends StatelessWidget {

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:instagram/view_model/user_view_model.dart';
-import 'package:instagram/widgets/follower_card.dart';
+import 'package:instagram/widgets/relationship_widgets/follower_card.dart';
 
-import '../ultis/colors.dart';
-import '../view_model/relationship_view_model.dart';
+import '../../ultis/colors.dart';
+import '../../view_model/relationship_view_model.dart';
 
 class FollowerListTabBarWidget extends StatefulWidget {
   final RelationshipViewModel relationshipViewModel;

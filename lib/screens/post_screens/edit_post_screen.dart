@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:instagram/repository/post_repository.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/post_view_model.dart';

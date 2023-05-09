@@ -8,7 +8,6 @@ import 'package:provider/provider.dart';
 
 import '../../ultis/ultils.dart';
 import '../../widgets/post_widgets/video_player_widget.dart';
-import '../post_screens/post_list_screen.dart';
 
 class ArchiveScreen extends StatefulWidget {
   const ArchiveScreen({Key? key}) : super(key: key);
@@ -71,7 +70,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                         context,
                         PageRouteBuilder(
                           pageBuilder: (context, animation, secondaryAnimation) =>
-                              PostDetailsScreen(post:_currentUserViewModel.archivedPost[index]),
+                              PostDetailsScreen.fromPost(_currentUserViewModel.archivedPost[index]),
                           transitionsBuilder:
                               (context, animation, secondaryAnimation, child) {
                             return buildSlideTransition(animation, child);

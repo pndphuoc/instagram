@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/like_view_model.dart';
-import 'package:instagram/view_model/relationship_view_model.dart';
-import 'package:instagram/widgets/following_card.dart';
 import 'package:instagram/widgets/post_widgets/liked_user_card.dart';
 
 class LikeListScreen extends StatefulWidget {
@@ -17,7 +15,6 @@ class _LikeListScreenState extends State<LikeListScreen> {
   final searchFieldBorder =
   OutlineInputBorder(borderRadius: BorderRadius.circular(10));
   final LikeViewModel _likeViewModel = LikeViewModel();
-  final RelationshipViewModel _relationshipViewModel = RelationshipViewModel();
   late Future _getLikedList;
 
   @override

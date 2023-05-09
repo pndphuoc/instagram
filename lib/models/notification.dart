@@ -3,20 +3,22 @@ class Notification {
   final String userId;
   final String title;
   final String message;
-  final String postId;
+  final String? postId;
   String interactiveUserAvatarUrl;
+  String interactiveUserId;
   String interactiveUsername;
-  String firstImage;
+  String? firstImage;
   final DateTime createdAt;
   final DateTime updatedAt;
   bool isRead;
   final NotificationType type;
 
-  Notification({this.id, required this.userId, required this.title, required this.message, required this.postId, required this.interactiveUserAvatarUrl, required this.interactiveUsername, required this.firstImage, required this.createdAt, required this.updatedAt, required this.isRead, required this.type});
+  Notification({this.id, required this.interactiveUserId, required this.userId, required this.title, required this.message, this.postId, required this.interactiveUserAvatarUrl, required this.interactiveUsername, this.firstImage, required this.createdAt, required this.updatedAt, required this.isRead, required this.type});
 
   factory Notification.fromJson(Map<String, dynamic> json) {
     return Notification(
       id: json['id'] ?? "",
+      interactiveUserId: json['interactiveUserId'],
       userId: json['userId'],
       title: json['title'],
       message: json['message'],
@@ -38,6 +40,7 @@ class Notification {
       'title': title,
       'message': message,
       'postId': postId,
+      'interactiveUserId': interactiveUserId,
       'interactiveUserAvatarUrl': interactiveUserAvatarUrl,
       'interactiveUsername': interactiveUsername,
       'firstImage': firstImage,
@@ -71,6 +74,10 @@ class NotificationMessages {
       'title': 'You have just been tagged in a comment',
       'message': '%s just tagged you in a comment',
     },
+    'follow': {
+      'title': 'You have a new follower',
+      'message': '%s started following you'
+    }
   };
 
   static String getTitle(String type) {

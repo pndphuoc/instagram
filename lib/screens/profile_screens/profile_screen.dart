@@ -5,8 +5,9 @@ import 'package:instagram/screens/profile_screens/personal_profile_screen.dart';
 import 'package:instagram/screens/post_screens/post_list_screen.dart';
 import 'package:instagram/ultis/global_variables.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
+import 'package:instagram/view_model/notification_view_model.dart';
 import 'package:instagram/view_model/user_view_model.dart';
-import 'package:instagram/widgets/bottom_navigator_bar.dart';
+import 'package:instagram/widgets/common_widgets/bottom_navigator_bar.dart';
 import '../../models/user_summary_information.dart';
 import '../../models/post.dart';
 import '../../models/user.dart' as model;
@@ -16,7 +17,7 @@ import '../../ultis/colors.dart';
 import '../../ultis/ultils.dart';
 import '../../view_model/relationship_view_model.dart';
 import '../../widgets/post_widgets/video_player_widget.dart';
-import '../../widgets/sticky_tab_bar_delegate.dart';
+import '../../widgets/common_widgets/sticky_tab_bar_delegate.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String userId;
@@ -55,13 +56,14 @@ class _ProfileScreenState extends State<ProfileScreen>
     super.dispose();
   }
 
-  _onPressedFollowButton() {
-    _relationshipViewModel.follow(
+  _onPressedFollowButton() async {
+    await _relationshipViewModel.follow(
         _currentUserViewModel.user!.uid,
         _currentUserViewModel.user!.followingListId,
         widget.userId,
         _userViewModel.user.followerListId);
     _userViewModel.isFollowing = true;
+    await NotificationViewModel.addFollowNotification(receiverId: widget.userId, followUsername: _currentUserViewModel.user!.username, followUserAvatarUrl: _currentUserViewModel.user!.avatarUrl);
   }
 
   _onPressedUnfollowButton() {

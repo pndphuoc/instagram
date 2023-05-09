@@ -2,12 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/relationship_view_model.dart';
-import 'package:instagram/view_model/user_view_model.dart';
-import 'package:instagram/widgets/follower_list_tab_bar_widget.dart';
-import 'package:instagram/widgets/following_list_tab_bar_widget.dart';
+import 'package:instagram/widgets/relationship_widgets/follower_list_tab_bar_widget.dart';
+import 'package:instagram/widgets/relationship_widgets/following_list_tab_bar_widget.dart';
 import 'package:provider/provider.dart';
-
-import '../../models/user.dart';
 
 class FollowerFollowingListScreen extends StatefulWidget {
   final String followingListId;

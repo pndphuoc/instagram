@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/change_password_view_model.dart';
-import 'package:instagram/widgets/text_form_field.dart';
+import 'package:instagram/widgets/common_widgets/text_form_field.dart';
 import 'package:provider/provider.dart';
 
 class ChangePasswordScreen extends StatefulWidget {

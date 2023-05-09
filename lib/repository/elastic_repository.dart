@@ -2,39 +2,43 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-class ElasticRepository {
-  static String endpoint = "https://a5e8ec9e4bf44999a1fe005d7925db89.ent-search.us-central1.gcp.cloud.es.io";
-  static String privateKey = "private-rnmssjj681asgqft7hqqx8pq";
-  static String apiKey = "cmRwMWI0Y0JnbE5tZlI3aV9mMEw6MVFZeW5qUTNTRFMzSzdzRE5scmUtdw==";
-  static String usersIndex = ".ent-search-engine-documents-users";
+import '../models/user_summary_information.dart';
+import 'package:elastic_client/elastic_client.dart' as elastic;
 
-  static String username = "duyphuoc";
-  static String password = "duyphuoc313";
+class ElasticRepository {
+  static String endpoint =
+      "https://instashare.ent.asia-southeast1.gcp.elastic-cloud.com";
+  static String privateKey = "search-txdcaef6466jeu1nw7pzze18";
+  static String apiKey =
+      "cmRwMWI0Y0JnbE5tZlI3aV9mMEw6MVFZeW5qUTNTRFMzSzdzRE5scmUtdw==";
+  static String usersIndex = ".ent-search-engine-documents-users";
+  static String requestPath = "/api/as/v1/engines/instashare/search.json";
 
   static Future<List<Map<String, dynamic>>> searchData(
-      String index, Map<String, dynamic> query) async {
+      {required String query, int page = 1}) async {
     final response = await http.post(
-      Uri.parse(
-          '$endpoint/$index/_search'),
+      Uri.parse('$endpoint/$requestPath'),
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'ApiKey $apiKey'
+        'Authorization': 'Bearer $privateKey'
       },
       body: jsonEncode({
-        'query': query
+        "query": query,
+        "page": {"size": 10, "current": page}
       }),
     );
     final json = jsonDecode(response.body);
-    final hits = json['hits']['hits'];
-    List<Map<String, dynamic>> results = [];
-    hits.forEach((hit) {
-      results.add(hit['_source'] as Map<String, dynamic>);
+    final results = json['results'];
+    List<Map<String, dynamic>> queryResults = [];
+
+    results.forEach((result) {
+      queryResults.add(result as Map<String, dynamic>);
     });
 
-    return results;
+    return queryResults;
   }
 
-  static Future<bool> isUsernameExists(String usernameQuery) async {
+/*  static Future<bool> isUsernameExists(String usernameQuery) async {
     final bytes = utf8.encode('$username:$password');
     final base64Str = base64.encode(bytes);
     final response = await http.post(
@@ -54,5 +58,5 @@ class ElasticRepository {
     print(response.body);
     final json = jsonDecode(response.body);
     return json['count'] == 1;
-  }
+  }*/
 }

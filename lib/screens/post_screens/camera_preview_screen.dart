@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:instagram/screens/post_screens/editing_photo_screen.dart';
 import 'package:instagram/screens/post_screens/media_preview_screen.dart';
 import 'package:instagram/view_model/camera_view_model.dart';
-import 'package:instagram/view_model/edit_profile_view_model.dart';
 
 import '../../ultis/ultils.dart';
 

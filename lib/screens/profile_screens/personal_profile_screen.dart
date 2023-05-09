@@ -1,23 +1,18 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:instagram/provider/home_screen_provider.dart';
 import 'package:instagram/screens/post_screens/post_list_screen.dart';
 import 'package:instagram/screens/profile_screens/archive_screen.dart';
 import 'package:instagram/screens/profile_screens/edit_profile_screen.dart';
 import 'package:instagram/ultis/colors.dart';
-import 'package:instagram/view_model/asset_message_view_model.dart';
-import 'package:instagram/view_model/asset_view_model.dart';
 import 'package:instagram/view_model/authentication_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
-import 'package:instagram/view_model/post_view_model.dart';
 import 'package:instagram/widgets/post_widgets/video_player_widget.dart';
 import 'package:provider/provider.dart';
 import '../../main.dart';
-import '../../models/post.dart';
 import '../../models/user.dart' as model;
 import '../../ultis/ultils.dart';
-import '../../widgets/sticky_tab_bar_delegate.dart';
+import '../../widgets/common_widgets/sticky_tab_bar_delegate.dart';
 import 'follower_following_list_screen.dart';
 
 class PersonalProfileScreen extends StatefulWidget {

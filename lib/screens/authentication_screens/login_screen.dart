@@ -3,8 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:instagram/route/route_name.dart';
 import 'package:instagram/view_model/authentication_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
-import 'package:instagram/view_model/post_view_model.dart';
-import 'package:instagram/widgets/text_form_field.dart';
+import 'package:instagram/widgets/common_widgets/text_form_field.dart';
 import 'package:provider/provider.dart';
 
 import '../../ultis/ultils.dart';

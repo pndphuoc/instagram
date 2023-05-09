@@ -81,7 +81,7 @@ class _ConfirmDialogState extends State<ConfirmDialog>
                     width: double.infinity,
                     height: 40,
                     alignment: Alignment.center,
-                    child: Text(widget.confirmButtonText, style: GoogleFonts.readexPro(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 15),)),
+                    child: Text(widget.confirmButtonText, style: GoogleFonts.beVietnamPro(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 15),)),
               ),
               InkWell(
                 borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(20), bottomRight: Radius.circular(20)),

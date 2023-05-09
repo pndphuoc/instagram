@@ -1,19 +1,13 @@
 import 'dart:io';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:instagram/ultis/ultils.dart';
 import 'package:instagram/view_model/authentication_view_model.dart';
-import 'package:instagram/view_model/elastic_view_model.dart';
 import 'package:instagram/view_model/firestore_view_model.dart';
 import 'package:instagram/view_model/user_view_model.dart';
-import 'package:instagram/widgets/text_form_field.dart';
+import 'package:instagram/widgets/common_widgets/text_form_field.dart';
 import 'package:provider/provider.dart';
-
-import '../../ultis/global_variables.dart';
-import '../../view_model/current_user_view_model.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({Key? key}) : super(key: key);

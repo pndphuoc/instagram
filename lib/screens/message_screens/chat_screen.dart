@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:instagram/models/user_summary_information.dart';
 import 'package:instagram/models/conversation.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/conversation_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
-import 'package:instagram/view_model/message_view_model.dart';
-import 'package:instagram/widgets/avatar_with_status.dart';
+import 'package:instagram/widgets/common_widgets/avatar_with_status.dart';
 import 'package:instagram/widgets/message_widgets/conversation_card.dart';
 import 'package:instagram/widgets/shimmer_widgets/conversation_card_shimmer.dart';
 import 'package:provider/provider.dart';
 
-import '../../widgets/message_widgets/conversation_card.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({Key? key}) : super(key: key);

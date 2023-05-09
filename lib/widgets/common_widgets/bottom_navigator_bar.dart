@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:instagram/provider/home_screen_provider.dart';
 import 'package:provider/provider.dart';
 
-import '../route/route_name.dart';
-import '../ultis/colors.dart';
-import '../view_model/asset_view_model.dart';
+import '../../route/route_name.dart';
+import '../../ultis/colors.dart';
+import '../../view_model/asset_view_model.dart';
 
 class BottomNavBar extends StatefulWidget {
   const BottomNavBar({Key? key}) : super(key: key);

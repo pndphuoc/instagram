@@ -22,6 +22,15 @@ class UserSummaryInformation {
     );
   }
 
+  factory UserSummaryInformation.fromJsonElastic(Map<String, dynamic> json) {
+    return UserSummaryInformation(
+      username: json['username']['raw'],
+      userId: json['id']['raw'],
+      displayName: json['displayname']['raw'],
+      avatarUrl: json['avatarurl']['raw'],
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'avatarUrl': avatarUrl,

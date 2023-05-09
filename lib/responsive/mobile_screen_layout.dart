@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:instagram/provider/home_screen_provider.dart';
-import 'package:instagram/widgets/bottom_navigator_bar.dart';
+import 'package:instagram/widgets/common_widgets/bottom_navigator_bar.dart';
 import 'package:provider/provider.dart';
 
 

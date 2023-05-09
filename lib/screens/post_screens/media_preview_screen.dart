@@ -1,12 +1,9 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:instagram/screens/post_screens/add_caption_screen.dart';
 import 'dart:io';
 
 import 'package:instagram/ultis/colors.dart';
 import 'package:video_player/video_player.dart';
-
-import '../../ultis/ultils.dart';
 
 class MediaPreviewScreen extends StatefulWidget {
   final XFile? video;

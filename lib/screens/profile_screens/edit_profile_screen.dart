@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:firebase_auth/firebase_auth.dart';

@@ -4,26 +4,26 @@ import 'package:instagram/ultis/colors.dart';
 
 final theme = ThemeData.dark().copyWith(
   scaffoldBackgroundColor: mobileBackgroundColor,
-  textTheme: GoogleFonts.readexProTextTheme().copyWith(
-    bodyLarge: const TextStyle(
+  textTheme: TextTheme(
+    bodyLarge: GoogleFonts.beVietnamPro(
         color: onBackground,
         fontSize: 20,
         fontWeight: FontWeight.normal),
-    bodyMedium: const TextStyle(
+    bodyMedium: GoogleFonts.beVietnamPro(
       color: onBackgroundSecondary,
     ),
-    bodySmall: const TextStyle(color: onBackground),
-    labelLarge: const TextStyle(
+    bodySmall: GoogleFonts.beVietnamPro(color: onBackground),
+    labelLarge: GoogleFonts.beVietnamPro(
         color: onBackground, fontWeight: FontWeight.w300),
-    displayLarge: const TextStyle(color: onBackground),
-    displayMedium: const TextStyle(color: onBackground),
-    displaySmall: const TextStyle(color: onBackground),
-    headlineMedium: const TextStyle(color: onBackground),
-    headlineSmall: const TextStyle(color: onBackground),
-    titleLarge: const TextStyle(color: onBackground),
-    labelSmall: const TextStyle(color: onBackground),
-    labelMedium: const TextStyle(color: onBackground),
-    titleMedium: const TextStyle(color: onBackground),
-    titleSmall: const TextStyle(color: onBackground),
+    displayLarge: GoogleFonts.beVietnamPro(color: onBackground),
+    displayMedium: GoogleFonts.beVietnamPro(color: onBackground),
+    displaySmall: GoogleFonts.beVietnamPro(color: onBackground),
+    headlineMedium: GoogleFonts.beVietnamPro(color: onBackground),
+    headlineSmall: GoogleFonts.beVietnamPro(color: onBackground),
+    titleLarge: GoogleFonts.beVietnamPro(color: onBackground),
+    labelSmall: GoogleFonts.beVietnamPro(color: onBackground),
+    labelMedium: GoogleFonts.beVietnamPro(color: onBackground),
+    titleMedium: GoogleFonts.beVietnamPro(color: onBackground),
+    titleSmall: GoogleFonts.beVietnamPro(color: onBackground),
   ),
 );

@@ -48,9 +48,9 @@ class PostViewModel extends ChangeNotifier {
   }
 
 
-  Future<Post> getPost(String postId, LikeViewModel likeViewModel, String userId) async {
+  Future<Post> getPost(String postId, LikeViewModel likeViewModel) async {
     final post = await PostRepository.getPost(postId);
-    post.isLiked = await likeViewModel.getIsLiked(post.likedListId, userId);
+    post.isLiked = await likeViewModel.getIsLiked(post.likedListId, FirebaseAuth.instance.currentUser!.uid);
     return post;
   }
 

@@ -7,15 +7,14 @@ import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/message_view_model.dart';
 import 'package:instagram/view_model/user_view_model.dart';
-import 'package:instagram/widgets/avatar_with_status.dart';
+import 'package:instagram/widgets/common_widgets/avatar_with_status.dart';
 import 'package:instagram/widgets/message_widgets/received_message_card.dart';
 import 'package:instagram/widgets/message_widgets/sent_message_card.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
-import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../ultis/ultils.dart';
-import '../../widgets/image_thumbail.dart';
+import '../../widgets/common_widgets/image_thumbail.dart';
 import '../post_screens/camera_preview_screen.dart';
 
 class ConversationScreen extends StatefulWidget {

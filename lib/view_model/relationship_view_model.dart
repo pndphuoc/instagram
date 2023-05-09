@@ -37,7 +37,7 @@ class RelationshipViewModel extends ChangeNotifier {
     _rebuildController.sink.add(true);
   }
 
-  Future<bool> isFollowing(String userId, String targetUserId) async {
+  static Future<bool> isFollowing(String userId, String targetUserId) async {
     return await RelationshipRepository.isFollowing(userId, targetUserId);
   }
 

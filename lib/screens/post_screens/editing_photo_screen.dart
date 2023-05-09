@@ -2,12 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:instagram/ultis/colors.dart';
-import 'package:instagram/view_model/asset_view_model.dart';
 import 'package:instagram/view_model/edit_profile_view_model.dart';
-import 'package:provider/provider.dart';
-
-import '../../ultis/ultils.dart';
-import 'add_caption_screen.dart';
 
 class EditingPhotoScreen extends StatefulWidget {
   final File photo;

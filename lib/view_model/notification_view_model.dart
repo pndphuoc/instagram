@@ -36,6 +36,28 @@ class NotificationViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  static Future<void> addFollowNotification({
+    required String receiverId,
+    required String followUsername,
+    required String followUserAvatarUrl,
+}) async {
+    model.Notification notification = model.Notification(
+      interactiveUserId: FirebaseAuth.instance.currentUser!.uid,
+      type: model.NotificationType.follow,
+      userId: receiverId,
+      interactiveUserAvatarUrl: followUserAvatarUrl,
+      interactiveUsername: followUsername,
+      isRead: false,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+      title: model.NotificationMessages.getTitle('follow'),
+      message: model.NotificationMessages.getMessage('follow', followUsername)
+    );
+
+    await NotificationRepository.addNotification(
+        notification: notification);
+  }
+
   static Future<void> addInteractiveNotification(
       {required String interactiveUserAvatarUrl,
         required String receiverId,
@@ -45,6 +67,7 @@ class NotificationViewModel extends ChangeNotifier {
 
     model.Notification notification = model.Notification(
       userId: receiverId,
+        interactiveUserId: FirebaseAuth.instance.currentUser!.uid,
         title: model.NotificationMessages.getTitle(notificationType.name),
         interactiveUsername: interactiveUsername,
         message: model.NotificationMessages.getMessage(
@@ -57,7 +80,7 @@ class NotificationViewModel extends ChangeNotifier {
         isRead: false,
         type: notificationType);
 
-    await NotificationRepository.addInteractiveNotification(
+    await NotificationRepository.addNotification(
         notification: notification);
   }
 }

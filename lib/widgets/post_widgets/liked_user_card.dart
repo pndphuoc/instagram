@@ -32,7 +32,7 @@ class _LikedUserCardState extends State<LikedUserCard> {
   void initState() {
     super.initState();
     _getUserData = _userViewModel.getUserDetails(widget.userId);
-    _isFollowing = _relationshipViewModel.isFollowing(FirebaseAuth.instance.currentUser!.uid, widget.userId);
+    _isFollowing = RelationshipViewModel.isFollowing(FirebaseAuth.instance.currentUser!.uid, widget.userId);
   }
 
   @override

@@ -1,8 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:instagram/models/message.dart';
-import 'package:instagram/view_model/message_view_model.dart';
 import 'package:instagram/view_model/user_view_model.dart';
 import 'package:video_player/video_player.dart';
 

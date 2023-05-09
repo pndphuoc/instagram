@@ -1,13 +1,12 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_crop/image_crop.dart';
 import 'package:instagram/permision_handler.dart';
 import 'package:instagram/route/route_name.dart';
 import 'package:instagram/screens/post_screens/camera_preview_screen.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
-import 'package:instagram/widgets/image_thumbail.dart';
+import 'package:instagram/widgets/common_widgets/image_thumbail.dart';
 import 'package:instagram/widgets/post_widgets/video_player_widget.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
@@ -109,7 +108,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                           );
                         } else {
                           if (value.selectedEntity!.type == AssetType.image) {
-                            return _buildCropImage(snapshot.data!);
+                            return Image.file(snapshot.data!, fit: BoxFit.cover,);
                           } else {
                             return VideoPlayerWidget.file(
                               file: snapshot.data!,
@@ -447,17 +446,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
     );
   }
 
-  Widget _buildCropImage(File imageFile) {
-    return Container(
-      color: Colors.black,
-      padding: const EdgeInsets.all(20.0),
-      child: Crop.file(
-        imageFile,
-        key: cropKeys.first,
-        aspectRatio: 1,
-      ),
-    );
-  }
+
 
 /*Future<void> _cropImage(File image) async {
     final scale = cropKey.currentState!.scale;

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:instagram/ultis/colors.dart';
-import 'package:instagram/view_model/user_view_model.dart';
-import 'package:instagram/widgets/bottom_navigator_bar.dart';
+import 'package:instagram/widgets/common_widgets/bottom_navigator_bar.dart';
 import 'package:instagram/widgets/post_widgets/post_card.dart';
 
 import '../../models/post.dart';

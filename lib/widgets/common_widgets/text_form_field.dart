@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:instagram/view_model/elastic_view_model.dart';
 
 class TextFormFieldInput extends StatelessWidget {
   final TextEditingController textEditingController;

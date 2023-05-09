@@ -40,11 +40,12 @@ class NotificationRepository {
       ).toList());
     }
 
-    static Future<void> addInteractiveNotification({required Notification notification}) async {
+    static Future<void> addNotification({required Notification notification}) async {
       final ref = _notificationsRef.doc();
       notification.id = ref.id;
 
       await _notificationsRef.add(notification.toJson());
     }
+
 }
   
