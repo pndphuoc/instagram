@@ -22,12 +22,6 @@ class _ChatScreenState extends State<ChatScreen> {
   late Stream<List<String>> _getConversationIds;
   final ConversationViewModel _conversationViewModel = ConversationViewModel();
   final double activeAvatarSize = 35;
-  final UserSummaryInformation fakeData = UserSummaryInformation(
-      userId: "ccc",
-      username: "hiii_chin",
-      displayName: "Nguyễn Thùy Chin",
-      avatarUrl:
-          "https://firebasestorage.googleapis.com/v0/b/instagram-b3812.appspot.com/o/photos%2F1681318354694?alt=media&token=91d18015-746a-4a6b-a9ba-293f5f056a07");
   final searchFieldBorder =
       OutlineInputBorder(borderRadius: BorderRadius.circular(10));
   late Conversation conversation;
@@ -84,7 +78,7 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Widget _buildActiveFriendList(BuildContext context) {
+/*  Widget _buildActiveFriendList(BuildContext context) {
     return SizedBox(
       width: MediaQuery.of(context).size.width,
       height: activeAvatarSize * 2 + 25,
@@ -98,30 +92,7 @@ class _ChatScreenState extends State<ChatScreen> {
         itemBuilder: (context, index) => _buildActiveUser(context, fakeData),
       ),
     );
-  }
-
-  Widget _buildActiveUser(BuildContext context, UserSummaryInformation user) {
-    return SizedBox(
-      width: activeAvatarSize * 2,
-      height: activeAvatarSize * 2 + 25,
-      child: Column(
-        children: [
-          AvatarWithStatus(
-            userId: user.userId,
-            radius: activeAvatarSize,
-            imageUrl: user.avatarUrl,
-          ),
-          const SizedBox(
-            height: 5,
-          ),
-          Text(
-            user.username,
-            style: Theme.of(context).textTheme.labelMedium,
-          )
-        ],
-      ),
-    );
-  }
+  }*/
 
   Widget _buildSearchBar(BuildContext context) {
     return Container(

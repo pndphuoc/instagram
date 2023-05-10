@@ -181,6 +181,7 @@ class PostViewModel extends ChangeNotifier {
         isDeleted: false,
         likedListId: '',
         updateAt: DateTime.now(),
+        isArchived: false,
         viewedListId: '');
 
     handleUploadNewPost(post, assetViewModel);

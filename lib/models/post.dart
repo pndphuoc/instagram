@@ -15,6 +15,7 @@ class Post {
   DateTime createAt;
   DateTime updateAt;
   bool isDeleted;
+  bool isArchived;
   bool isLiked = false;
   Post({
     required this.uid,
@@ -30,6 +31,7 @@ class Post {
     required this.avatarUrl,
     required this.createAt,
     required this.updateAt,
+    required this.isArchived,
     required this.isDeleted,
   });
 
@@ -51,6 +53,7 @@ class Post {
       createAt: json['createAt'].toDate(),
       updateAt: json['updateAt'].toDate(),
       isDeleted: json['isDeleted'] as bool,
+      isArchived: json['isArchived'] as bool
     );
   }
 
@@ -71,6 +74,7 @@ class Post {
       'createAt': createAt,
       'updateAt': updateAt,
       'isDeleted': isDeleted,
+      'isArchived': isArchived
     };
   }
 }

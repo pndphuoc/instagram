@@ -28,7 +28,9 @@ class _PostDetailsScreenState extends State<PostDetailsScreen> {
   late Future _getPostDetail;
   @override
   void initState() {
-    _getPostDetail = _postViewModel.getPost(widget.postId!, _likeViewModel);
+    if (widget.postId != null) {
+      _getPostDetail = _postViewModel.getPost(widget.postId!, _likeViewModel);
+    }
     super.initState();
   }
 

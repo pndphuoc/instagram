@@ -39,6 +39,7 @@ class NotificationCard extends StatelessWidget {
                 ]
               )),
             ),
+            const SizedBox(width: 10,),
             notification.type != model.NotificationType.follow ?
                 CachedNetworkImage(imageUrl: notification.firstImage!, width: 50, height: 50, fit: BoxFit.cover,) :
                 FutureBuilder(
@@ -54,12 +55,7 @@ class NotificationCard extends StatelessWidget {
                               )
                           ), child: const Text("Follow"));
                         } else {
-                          return ElevatedButton(onPressed: (){}, style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(7)
-                            )
-                          ), child: const Text("Unfollow"));
+                          return Container();
                         }
                       } else {
                         return Center(child: Text(snapshot.error.toString()),);

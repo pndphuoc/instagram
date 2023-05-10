@@ -222,8 +222,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     color: Colors.blue,
                                     borderRadius:
                                     BorderRadius.all(Radius.circular(4))),
-                                child: const Text(
-                                  'Sign up',
+                                child: Text(
+                                  'Sign up', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white),
                                 )),
                           );
                         }

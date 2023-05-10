@@ -178,7 +178,7 @@ class _PostCardState extends State<PostCard> {
             GestureDetector(
               onTap: () {
                 _likeViewModel.toggleLikePost(widget.post).then((value) {
-                  if (value) {
+                  if (value && widget.post.userId != _currentUserViewModel.user!.uid) {
                     NotificationViewModel.addInteractiveNotification(
                         receiverId: widget.post.userId,
                         interactiveUserAvatarUrl:
@@ -190,7 +190,6 @@ class _PostCardState extends State<PostCard> {
                         firstImage: widget.post.medias.first.url);
                   }
                 });
-
               },
               child: LikeAnimation(
                   isAnimating: snapshot.data!,

@@ -30,7 +30,7 @@ class ConversationRepository{
 
       for (DocumentSnapshot<Object?> document in snapshot.docs) {
         Map<String, dynamic> data = document.data() as Map<String, dynamic>;
-        String id = data['conversationId'][0];
+        String id = data['conversationId'];
         ids.add(id);
       }
       return ids;
@@ -58,7 +58,7 @@ class ConversationRepository{
           .collection('conversations')
           .doc(conversationId)
           .set({
-        "conversationId": FieldValue.arrayUnion([conversationId]),
+        "conversationId": conversationId,
         "lastMessageTime": messageTime,
         "isTurnOffNotification": false
       });

@@ -67,9 +67,9 @@ class _LoginScreenState extends State<LoginScreen> {
               flex: 1,
               child: Container(),
             ),
-            SvgPicture.asset(
-              'assets/ic_instagram.svg',
-              height: 64,
+            Image.asset(
+              'assets/logo.png',
+              height: MediaQuery.of(context).size.height / 4.5,
             ),
             const SizedBox(
               height: 64,
@@ -119,8 +119,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         decoration: const BoxDecoration(
                             color: Colors.blue,
                             borderRadius: BorderRadius.all(Radius.circular(4))),
-                        child: const Text(
-                          'Log In',
+                        child: Text(
+                          'Log In', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white),
                         )),
                   );
                 } else {

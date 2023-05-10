@@ -103,10 +103,9 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
   AppBar _appBar(BuildContext context) {
     return AppBar(
       backgroundColor: mobileBackgroundColor,
-      title: SvgPicture.asset(
-        'assets/ic_instagram.svg',
+      title: Image.asset(
+        'assets/logo.png',
         width: MediaQuery.of(context).size.width / 3,
-        color: primaryColor,
       ),
       actions: [
         Padding(

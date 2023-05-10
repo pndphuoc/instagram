@@ -60,19 +60,20 @@ class LikeViewModel extends ChangeNotifier {
 
   Future<bool> toggleLikePost(Post post) async {
     if (!post.isLiked) {
-      await LikeRepository.like(
-          post.likedListId, _auth.currentUser!.uid);
       post.likeCount++;
       post.isLiked = true;
+      _likeController.sink.add(post.isLiked);
+      await LikeRepository.like(
+          post.likedListId, _auth.currentUser!.uid);
     } else {
+      post.likeCount--;
+      post.isLiked = false;
+      _likeController.sink.add(post.isLiked);
       await LikeRepository.unlike(
         post.likedListId,
         _auth.currentUser!.uid,
       );
-      post.likeCount--;
-      post.isLiked = false;
     }
-    _likeController.sink.add(post.isLiked);
     return post.isLiked;
   }
 

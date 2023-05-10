@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/notification_view_model.dart';
+import 'package:instagram/widgets/animation_widgets/show_right.dart';
 import 'package:instagram/widgets/notification_widgets/notification_card.dart';
 import 'package:provider/provider.dart';
 
@@ -29,7 +30,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: value.notifications.length,
-                    itemBuilder: (context, index) => NotificationCard(notification: value.notifications[index]),);
+                    itemBuilder: (context, index) => ShowRight(child: NotificationCard(notification: value.notifications[index])),);
                 default:
                   return const Center(child: CircularProgressIndicator(),);
               }
