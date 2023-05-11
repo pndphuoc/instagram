@@ -74,6 +74,9 @@ dependencies:
   badges: ^3.1.1
   flutter_slidable: ^3.0.0
   elastic_client: ^0.3.12
+  intl: ^0.17.0
+  readmore: ^2.2.0
+  ionicons: ^0.2.2
 
 
 dev_dependencies:
