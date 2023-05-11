@@ -4,6 +4,7 @@ import 'package:instagram/screens/contest_screen/create_contest_screen.dart';
 import 'package:instagram/screens/notification_screens/notifications_screen.dart';
 import 'package:instagram/screens/post_screens/discover_screen.dart';
 
+import '../screens/contest_screens/contest_list_screen.dart';
 import '../screens/post_screens/add_post_screen.dart';
 import '../screens/post_screens/news_feed_screen.dart';
 import '../screens/profile_screens/personal_profile_screen.dart';
@@ -14,7 +15,7 @@ class HomeScreenProvider with ChangeNotifier {
 
   final List<Widget> screens = [
     const NewsFeedScreen(),
-    const CreateContestScreen(),
+    const ContestListScreen(),
     Container(),
     const NotificationsScreen(),
     const PersonalProfileScreen()
