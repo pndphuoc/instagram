@@ -1,11 +1,14 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:instagram/view_model/contest_details_view_model.dart';
 import 'package:instagram/widgets/common_widgets/bottom_navigator_bar.dart';
 import 'package:intl/intl.dart';
 import 'package:ionicons/ionicons.dart';
+import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
 
 import '../../models/contest.dart';
+import '../contest_screen/rank_of_contest_screen.dart';
 
 class ContestDetailScreen extends StatelessWidget {
   const ContestDetailScreen({Key? key, required this.contest})
@@ -14,71 +17,73 @@ class ContestDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          CustomScrollView(
-            slivers: [
-              SliverAppBar(
-                leading: IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.arrow_back),
-                ),
-                pinned: true,
-                expandedHeight: 200.0,
-                flexibleSpace: FlexibleSpaceBar(
-                  background: CachedNetworkImage(
-                    imageUrl: contest.banner,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              buildSliverHeaderBody(context),
-              SliverToBoxAdapter(
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  decoration: const BoxDecoration(
-                      border: Border(
-                          top: BorderSide(width: 1, color: Colors.grey))),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Description',
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleLarge
-                            ?.copyWith(fontWeight: FontWeight.bold),
+    return ListenableProvider<ContestDetailsViewModel>(create: (context) => ContestDetailsViewModel(contestId: contest.uid!),
+      builder: (context, child) => Consumer<ContestDetailsViewModel>(
+        builder: (context, value, child) => Scaffold(
+          body: Stack(
+            children: [
+              CustomScrollView(
+                slivers: [
+                  SliverAppBar(
+                    leading: IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.arrow_back),
+                    ),
+                    pinned: true,
+                    expandedHeight: 200.0,
+                    flexibleSpace: FlexibleSpaceBar(
+                      background: CachedNetworkImage(
+                        imageUrl: contest.banner,
+                        fit: BoxFit.cover,
                       ),
-                      const SizedBox(height: 8),
-                      ReadMoreText(
-                        contest.description,
-                        trimLines: 5,
-                        trimMode: TrimMode.Line,
-                        trimCollapsedText: ' Show more',
-                        trimExpandedText: ' Show less',
-                        style: Theme.of(context).textTheme.titleSmall,
-                        moreStyle: Theme.of(context)
-                            .textTheme
-                            .titleSmall
-                            ?.copyWith(
+                    ),
+                  ),
+                  buildSliverHeaderBody(context),
+                  SliverToBoxAdapter(
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: const BoxDecoration(
+                          border: Border(
+                              top: BorderSide(width: 1, color: Colors.grey))),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Description',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 8),
+                          ReadMoreText(
+                            contest.description,
+                            trimLines: 5,
+                            trimMode: TrimMode.Line,
+                            trimCollapsedText: ' Show more',
+                            trimExpandedText: ' Show less',
+                            style: Theme.of(context).textTheme.titleSmall,
+                            moreStyle: Theme.of(context)
+                                .textTheme
+                                .titleSmall
+                                ?.copyWith(
                                 color: Colors.blue,
                                 fontWeight: FontWeight.bold),
-                        lessStyle: Theme.of(context)
-                            .textTheme
-                            .titleSmall
-                            ?.copyWith(
+                            lessStyle: Theme.of(context)
+                                .textTheme
+                                .titleSmall
+                                ?.copyWith(
                                 color: Colors.blue,
                                 fontWeight: FontWeight.bold),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-              buildListTileItem(context,
-                  title: 'View the contest rules',
-                  onTap: () => showModalBottomSheet(
+                  buildListTileItem(context,
+                      title: 'View the contest rules',
+                      onTap: () => showModalBottomSheet(
                         context: context,
                         isScrollControlled: true,
                         shape: const RoundedRectangleBorder(
@@ -101,42 +106,52 @@ class ContestDetailScreen extends StatelessWidget {
                           ]),
                         ),
                       )),
-              buildListTileItem(context,
-                  title: 'View the leaderboard', onTap: () {}),
-              buildListTileItem(context,
-                  title: 'View the contest entries', onTap: () {}),
-              const SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 100,
-                ),
+                  buildListTileItem(context,
+                      title: 'View the leaderboard', onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => RankOfContest(
+                                contestId: contest.uid! ,rankingList: value.top10PostOfContest)),
+                        );
+                      }),
+                  buildListTileItem(context,
+                      title: 'View the contest entries', onTap: () {}),
+                  const SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: 100,
+                    ),
+                  ),
+                ],
               ),
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: InkWell(
+                  onTap: () {
+                    print('Heiti SC');
+                  },
+                  child: Container(
+                      color: Colors.blue,
+                      height: 60,
+                      child: Center(
+                          child: Text(
+                            'Join the contest'.toUpperCase(),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                          ))),
+                ),
+              )
             ],
           ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: InkWell(
-              onTap: () {
-                print('Heiti SC');
-              },
-              child: Container(
-                  color: Colors.blue,
-                  height: 60,
-                  child: Center(
-                      child: Text(
-                    'Join the contest'.toUpperCase(),
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleLarge
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                  ))),
-            ),
-          )
-        ],
+          bottomNavigationBar: const BottomNavBar(),
+        ),
       ),
-      bottomNavigationBar: const BottomNavBar(),
     );
+
   }
 
   SliverToBoxAdapter buildListTileItem(BuildContext context,
@@ -182,9 +197,9 @@ class ContestDetailScreen extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: (contest.status == ContestStatus.inProgress)
+                    color: (contest.status == ContestStatus.inProgress['status'])
                         ? Colors.green
-                        : (contest.status == ContestStatus.comingSoon)
+                        : (contest.status == ContestStatus.upcoming['status'])
                             ? Colors.amber
                             : Colors.red,
                     borderRadius: BorderRadius.circular(4),

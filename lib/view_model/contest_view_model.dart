@@ -107,5 +107,4 @@ class CreateContestViewModel extends ChangeNotifier {
     if (endDate == null) return;
     notifyListeners();
   }
-
 }
