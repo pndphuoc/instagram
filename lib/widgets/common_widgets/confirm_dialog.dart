@@ -51,7 +51,7 @@ class _ConfirmDialogState extends State<ConfirmDialog>
               ),
               widget.isUnfollow ?
               CircleAvatar(
-                backgroundImage: widget.imageUrl!.isNotEmpty
+                backgroundImage: widget.imageUrl != null
                     ? CachedNetworkImageProvider(widget.imageUrl!)
                     : const AssetImage('assets/default_avatar.png')
                         as ImageProvider,

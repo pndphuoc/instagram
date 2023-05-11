@@ -1,7 +1,8 @@
+import 'dart:convert';
 import 'package:instagram/models/prize.dart';
 
 class Contest {
-  final String uid;
+  final String? uid;
   final String name;
   final String description;
   final String? topic;
@@ -14,7 +15,7 @@ class Contest {
   final String status;
 
   Contest(
-      {required this.uid,
+      {this.uid,
       required this.name,
       required this.description,
       this.topic,
@@ -24,11 +25,12 @@ class Contest {
       required this.banner,
       required this.prizes,
       required this.ownerId,
-      required this.status});
+        required this.status
+      });
 
   factory Contest.fromJson(Map<String, dynamic> json) {
-    final prizeList = json['prizes'].cast<Map<String, dynamic>>();
-    final prizes = prizeList.map((e) => Prize.fromJson(e)).toList();
+    final prizeList = json['prizes'] as List<dynamic>;
+    final List<Prize> prizes = prizeList.map((e) => Prize.fromJson(e as Map<String, dynamic>)).toList();
     return Contest(
         uid: json['uid'],
         name: json['name'],
