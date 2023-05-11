@@ -9,6 +9,7 @@ class ContestRepository {
   static final CollectionReference _postRef = FirebaseFirestore.instance.collection('posts');
   static Future<void> addContest(Contest contest) async {
     try {
+      contest.uid = _contestRef.doc().id;
       await _contestRef.add(contest.toJson());
     } catch (e) {
       rethrow;
@@ -55,6 +56,15 @@ class ContestRepository {
     try {
       final snap = await _contestRef.where('status', isEqualTo: ContestStatus.expired['status']).orderBy('createAt').get();
       return snap.docs.map((e) => Contest.fromJson(e.data() as Map<String, dynamic>)).toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+  
+  static Future<List<Post>> getPostsOfContest(String contestId, {int page = 0, int pageSize = 10}) async {
+    try {
+      final snap = await _postRef.where('contestId', isEqualTo: contestId).orderBy('createAt', descending: true).orderBy('likeCount', descending: true).get();
+      return snap.docs.map((e) => Post.fromJson(e.data() as Map<String, dynamic>)).toList();
     } catch (e) {
       rethrow;
     }

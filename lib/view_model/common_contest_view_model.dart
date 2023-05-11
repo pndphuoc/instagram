@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:instagram/repository/contest_repository.dart';
 
 import '../models/contest.dart';
+import '../models/post.dart';
 
 class CommonContestViewModel extends ChangeNotifier {
   List<Contest> _upcomingContests = [];
@@ -15,27 +16,34 @@ class CommonContestViewModel extends ChangeNotifier {
   }
   Future<void> getContest({int page = 0, int pageSize = 10}) async {
     ContestRepository.getUpcomingContest().then((list) {
-      print("upcoming");
       _upcomingContests = list;
-      print("${_upcomingContests.length}");
       notifyListeners();
     });
 
     ContestRepository.getProgressingContest().then((list) {
-      print("progressing");
       _progressingContests = list;
-      print("${_progressingContests.length}");
       notifyListeners();
     });
 
     ContestRepository.getExpiredContest().then((list) {
-      print("expired");
       _expiredContests = list;
-      print("${_expiredContests.length}");
       notifyListeners();
     });
     notifyListeners();
   }
+
+  List<Post> _posts = [];
+
+
+  List<Post> get posts => _posts;
+  bool isLoadingPosts = false;
+
+
+  Future<void> getPostsOfContest(String contestId, {int page = 0, int pageSize = 10}) async {
+    _posts = await ContestRepository.getPostsOfContest(contestId);
+  }
+
+
 
   List<Contest> get progressingContests => _progressingContests;
 

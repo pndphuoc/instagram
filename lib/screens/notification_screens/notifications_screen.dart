@@ -30,7 +30,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: value.notifications.length,
-                    itemBuilder: (context, index) => ShowRight(child: NotificationCard(notification: value.notifications[index])),);
+                    itemBuilder: (context, index) => NotificationCard(notification: value.notifications[index]),);
                 default:
                   return const Center(child: CircularProgressIndicator(),);
               }

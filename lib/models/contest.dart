@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:instagram/models/prize.dart';
 
 class Contest {
-  final String? uid;
+  late final String? uid;
   final String name;
   final String description;
   final String? topic;
@@ -46,6 +46,7 @@ class Contest {
   }
 
   Map<String, dynamic> toJson() => {
+        'uid': uid,
         'name': name,
         'description': description,
         'topic': topic,

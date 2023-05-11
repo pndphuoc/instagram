@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:instagram/models/contest.dart';
-import 'package:instagram/screens/contest_screen/rank_of_contest_screen.dart';
-import 'package:instagram/screens/contest_screens/components/card_banner_list.dart';
+import 'package:instagram/screens/contest_screens/components/contest_tab.dart';
 import 'package:instagram/ultis/colors.dart';
-import 'package:instagram/view_model/contest_details_view_model.dart';
 
 class ContestListScreen extends StatefulWidget {
   const ContestListScreen({Key? key}) : super(key: key);
@@ -33,7 +31,7 @@ class _ContestListScreenState extends State<ContestListScreen>
           controller: _tabController,
           tabs: [
             Text(
-              ContestStatus.upcoming['name'],
+              ContestStatus.inProgress['name'],
               style: Theme.of(context).textTheme.titleSmall,
             ),
             Text(

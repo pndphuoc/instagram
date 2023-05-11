@@ -8,7 +8,7 @@ class ContestDetailsViewModel extends ChangeNotifier {
   late String contestId;
   Contest? contestDetails;
   ContestDetailsViewModel({required this.contestId}) {
-    getContestDetails().whenComplete(() => getTop10PostOfContest());
+    getContestDetails();
   }
 
   bool _isLoading = false;
@@ -26,7 +26,6 @@ class ContestDetailsViewModel extends ChangeNotifier {
 
   Future<void> getTop10PostOfContest() async {
     _top10PostOfContest = await ContestRepository.getTop10PostOfContest(contestId);
-
     _isLoading = false;
     notifyListeners();
   }

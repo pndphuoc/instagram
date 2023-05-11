@@ -210,7 +210,9 @@ class _RankOfContestState extends State<RankOfContest> {
                 .textTheme
                 .bodyMedium,
           ),
-          IconButton(onPressed: (){}, icon: const Icon(Icons.remove_red_eye_outlined, color: Colors.white,))
+          IconButton(onPressed: (){
+            Navigator.push(context, MaterialPageRoute(builder: (context) => PostDetailsScreen(postId: postId,),));
+          }, icon: const Icon(Icons.remove_red_eye_outlined, color: Colors.white,))
         ],
       ),
     );
