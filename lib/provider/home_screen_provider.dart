@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:instagram/route/route_name.dart';
+import 'package:instagram/screens/contest_screen/create_contest_screen.dart';
 import 'package:instagram/screens/notification_screens/notifications_screen.dart';
 import 'package:instagram/screens/post_screens/discover_screen.dart';
 
@@ -13,7 +14,7 @@ class HomeScreenProvider with ChangeNotifier {
 
   final List<Widget> screens = [
     const NewsFeedScreen(),
-    const DiscoverScreen(),
+    const CreateContestScreen(),
     Container(),
     const NotificationsScreen(),
     const PersonalProfileScreen()
