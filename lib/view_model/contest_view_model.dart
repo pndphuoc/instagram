@@ -23,9 +23,13 @@ class CreateContestViewModel extends ChangeNotifier {
   List<TextEditingController> prizeControllers = [];
   final List<Prize> prizes = [];
   bool _isCreating = false;
-
   bool get isCreating => _isCreating;
   File? _banner;
+
+  int _awardMethod = AwardMethod.interaction['code'];
+
+  int get awardMethod => _awardMethod;
+
 
   File? get banner => _banner;
 
@@ -70,6 +74,8 @@ class CreateContestViewModel extends ChangeNotifier {
         ownerId: FirebaseAuth.instance.currentUser!.uid,
         rules: rulesController.text,
         topic: topicController.text,
+        awardMethod: _awardMethod,
+        createAt: DateTime.now(),
         status: 'upcoming');
     await ContestRepository.addContest(newContest);
 
@@ -105,6 +111,11 @@ class CreateContestViewModel extends ChangeNotifier {
             : DateTime.now().add(const Duration(days: 1)),
         lastDate: DateTime.now().add(const Duration(days: 120)));
     if (endDate == null) return;
+    notifyListeners();
+  }
+
+  void onChangeAwardMethod(int methodId) {
+    _awardMethod = methodId;
     notifyListeners();
   }
 }

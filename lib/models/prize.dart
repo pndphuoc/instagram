@@ -1,10 +1,10 @@
 class Prize {
   final String? uid;
   final String name;
-  final String? award;
+  final String award;
   final String? winnerId;
 
-  Prize({this.uid, required this.name, this.award, this.winnerId});
+  Prize({this.uid, required this.name, required this.award, this.winnerId});
 
   factory Prize.fromJson(Map<String, dynamic> json) {
     return Prize(

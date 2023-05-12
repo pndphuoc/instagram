@@ -40,44 +40,59 @@ class _ContestTabState extends State<ContestTab> {
   }
 
   Widget buildCardBannerItem(BuildContext context, {required Contest contest}) {
-    return InkWell(
-      onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) => ContestDetailScreen(contest: contest),));
-      },
-      child: AspectRatio(
-        aspectRatio: 16/9,
-        child: Stack(
-          children: [
-            Container(
-              width: MediaQuery.of(context).size.width,
-              decoration: BoxDecoration(
-                  color: Colors.grey,
-                  borderRadius: BorderRadius.circular(16),
-                  image: DecorationImage(
-                      image: CachedNetworkImageProvider(contest.banner),
-                      fit: BoxFit.cover)),
-            ),
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                color: Colors.black.withOpacity(0.7),
-                padding: const EdgeInsets.all(8),
-                child: Text(
-                  contest.name,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontWeight: FontWeight.bold),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+    return Stack(
+      children: [
+        InkWell(
+          onTap: () {
+            Navigator.of(context).push(MaterialPageRoute(builder: (context) => ContestDetailScreen(contest: contest),));
+          },
+          child: AspectRatio(
+            aspectRatio: 16/9,
+            child: Stack(
+              children: [
+                Container(
+                  width: MediaQuery.of(context).size.width,
+                  decoration: BoxDecoration(
+                      color: Colors.grey,
+                      borderRadius: BorderRadius.circular(16),
+                      image: DecorationImage(
+                          image: CachedNetworkImageProvider(contest.banner),
+                          fit: BoxFit.cover)),
                 ),
-              ),
-            )
-          ],
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    color: Colors.black.withOpacity(0.7),
+                    padding: const EdgeInsets.all(8),
+                    child: Text(
+                      contest.name,
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ),
         ),
-      ),
+        if (contest.awardMethod == AwardMethod.interaction['code']) Positioned(
+            top: 10,
+            right: 10,
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                color: Colors.black54
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+              child: Text("Vote", style: Theme.of(context).textTheme.labelMedium,),
+            ))
+      ],
     );
   }
 }

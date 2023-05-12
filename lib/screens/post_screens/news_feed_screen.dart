@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:instagram/provider/home_screen_provider.dart';
 import 'package:instagram/screens/message_screens/chat_screen.dart';
+import 'package:instagram/screens/notification_screens/notifications_screen.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
@@ -108,6 +109,43 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
         width: MediaQuery.of(context).size.width / 3,
       ),
       actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 20, top: 10),
+          child: GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder:
+                      (context, animation, secondaryAnimation) =>
+                  const NotificationsScreen(),
+                  transitionsBuilder: (context, animation,
+                      secondaryAnimation, child) {
+                    return buildSlideTransition(animation, child);
+                  },
+                  transitionDuration:
+                  const Duration(milliseconds: 150),
+                  reverseTransitionDuration:  const Duration(milliseconds: 150),
+                ),
+              );
+            },
+            child: Consumer<CurrentUserViewModel>(
+              builder: (context, value, child) {
+                return StreamBuilder(
+                  //stream: value.hasUnReadMessage(),
+                  initialData: false,
+                  builder: (context, snapshot) {
+                    return Badge(
+                      smallSize: 10,
+                      isLabelVisible: snapshot.data!,
+                      child: const Icon(Icons.favorite_border, color: Colors.white,),
+                    );
+                  },);
+              },
+            ),
+          ),
+        )
+,
         Padding(
           padding: const EdgeInsets.only(right: 20, top: 10),
           child: GestureDetector(

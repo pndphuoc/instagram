@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:instagram/provider/home_screen_provider.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
+import 'package:instagram/view_model/common_contest_view_model.dart';
 import 'package:instagram/view_model/post_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/widgets/common_widgets/image_thumbail.dart';
@@ -17,8 +18,12 @@ import 'package:video_player/video_player.dart';
 
 class AddCaptionScreen extends StatefulWidget {
   final File? media;
+  final String? contestId;
+  const AddCaptionScreen({Key? key, this.media,  this.contestId}) : super(key: key);
 
-  const AddCaptionScreen({Key? key, this.media}) : super(key: key);
+  factory AddCaptionScreen.contest({required String contestId, required File media}) {
+    return AddCaptionScreen(contestId: contestId, media: media,);
+  }
 
   @override
   State<AddCaptionScreen> createState() => _AddCaptionScreenState();
@@ -192,7 +197,8 @@ class _AddCaptionScreenState extends State<AddCaptionScreen> {
       actions: [
         GestureDetector(
           onTap: () async {
-            _uploadNewPost(context);
+            widget.contestId == null ?
+            _uploadNewPost(context) : Navigator.pop(context, _controller.text);
           },
           child: const SizedBox(
             height: kToolbarHeight,

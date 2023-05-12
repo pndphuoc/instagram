@@ -2,6 +2,7 @@ import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:instagram/models/contest.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/contest_view_model.dart';
 import 'package:intl/intl.dart';
@@ -104,6 +105,10 @@ class _CreateContestScreenState extends State<CreateContestScreen> with SingleTi
                 height: 10,
               ),
               _buildDateSelector(context, contestViewModel),
+              const SizedBox(
+                height: 10,
+              ),
+              _buildAwardMethodSelector(context, contestViewModel),
               const SizedBox(
                 height: 10,
               ),
@@ -232,6 +237,75 @@ class _CreateContestScreenState extends State<CreateContestScreen> with SingleTi
         )
       ],
     );
+  }
+
+  Widget _buildAwardMethodSelector(BuildContext context, CreateContestViewModel createContestViewModel) {
+    return Selector<CreateContestViewModel, int>(builder: (context, value, child) => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Award method", style: Theme.of(context).textTheme.labelLarge,),
+        const SizedBox(height: 5,),
+        Row(
+          children: [
+            Expanded(
+              child: InkWell(
+                onTap: () {
+                  createContestViewModel.onChangeAwardMethod(AwardMethod.interaction['code']);
+                },
+                child: Container(
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: value == AwardMethod.interaction['code'] ? primaryColor : mobileBackgroundColor,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(10),
+                      bottomLeft: Radius.circular(10),
+                    ),
+                    border: Border.all(
+                      width: 2,
+                      color: secondaryColor,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      AwardMethod.interaction['name'],
+                      style: Theme.of(context).textTheme.labelMedium,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: InkWell(
+                onTap: () {
+                  createContestViewModel.onChangeAwardMethod(AwardMethod.selfDetermined['code']);
+                },
+                child: Container(
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: value == AwardMethod.selfDetermined['code'] ? primaryColor : mobileBackgroundColor,
+                    borderRadius: const BorderRadius.only(
+                      topRight: Radius.circular(10),
+                      bottomRight: Radius.circular(10),
+                    ),
+                    border: Border.all(
+                      width: 2,
+                      color: secondaryColor,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      AwardMethod.selfDetermined['name'],
+                      style:  Theme.of(context).textTheme.labelMedium,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        )
+        ,
+      ],
+    ), selector: (context, createContest) => createContest.awardMethod,);
   }
 
   Widget _prizeBlock(

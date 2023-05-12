@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:instagram/screens/contest_screens/contest_list_screen.dart';
 import 'package:instagram/screens/post_screens/post_list_screen.dart';
 import 'package:instagram/screens/profile_screens/archive_screen.dart';
 import 'package:instagram/screens/profile_screens/edit_profile_screen.dart';
@@ -451,6 +452,34 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
                         ),
                         Text(
                           "Settings",
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                      ],
+                    )),
+              ),
+              InkWell(
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ContestListScreen(ownerId: _currentUserViewModel.user!.uid),
+                      ));
+                },
+                child: Container(
+                    color: Colors.transparent,
+                    width: MediaQuery.of(context).size.width,
+                    height: 50,
+                    child: Row(
+                      children: [
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        const Icon(Icons.photo_library_outlined, size: 35),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        Text(
+                          "My contests",
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                       ],

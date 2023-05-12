@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:instagram/models/contest.dart';
 import 'package:instagram/screens/contest_screens/components/contest_tab.dart';
+import 'package:instagram/screens/contest_screens/create_contest_screen.dart';
+import 'package:instagram/screens/contest_screens/personal_contest_screens.dart';
 import 'package:instagram/ultis/colors.dart';
 
 class ContestListScreen extends StatefulWidget {
-  const ContestListScreen({Key? key}) : super(key: key);
+  final String? ownerId;
+  const ContestListScreen({Key? key, this.ownerId}) : super(key: key);
 
   @override
   State<ContestListScreen> createState() => _ContestListScreenState();
@@ -24,9 +27,6 @@ class _ContestListScreenState extends State<ContestListScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back)),
         bottom: TabBar(
           controller: _tabController,
           tabs: [
@@ -49,8 +49,19 @@ class _ContestListScreenState extends State<ContestListScreen>
         actions: [
           IconButton(
               onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const PersonalContestsScreen(),));
               },
-              icon: const Icon(Icons.search))
+              icon: const Icon(Icons.collections_bookmark_outlined)),
+          IconButton(
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const CreateContestScreen(),));
+              },
+              icon: const Icon(Icons.add_circle_outline_outlined)),
+          IconButton(
+              onPressed: () {
+              },
+              icon: const Icon(Icons.search)),
+
         ],
         title: Text(
           'Contest List',

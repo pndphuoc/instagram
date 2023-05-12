@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:instagram/models/prize.dart';
 
 class Contest {
-  late final String? uid;
+  late String? uid;
   final String name;
   final String description;
   final String? topic;
@@ -10,10 +10,11 @@ class Contest {
   final DateTime startTime;
   final DateTime endTime;
   final String banner;
-  final List<Prize> prizes;
+  List<Prize> prizes;
   final String ownerId;
   final String status;
-
+  final int awardMethod;
+  final DateTime createAt;
   Contest(
       {this.uid,
       required this.name,
@@ -25,7 +26,9 @@ class Contest {
       required this.banner,
       required this.prizes,
       required this.ownerId,
-        required this.status
+        required this.status,
+        required this.awardMethod,
+        required this.createAt
       });
 
   factory Contest.fromJson(Map<String, dynamic> json) {
@@ -42,7 +45,19 @@ class Contest {
         banner: json['banner'],
         prizes: prizes,
         ownerId: json['ownerId'],
-        status: json['status']);
+        awardMethod: json['awardMethod'],
+        createAt: DateTime.parse(json['createAt']),
+        status: getContestStatus(DateTime.parse(json['startTime']), DateTime.parse(json['endTime'])));
+  }
+
+  static String getContestStatus(DateTime startTIme, DateTime endTime) {
+    if (DateTime.now().isBefore(startTIme)) {
+      return ContestStatus.upcoming['status'];
+    } else if (endTime.isBefore(DateTime.now())) {
+      return ContestStatus.expired['status'];
+    } else {
+      return ContestStatus.inProgress['status'];
+    }
   }
 
   Map<String, dynamic> toJson() => {
@@ -56,7 +71,9 @@ class Contest {
         'banner': banner,
         'prizes': prizes.map((e) => e.toJson()).toList(),
         'ownerId': ownerId,
-        'status': status
+        'status': status,
+        'awardMethod': awardMethod,
+        'createAt': createAt.toIso8601String()
       };
 }
 
@@ -74,5 +91,16 @@ class ContestStatus {
   static const Map<String, dynamic> expired = {
     'name': 'Expired',
     'status': 'expired'
+  };
+}
+
+class AwardMethod {
+  static const Map<String, dynamic> interaction = {
+    'name': 'Interaction',
+    'code': 1
+  };
+  static const Map<String, dynamic> selfDetermined = {
+    'name': 'Self-determined',
+    'code': 2
   };
 }

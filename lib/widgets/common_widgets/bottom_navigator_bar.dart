@@ -59,9 +59,8 @@ class _BottomNavBarState extends State<BottomNavBar> {
             ),
             BottomNavigationBarItem(
                 icon: Icon(
-                    Icons.favorite_border_outlined, color: onBackground),
-                activeIcon: Icon(Icons.favorite, color: onBackground),
-                label: 'notifications',
+                    Icons.bar_chart_rounded, color: onBackground),
+                label: 'contest',
                 backgroundColor: mobileBackgroundColor
             ),
             BottomNavigationBarItem(
