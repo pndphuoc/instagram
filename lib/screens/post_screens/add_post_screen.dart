@@ -2,7 +2,9 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:image_crop/image_crop.dart';
 import 'package:instagram/permision_handler.dart';
+import 'package:instagram/repository/dall_e_repository.dart';
 import 'package:instagram/route/route_name.dart';
+import 'package:instagram/screens/ai_post_screens/add_ai_post_screen.dart';
 import 'package:instagram/screens/post_screens/camera_preview_screen.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
@@ -174,7 +176,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
-            flex: 2,
+            flex: 3,
             child: InkWell(
               onTap: () async {
                 await _showBottomModalOfPaths(context, value);
@@ -194,10 +196,28 @@ class _AddPostScreenState extends State<AddPostScreen> {
             ),
           ),
           Expanded(
-              flex: 1,
+              flex: 2,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
+                  InkWell(
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const AddAIPostScreen(),));
+                    },
+                    borderRadius: BorderRadius.circular(35),
+                    child: Container(
+                        height: 35,
+                        width: 35,
+                        decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: value.getIsMultiSelect
+                                ? Colors.blue
+                                : const Color.fromARGB(100, 172, 173, 168)),
+                        child: Center(child: Text("AI", style: Theme.of(context).textTheme.labelMedium,))),
+                  ),
+                  const SizedBox(
+                    width: 10,
+                  ),
                   InkWell(
                     onTap: () {
                       value.setIsMultiSelect = !value.getIsMultiSelect;

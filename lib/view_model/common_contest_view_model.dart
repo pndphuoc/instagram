@@ -23,20 +23,6 @@ class CommonContestViewModel extends ChangeNotifier {
     getContest();
   }
   Future<void> getContest({int page = 0, int pageSize = 10}) async {
-    /*ContestRepository.getUpcomingContest().then((list) {
-      _upcomingContests = list;
-      notifyListeners();
-    });
-
-    ContestRepository.getProgressingContest().then((list) {
-      _progressingContests = list;
-      notifyListeners();
-    });
-
-    ContestRepository.getExpiredContest().then((list) {
-      _expiredContests = list;
-      notifyListeners();
-    });*/
     ContestRepository.getContests().then((value) => classifyContests(value));
     notifyListeners();
   }
@@ -58,12 +44,9 @@ class CommonContestViewModel extends ChangeNotifier {
   List<Post> get posts => _posts;
   bool isLoadingPosts = false;
 
-
   Future<void> getPostsOfContest(String contestId, {int page = 0, int pageSize = 10}) async {
     _posts = await ContestRepository.getPostsOfContest(contestId);
   }
-
-
 
   List<Contest> get progressingContests => _progressingContests;
 

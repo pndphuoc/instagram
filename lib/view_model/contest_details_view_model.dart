@@ -13,6 +13,7 @@ import 'package:mime/mime.dart';
 import '../models/contest.dart';
 import '../models/media.dart';
 import '../models/post.dart';
+import '../models/prize.dart';
 import '../models/user.dart';
 
 class ContestDetailsViewModel extends ChangeNotifier {
@@ -30,7 +31,12 @@ class ContestDetailsViewModel extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   List<Post> _top10PostOfContest = [];
+
   List<Post> get top10PostOfContest => _top10PostOfContest;
+
+  List<Prize> get prizes => contestDetails!.prizes;
+
+  List<Post> winningPosts = [];
 
   Future<void> getContestDetails() async {
     _isLoading = true;
@@ -40,6 +46,19 @@ class ContestDetailsViewModel extends ChangeNotifier {
 
   Future<void> getTop10PostOfContest() async {
     _top10PostOfContest = await ContestRepository.getTop10PostOfContest(contestId);
+  }
+
+  void chooseWinner({required Post post, required Prize prize}) {
+    final index = contestDetails!.prizes.indexWhere((element) => element.name == prize.name);
+    contestDetails!.prizes[index].winnerId = post.uid;
+
+    if (winningPosts.length > index) {
+      winningPosts[index] = post;
+    } else {
+      winningPosts.add(post);
+    }
+
+    notifyListeners();
   }
 
   Future<void> getOwnerUser(String userId) async {
@@ -54,9 +73,24 @@ class ContestDetailsViewModel extends ChangeNotifier {
     if (images.isEmpty) return [];
     return images.map((e) => File(e.path)).toList();
   }
-
+  bool isUpdateAward = false;
   Future<void> updateAward() async {
+    isUpdateAward = true;
+    notifyListeners();
+
     await ContestRepository.updatePrizes(contestId: contestId, prizes: contestDetails!.prizes);
+
+    isUpdateAward = false;
+    notifyListeners();
+  }
+
+  bool isHaveResult() {
+    for(final winner in contestDetails!.prizes) {
+      if (winner.winnerId == null) {
+        return false;
+      }
+    }
+    return true;
   }
 
   Future<String> onUploadPostOfContest({required String caption, required List<File> files, required User currentUser}) async {

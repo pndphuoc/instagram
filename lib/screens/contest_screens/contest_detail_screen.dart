@@ -1,8 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:instagram/screens/contest_screens/award_modification_screen.dart';
 import 'package:instagram/screens/contest_screens/contest_entries_screen.dart';
+import 'package:instagram/screens/contest_screens/contest_result.dart';
 import 'package:instagram/screens/post_screens/add_caption_screen.dart';
 import 'package:instagram/screens/post_screens/post_details_screen.dart';
 import 'package:instagram/view_model/contest_details_view_model.dart';
@@ -134,6 +136,8 @@ class ContestDetailScreen extends StatelessWidget {
                                                 value.top10PostOfContest)),
                                   ));
                         }),
+                        if (value.contestDetails!.awardMethod == AwardMethod.selfDetermined['code']) buildListTileItem(context, title: 'Result', 
+                            onTap: value.isHaveResult() ? () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ContestResult(),)) : () => Fluttertoast.showToast(msg: 'There are currently no results for this contest')),
                         buildListTileItem(context,
                             title: 'Prize details', onTap: () {}),
                         const SliverToBoxAdapter(
@@ -168,7 +172,7 @@ class ContestDetailScreen extends StatelessWidget {
                                       ))),
                             ),
                           ),
-                          if (contest.startTime.isBefore(DateTime.now()) && DateTime.now().isBefore(contest.endTime)) Expanded(
+                          if (contest.startTime.isBefore(DateTime.now())) Expanded(
                             child: InkWell(
                               onTap: () {
                                 Navigator.push(
@@ -245,7 +249,7 @@ class ContestDetailScreen extends StatelessWidget {
                                   ))),
                             ),
                           ),
-                          if (contest.endTime.isBefore(DateTime.now()) && contest.ownerId == FirebaseAuth.instance.currentUser!.uid && contest.awardMethod == AwardMethod.selfDetermined['code']) Expanded(
+                          if (!value.isHaveResult() && contest.endTime.isBefore(DateTime.now()) && contest.ownerId == FirebaseAuth.instance.currentUser!.uid && contest.awardMethod == AwardMethod.selfDetermined['code']) Expanded(
                             child: InkWell(
                               onTap: () {
                                 Navigator.push(context, MaterialPageRoute(builder: (context) => AwardModificationScreen(contestDetailsViewModel: value),));

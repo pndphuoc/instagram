@@ -2,7 +2,7 @@ class Prize {
   final String? uid;
   final String name;
   final String award;
-  final String? winnerId;
+  late String? winnerId;
 
   Prize({this.uid, required this.name, required this.award, this.winnerId});
 
