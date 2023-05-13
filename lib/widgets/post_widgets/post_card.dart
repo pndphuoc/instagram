@@ -364,7 +364,19 @@ class _PostCardState extends State<PostCard> {
                     style: Theme.of(context).textTheme.labelMedium,
                   ),
                 ),
-              )
+              ),
+            if (widget.post.isAIPost)
+              Positioned(
+                  left: 10,
+                  top: 10,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.white)
+                    ),
+                    child: Center(child: Text("AI", style: Theme.of(context).textTheme.labelLarge,),),
+                  ))
           ],
         ),
       ),
@@ -396,7 +408,7 @@ class _PostCardState extends State<PostCard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ExpandableText(
-              widget.post.caption,
+              widget.post.isAIPost ? "Prompt: ${widget.post.caption}" : widget.post.caption,
               expandText: 'show more',
               maxLines: 3,
               animation: true,

@@ -401,6 +401,19 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
                             child: Icon(
                               Icons.slow_motion_video_rounded,
                               color: Colors.white,
+                            )),
+                      if (_currentUserViewModel
+                          .posts[index].isAIPost)
+                        Positioned(
+                            left: 10,
+                            top: 10,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: Colors.white)
+                              ),
+                              child: Center(child: Text("AI", style: Theme.of(context).textTheme.labelSmall,),),
                             ))
                     ],
                   ),

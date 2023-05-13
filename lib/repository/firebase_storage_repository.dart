@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
@@ -85,5 +86,22 @@ class FireBaseStorageRepository {
       rethrow;
     }
     return false;
+  }
+
+  static Future<String> uploadImageFromUrlToFirebaseStorage(String url, String path) async {
+    http.Response response = await http.get(Uri.parse(url));
+    Uint8List imageData = response.bodyBytes;
+
+    Reference ref = _firebaseStorage
+        .ref()
+        .child(path)
+        .child("${DateTime.now().millisecondsSinceEpoch}");
+
+    // Upload ảnh lên Firebase Storage
+    UploadTask uploadTask = ref.putData(imageData);
+    TaskSnapshot snapshot = await uploadTask;
+
+    // Trả về URL của ảnh vừa được upload
+    return await snapshot.ref.getDownloadURL();
   }
 }

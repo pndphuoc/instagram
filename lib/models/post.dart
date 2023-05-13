@@ -17,7 +17,7 @@ class Post {
   bool isDeleted;
   bool isArchived;
   bool isLiked = false;
-
+  bool isAIPost;
   Post({
     required this.uid,
     required this.caption,
@@ -34,6 +34,7 @@ class Post {
     required this.updateAt,
     required this.isArchived,
     required this.isDeleted,
+    required this.isAIPost
   });
 
   factory Post.fromJson(Map<String, dynamic> json) {
@@ -55,6 +56,7 @@ class Post {
       updateAt: json['updateAt'].toDate(),
       isDeleted: json['isDeleted'] as bool,
       isArchived: json['isArchived'] as bool,
+      isAIPost: json['isAIPost'] ?? false
     );
   }
 
@@ -75,6 +77,7 @@ class Post {
       'createAt': createAt,
       'updateAt': updateAt,
       'isDeleted': isDeleted,
+      'isAIPost': isAIPost,
       'isArchived': isArchived,
     };
   }
@@ -100,6 +103,7 @@ class ContestPost extends Post {
     required DateTime updateAt,
     required bool isDeleted,
     required bool isArchived,
+    required bool isAIPost,
     this.isContestPost = true,
   }) : super(
     uid: uid,
@@ -117,6 +121,7 @@ class ContestPost extends Post {
     updateAt: updateAt,
     isDeleted: isDeleted,
     isArchived: isArchived,
+    isAIPost: isAIPost
   );
 
   factory ContestPost.fromJson(Map<String, dynamic> json) {
@@ -141,6 +146,7 @@ class ContestPost extends Post {
       isDeleted: json['isDeleted'] ?? false,
       isArchived: json['isArchived'] ?? false,
       isContestPost: json['isContestPost'] ?? false,
+      isAIPost: json['isAIPost'] ?? false
     );
   }
 
@@ -149,6 +155,76 @@ class ContestPost extends Post {
     final Map<String, dynamic> data = super.toJson();
     data['contestId'] = contestId;
     data['isContestPost'] = isContestPost;
+    return data;
+  }
+}
+
+class AIPost extends Post {
+  final bool isShareToAISpace;
+
+  AIPost({
+    required this.isShareToAISpace,
+    required isAIPost,
+    required String uid,
+    required String caption,
+    required String commentListId,
+    required int commentCount,
+    required String likedListId,
+    required int likeCount,
+    required String viewedListId,
+    required List<Media> medias,
+    required String userId,
+    required String username,
+    required String avatarUrl,
+    required DateTime createAt,
+    required DateTime updateAt,
+    required bool isDeleted,
+    required bool isArchived,
+  }) : super(
+    uid: uid,
+    caption: caption,
+    commentListId: commentListId,
+    commentCount: commentCount,
+    likedListId: likedListId,
+    likeCount: likeCount,
+    viewedListId: viewedListId,
+    medias: medias,
+    userId: userId,
+    username: username,
+    avatarUrl: avatarUrl,
+    createAt: createAt,
+    updateAt: updateAt,
+    isDeleted: isDeleted,
+    isArchived: isArchived,
+    isAIPost: isAIPost
+  );
+
+  factory AIPost.fromJson(Map<String, dynamic> json) {
+    return AIPost(
+      isShareToAISpace: json['isShareToAISpace'],
+      isAIPost: json['isAIPost'],
+      uid: json['uid'],
+      caption: json['caption'],
+      commentListId: json['commentListId'],
+      commentCount: json['commentCount'],
+      likedListId: json['likedListId'],
+      likeCount: json['likeCount'],
+      viewedListId: json['viewedListId'],
+      medias: List<Media>.from(json['medias'].map((m) => Media.fromJson(m))),
+      userId: json['userId'],
+      username: json['username'],
+      avatarUrl: json['avatarUrl'],
+      createAt: DateTime.parse(json['createAt']),
+      updateAt: DateTime.parse(json['updateAt']),
+      isDeleted: json['isDeleted'],
+      isArchived: json['isArchived'],
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = super.toJson();
+    data['isShareToAISpace'] = isShareToAISpace;
     return data;
   }
 }

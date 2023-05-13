@@ -166,7 +166,7 @@ class PostViewModel extends ChangeNotifier {
     isUploading = false;
   }
 
-  void onUploadButtonTap(String caption, user.User user, AssetViewModel assetViewModel) {
+  void onUploadButtonTap(String caption, user.User user, AssetViewModel assetViewModel, {bool isAIPost = false}) {
     Post post = Post(
         caption: caption,
         userId: user.uid,
@@ -182,6 +182,7 @@ class PostViewModel extends ChangeNotifier {
         likedListId: '',
         updateAt: DateTime.now(),
         isArchived: false,
+        isAIPost: isAIPost,
         viewedListId: '');
 
     handleUploadNewPost(post, assetViewModel);

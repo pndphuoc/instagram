@@ -203,6 +203,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                   InkWell(
                     onTap: () {
                       Navigator.push(context, MaterialPageRoute(builder: (context) => const AddAIPostScreen(),));
+                      //DallERepository.generateImages(prompt: "an image depicting alien creatures walking on the ground in a post-apocalyptic Earth, with collapsed buildings and lush vegetation, in a realistic style.");
                     },
                     borderRadius: BorderRadius.circular(35),
                     child: Container(

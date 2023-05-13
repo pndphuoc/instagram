@@ -111,6 +111,7 @@ class ContestDetailsViewModel extends ChangeNotifier {
         updateAt: DateTime.now(),
         isArchived: false,
         isContestPost: true,
+        isAIPost: false,
         viewedListId: '', contestId: contestId);
 
     String postId = await PostRepository.addContestPost(post);

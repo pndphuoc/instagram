@@ -85,6 +85,27 @@ class PostRepository{
     return uid;
   }
 
+  static Future<String> addAIPost(AIPost post) async {
+    DocumentReference docRef = _postsCollection.doc();
+    String uid = docRef.id;
+    post.uid = uid;
+
+    DocumentReference likeRef = _likesCollection.doc();
+    likeRef.set({"likedBy": [], "postId": uid});
+    post.likedListId = likeRef.id;
+
+    DocumentReference commentListRef = _commentListCollection.doc();
+    commentListRef.set({"uid": commentListRef.id, "postId": uid});
+    post.commentListId = commentListRef.id;
+
+    DocumentReference viewedListRef = _viewedListCollection.doc();
+    viewedListRef.set({"uid": viewedListRef.id, "postId": uid});
+    post.viewedListId = viewedListRef.id;
+
+    await docRef.set(post.toJson());
+    return uid;
+  }
+
   static Future<void> updateCaption({required String postId, required String caption}) async {
     await _postsCollection.doc(postId).update({
       'caption': caption
