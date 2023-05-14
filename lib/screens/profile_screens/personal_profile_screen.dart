@@ -181,7 +181,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
                   backgroundColor: secondaryColor),
               child: Text(
                 "Edit profile",
-                style: Theme.of(context).textTheme.titleMedium,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(color: onSecondaryBackground),
               )),
         ),
         const SizedBox(
@@ -207,7 +207,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
                   backgroundColor: secondaryColor),
               child: Text(
                 "Log out",
-                style: Theme.of(context).textTheme.titleMedium,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(color: onSecondaryBackground),
               )),
         ),
         const SizedBox(

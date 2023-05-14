@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:instagram/models/media.dart';
 import 'package:instagram/provider/home_screen_provider.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/add_ai_post_view_model.dart';

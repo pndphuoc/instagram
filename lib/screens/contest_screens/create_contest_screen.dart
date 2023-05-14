@@ -55,7 +55,7 @@ class _CreateContestScreenState extends State<CreateContestScreen> with SingleTi
 
   Widget _buildInputField(
       BuildContext context, String name, TextEditingController controller,
-      {bool isMultiLines = false, Color outlineBorderColor = secondaryColor}) {
+      {bool isMultiLines = false, Color outlineBorderColor = Colors.grey}) {
     final inputBorder = OutlineInputBorder(
         borderSide:
             Divider.createBorderSide(context, width: 2, color: outlineBorderColor));
@@ -154,13 +154,13 @@ class _CreateContestScreenState extends State<CreateContestScreen> with SingleTi
                   child: Container(
                     width: MediaQuery.of(context).size.width,
                     decoration: BoxDecoration(
-                      border: Border.all(color: secondaryColor, width: 2),
+                      border: Border.all(color: Colors.grey, width: 2),
                     ),
                     child: const Center(
                       child: Icon(
                         Icons.add,
                         size: 50,
-                        color: secondaryColor,
+                        color: Colors.grey,
                       ),
                     ),
                   ),
@@ -225,7 +225,7 @@ class _CreateContestScreenState extends State<CreateContestScreen> with SingleTi
             height: 50,
             width: MediaQuery.of(context).size.width,
             decoration: BoxDecoration(
-                border: Border.all(color: secondaryColor, width: 2),
+                border: Border.all(color: Colors.grey, width: 2),
                 borderRadius: BorderRadius.circular(10)),
             child: const Center(
               child: Icon(
@@ -262,13 +262,13 @@ class _CreateContestScreenState extends State<CreateContestScreen> with SingleTi
                     ),
                     border: Border.all(
                       width: 2,
-                      color: secondaryColor,
+                      color: Colors.grey,
                     ),
                   ),
                   child: Center(
                     child: Text(
                       AwardMethod.interaction['name'],
-                      style: Theme.of(context).textTheme.labelMedium,
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(color: value == AwardMethod.interaction['code'] ? onSecondaryBackground : onBackground),
                     ),
                   ),
                 ),
@@ -289,13 +289,13 @@ class _CreateContestScreenState extends State<CreateContestScreen> with SingleTi
                     ),
                     border: Border.all(
                       width: 2,
-                      color: secondaryColor,
+                      color: Colors.grey,
                     ),
                   ),
                   child: Center(
                     child: Text(
                       AwardMethod.selfDetermined['name'],
-                      style:  Theme.of(context).textTheme.labelMedium,
+                      style:  Theme.of(context).textTheme.labelMedium
                     ),
                   ),
                 ),
@@ -319,7 +319,7 @@ class _CreateContestScreenState extends State<CreateContestScreen> with SingleTi
       height: 50,
       width: MediaQuery.of(context).size.width,
       decoration: BoxDecoration(
-          border: Border.all(color: secondaryColor, width: 2),
+          border: Border.all(color: Colors.grey, width: 2),
           borderRadius: BorderRadius.circular(10)),
       child: Row(
         children: [
@@ -330,7 +330,7 @@ class _CreateContestScreenState extends State<CreateContestScreen> with SingleTi
                 maxLines: null,
               )),
           const VerticalDivider(
-            color: secondaryColor,
+            color: Colors.grey,
             width: 2,
           ),
           Expanded(
@@ -377,7 +377,7 @@ class _CreateContestScreenState extends State<CreateContestScreen> with SingleTi
                     ),
                     border: Border.all(
                       width: 2,
-                      color: secondaryColor,
+                      color: Colors.grey,
                     ),
                   ),
                   child: Center(
@@ -403,7 +403,7 @@ class _CreateContestScreenState extends State<CreateContestScreen> with SingleTi
                     ),
                     border: Border.all(
                       width: 2,
-                      color: secondaryColor,
+                      color: Colors.grey,
                     ),
                   ),
                   child: Center(
@@ -454,7 +454,7 @@ class _CreateContestScreenState extends State<CreateContestScreen> with SingleTi
     return ScaleTransition(
       scale: _animation,
       child: Dialog(
-        backgroundColor: secondaryColor,
+        backgroundColor: Colors.grey,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20)
         ),
