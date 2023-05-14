@@ -14,6 +14,7 @@ import '../../main.dart';
 import '../../models/user.dart' as model;
 import '../../ultis/ultils.dart';
 import '../../widgets/common_widgets/sticky_tab_bar_delegate.dart';
+import '../../widgets/post_widgets/mini_post_card.dart';
 import 'follower_following_list_screen.dart';
 
 class PersonalProfileScreen extends StatefulWidget {
@@ -363,60 +364,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
                       ),
                     );
                   },
-                  child: Stack(
-                    children: [
-                      if (_currentUserViewModel
-                              .posts[index].medias.first.type ==
-                          'image')
-                        CachedNetworkImage(
-                          imageUrl: _currentUserViewModel
-                              .posts[index].medias.first.url,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          height: double.infinity,
-                          fadeInDuration: const Duration(milliseconds: 100),
-                        )
-                      else
-                        Positioned.fill(
-                          child: VideoPlayerWidget.network(
-                            url: _currentUserViewModel
-                                .posts[index].medias.first.url,
-                            isPlay: false,
-                          ),
-                        ),
-                      if (_currentUserViewModel.posts[index].medias.length > 1)
-                        const Positioned(
-                            top: 5,
-                            right: 5,
-                            child: Icon(
-                              Icons.layers_rounded,
-                              color: Colors.white,
-                            ))
-                      else if (_currentUserViewModel
-                              .posts[index].medias.first.type ==
-                          'video')
-                        const Positioned(
-                            top: 5,
-                            right: 5,
-                            child: Icon(
-                              Icons.slow_motion_video_rounded,
-                              color: Colors.white,
-                            )),
-                      if (_currentUserViewModel
-                          .posts[index].isAIPost)
-                        Positioned(
-                            left: 10,
-                            top: 10,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: Colors.white)
-                              ),
-                              child: Center(child: Text("AI", style: Theme.of(context).textTheme.labelSmall,),),
-                            ))
-                    ],
-                  ),
+                  child: MiniPostCard(post: _currentUserViewModel.posts[index]),
                 );
               },
             );

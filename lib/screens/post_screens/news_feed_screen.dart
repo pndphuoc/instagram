@@ -3,6 +3,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:instagram/provider/home_screen_provider.dart';
 import 'package:instagram/screens/message_screens/chat_screen.dart';
 import 'package:instagram/screens/notification_screens/notifications_screen.dart';
+import 'package:instagram/screens/post_screens/ai_space_news_feed_screen.dart';
+import 'package:instagram/screens/post_screens/following_news_feed.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/asset_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
@@ -22,81 +24,29 @@ class NewsFeedScreen extends StatefulWidget {
   State<NewsFeedScreen> createState() => _NewsFeedScreenState();
 }
 
-class _NewsFeedScreenState extends State<NewsFeedScreen> {
-  late Future _getPosts;
-  late CurrentUserViewModel _currentUserViewModel;
+class _NewsFeedScreenState extends State<NewsFeedScreen> with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
 
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    NotificationController().addListener(() => setState(() {}));
-    _currentUserViewModel = context.read<CurrentUserViewModel>();
-    _getPosts = context.read<PostViewModel>().getPosts(_currentUserViewModel.user!.followingListId);
-  }
-
-  Future<void> _refresh() async {
-    setState(() {
-      _getPosts = context.read<PostViewModel>().getPosts(_currentUserViewModel.user!.followingListId);
-    });
+    _tabController = TabController(length: 2, vsync: this);
   }
 
 
   @override
   Widget build(BuildContext context) {
-    final assetProvider = Provider.of<AssetViewModel>(context, listen: false);
+    super.build(context);
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: _appBar(context),
-      body: RefreshIndicator(
-        onRefresh: _refresh,
-        child: Consumer<PostViewModel>(
-          builder: (context, value, child) {
-            return FutureBuilder(
-              future: _getPosts,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return SingleChildScrollView(
-                    child: Column(
-                      children: const [
-                        PostShimmer(),
-                        SizedBox(height: 20,),
-                        PostShimmer(),
-                      ],
-                    ),
-                  );
-                } else if (snapshot.connectionState == ConnectionState.done) {
-                  if (value.posts.isNotEmpty) {
-                    return ListView.separated(
-                      controller: context.read<HomeScreenProvider>().scrollController,
-                      cacheExtent: 1000,
-                      separatorBuilder: (context, index) => const SizedBox(
-                        height: 20,
-                      ),
-                      itemCount: value.posts.length,
-                      itemBuilder: (context, index) {
-                        if (value.isUploading && index == 0) {
-                          return UploadingPostCard(
-                              post: value.posts.first,
-                              asset: assetProvider.firstAsset);
-                        }
-                        return PostCard(post: value.posts[index]);
-                      },
-                    );
-                  } else {
-                    return const Center(
-                      child: Text("No post"),
-                    );
-                  }
-                } else {
-                  return const Center(
-                    child: Text("Error"),
-                  );
-                }
-              },
-            );
-          },
-        ),
+      body: TabBarView(
+        controller: _tabController,
+        children: const [
+          FollowingNewsFeedScreen(),
+          AISpaceNewsFeedScreen()
+        ],
       ),
     );
   }
@@ -107,6 +57,22 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
       title: Image.asset(
         'assets/logo.png',
         width: MediaQuery.of(context).size.width / 3,
+      ),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(30),
+        child: TabBar(
+          dividerColor: const Color.fromRGBO(246, 200, 200, 1.0),
+          indicatorColor: const Color.fromRGBO(246, 200, 200, 1.0),
+          controller: _tabController,
+          tabs: [
+            SizedBox(
+                height: 30,
+                child: Text("Following", style: Theme.of(context).textTheme.labelLarge,)),
+            SizedBox(
+                height: 30,
+                child: Text("AI Space", style: Theme.of(context).textTheme.labelLarge,)),
+          ],
+        ),
       ),
       actions: [
         Padding(
@@ -185,4 +151,8 @@ class _NewsFeedScreenState extends State<NewsFeedScreen> {
       ],
     );
   }
+
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
 }

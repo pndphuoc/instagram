@@ -90,7 +90,7 @@ class AddAIPostViewModel extends ChangeNotifier {
     _isGenerating = true;
     notifyListeners();
 
-    _generatedPhotos = await DallERepository.generateImages(
+    _generatedPhotos = await AISpaceRepository.generateImagesFromDallE(
         prompt: _textEditingController.text,
         size: _label,
         quantity: _numberOfPhotos.toInt());
