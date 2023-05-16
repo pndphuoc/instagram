@@ -2,8 +2,6 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-import '../models/user_summary_information.dart';
-import 'package:elastic_client/elastic_client.dart' as elastic;
 
 class ElasticRepository {
   static String endpoint =

@@ -129,7 +129,9 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen>
                     )),
                     SliverPersistentHeader(
                       delegate: StickyTabBarDelegate(
-                        child: TabBar(controller: _tabController, tabs: const [
+                        child: TabBar(
+                            indicatorColor: primaryColor,
+                            controller: _tabController, tabs: const [
                           Tab(
                             child: Icon(Icons.grid_view),
                           ),

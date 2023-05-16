@@ -164,7 +164,9 @@ class _ProfileScreenState extends State<ProfileScreen>
                       SliverPersistentHeader(
                         delegate: StickyTabBarDelegate(
                           child:
-                              TabBar(controller: _tabController, tabs: const [
+                              TabBar(
+                                  indicatorColor: primaryColor,
+                                  controller: _tabController, tabs: const [
                             Tab(
                               child: Icon(Icons.grid_view),
                             ),
@@ -346,7 +348,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                       backgroundColor: secondaryColor),
                   child: Text(
                     "Unfollow",
-                    style: Theme.of(context).textTheme.titleMedium,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(color: onSecondaryBackground),
                   ));
             } else {
               return ElevatedButton(
@@ -354,10 +356,10 @@ class _ProfileScreenState extends State<ProfileScreen>
                   style: ElevatedButton.styleFrom(
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10)),
-                      backgroundColor: primaryColor),
+                      backgroundColor: secondaryColor),
                   child: Text(
                     "Follow",
-                    style: Theme.of(context).textTheme.titleMedium,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(color: onSecondaryBackground),
                   ));
             }
           },
@@ -374,7 +376,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   backgroundColor: secondaryColor),
               child: Text(
                 "Message",
-                style: Theme.of(context).textTheme.titleMedium,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(color: onSecondaryBackground),
               )),
         ),
         const SizedBox(

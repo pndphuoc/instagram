@@ -8,7 +8,6 @@ import '../models/prize.dart';
 class ContestRepository {
   static final CollectionReference _contestRef = FirebaseFirestore.instance.collection('contest');
   static final CollectionReference _postRef = FirebaseFirestore.instance.collection('posts');
-  static final CollectionReference _userRef = FirebaseFirestore.instance.collection('users');
 
   static Future<void> addContest(Contest contest) async {
     try {

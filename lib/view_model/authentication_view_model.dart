@@ -49,8 +49,6 @@ class AuthenticationViewModel extends ChangeNotifier {
         return null;
       }
 
-      await NotificationRepository.addFcmToken(FirebaseAuth.instance.currentUser!.uid, token);
-
       if (userCredential.additionalUserInfo!.isNewUser) {
         return await UserRepository.addNewUser(
           uid: user.uid,
@@ -59,6 +57,9 @@ class AuthenticationViewModel extends ChangeNotifier {
           avatarUrl: user.photoURL.toString(),
           displayName: user.displayName.toString());
       }
+
+      await NotificationRepository.addFcmToken(FirebaseAuth.instance.currentUser!.uid, token);
+      
       return user.uid;
     } catch (e) {
       rethrow;

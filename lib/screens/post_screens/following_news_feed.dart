@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:instagram/screens/post_screens/welcome_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../../provider/home_screen_provider.dart';
@@ -75,9 +76,7 @@ class _FollowingNewsFeedScreenState extends State<FollowingNewsFeedScreen> with 
                     },
                   );
                 } else {
-                  return const Center(
-                    child: Text("No post"),
-                  );
+                  return const WelcomeScreen();
                 }
               } else {
                 return const Center(

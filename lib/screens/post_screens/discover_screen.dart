@@ -84,16 +84,6 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           builder: (context, elastic, child) {
             return TextField(
               readOnly: true,
-              /*onChanged: (value) async {
-                if (_debounce?.isActive ?? false) _debounce?.cancel();
-
-                _debounce = Timer(const Duration(milliseconds: 300), () async {
-                  await elastic.searchData('users', {
-                    'match_phrase_prefix': {'username': _searchController.text}
-                  });
-                  setState(() {});
-                });
-              },*/
               onTap: _onSearchFieldTap,
               decoration: InputDecoration(
                 prefixIcon: const Icon(Icons.search),
@@ -102,7 +92,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                 const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
                 counterStyle: Theme.of(context).textTheme.bodyMedium,
                 filled: true,
-                fillColor: secondaryColor,
+                fillColor: Colors.white24,
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide.none),

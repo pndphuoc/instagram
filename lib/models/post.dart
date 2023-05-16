@@ -54,8 +54,8 @@ class Post {
       avatarUrl: json['avatarUrl'] as String,
       createAt: json['createAt'].toDate(),
       updateAt: json['updateAt'].toDate(),
-      isDeleted: json['isDeleted'] as bool,
-      isArchived: json['isArchived'] as bool,
+      isDeleted: json['isDeleted'] ?? false,
+      isArchived: json['isArchived'] ?? false,
       isAIPost: json['isAIPost'] ?? false
     );
   }

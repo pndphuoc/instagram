@@ -67,7 +67,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
                 counterStyle: Theme.of(context).textTheme.bodyMedium,
                 filled: true,
-                fillColor: secondaryColor,
+                fillColor: Colors.white24,
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide.none),

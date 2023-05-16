@@ -112,7 +112,7 @@ class _ChatScreenState extends State<ChatScreen> {
             focusedBorder: searchFieldBorder,
             disabledBorder: searchFieldBorder,
             filled: true,
-            fillColor: secondaryColor),
+            fillColor: Colors.white38),
       ),
     );
   }

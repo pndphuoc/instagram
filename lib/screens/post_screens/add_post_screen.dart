@@ -157,6 +157,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
       actions: [
         TextButton(
             onPressed: () {
+
               Navigator.pushNamed(context, RouteName.addCaption);
             },
             child: const Text("Post"))
@@ -209,11 +210,9 @@ class _AddPostScreenState extends State<AddPostScreen> {
                     child: Container(
                         height: 35,
                         width: 35,
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                             shape: BoxShape.circle,
-                            color: value.getIsMultiSelect
-                                ? Colors.blue
-                                : const Color.fromARGB(100, 172, 173, 168)),
+                            color: Color.fromARGB(100, 172, 173, 168)),
                         child: Center(child: Text("AI", style: Theme.of(context).textTheme.labelMedium,))),
                   ),
                   const SizedBox(
@@ -230,7 +229,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                         decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: value.getIsMultiSelect
-                                ? Colors.blue
+                                ? primaryColor
                                 : const Color.fromARGB(100, 172, 173, 168)),
                         child: const Icon(
                           Icons.layers_outlined,
@@ -403,12 +402,12 @@ class _AddPostScreenState extends State<AddPostScreen> {
                             shape: BoxShape.circle,
                             border: Border.fromBorderSide(
                                 BorderSide(color: Colors.white, width: 1)),
-                            color: Colors.blue),
+                            color: primaryColor),
                         child: Center(
                             child: Text((value.selectedEntities
                                         .indexOf(entities[index]) +
                                     1)
-                                .toString())),
+                                .toString(), style: Theme.of(context).textTheme.labelLarge,)),
                       ))
               ],
             ),

@@ -58,12 +58,12 @@ class PostViewModel extends ChangeNotifier {
     List<String> followingIds = await RelationshipRepository.getFollowingIds(followingListId);
 
     List<Post> discoverPosts = await PostRepository.getDiscoverPosts(followingIds);
+
     for (var element in discoverPosts) {
       element.isLiked = await LikeRepository.isLiked(element.likedListId, FirebaseAuth.instance.currentUser!.uid);
     }
 
     discoverPosts.shuffle();
-
     return discoverPosts;
   }
 
