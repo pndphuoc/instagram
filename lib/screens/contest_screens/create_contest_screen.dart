@@ -57,6 +57,7 @@ class _CreateContestScreenState extends State<CreateContestScreen> with SingleTi
       BuildContext context, String name, TextEditingController controller,
       {bool isMultiLines = false, Color outlineBorderColor = Colors.grey}) {
     final inputBorder = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(15),
         borderSide:
             Divider.createBorderSide(context, width: 2, color: outlineBorderColor));
     return Column(
@@ -154,6 +155,7 @@ class _CreateContestScreenState extends State<CreateContestScreen> with SingleTi
                   child: Container(
                     width: MediaQuery.of(context).size.width,
                     decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
                       border: Border.all(color: Colors.grey, width: 2),
                     ),
                     child: const Center(
@@ -257,8 +259,8 @@ class _CreateContestScreenState extends State<CreateContestScreen> with SingleTi
                   decoration: BoxDecoration(
                     color: value == AwardMethod.interaction['code'] ? primaryColor : mobileBackgroundColor,
                     borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(10),
-                      bottomLeft: Radius.circular(10),
+                      topLeft: Radius.circular(25),
+                      bottomLeft: Radius.circular(25),
                     ),
                     border: Border.all(
                       width: 2,
@@ -284,8 +286,8 @@ class _CreateContestScreenState extends State<CreateContestScreen> with SingleTi
                   decoration: BoxDecoration(
                     color: value == AwardMethod.selfDetermined['code'] ? primaryColor : mobileBackgroundColor,
                     borderRadius: const BorderRadius.only(
-                      topRight: Radius.circular(10),
-                      bottomRight: Radius.circular(10),
+                      topRight: Radius.circular(25),
+                      bottomRight: Radius.circular(25),
                     ),
                     border: Border.all(
                       width: 2,
@@ -372,8 +374,8 @@ class _CreateContestScreenState extends State<CreateContestScreen> with SingleTi
                   height: 50,
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(10),
-                      bottomLeft: Radius.circular(10),
+                      topLeft: Radius.circular(25),
+                      bottomLeft: Radius.circular(25),
                     ),
                     border: Border.all(
                       width: 2,
@@ -398,8 +400,8 @@ class _CreateContestScreenState extends State<CreateContestScreen> with SingleTi
                   height: 50,
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.only(
-                      topRight: Radius.circular(10),
-                      bottomRight: Radius.circular(10),
+                      topRight: Radius.circular(25),
+                      bottomRight: Radius.circular(25),
                     ),
                     border: Border.all(
                       width: 2,

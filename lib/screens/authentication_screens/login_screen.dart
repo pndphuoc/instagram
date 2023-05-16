@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:instagram/route/route_name.dart';
+import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/authentication_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/widgets/common_widgets/text_form_field.dart';
@@ -117,10 +118,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         alignment: Alignment.center,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: const BoxDecoration(
-                            color: Colors.blue,
+                            color: secondaryColor,
                             borderRadius: BorderRadius.all(Radius.circular(4))),
                         child: Text(
-                          'Log In', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white),
+                          'Log In', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.black87),
                         )),
                   );
                 } else {
@@ -195,7 +196,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: const Text(
                         "Sign up",
                         style: TextStyle(
-                            fontWeight: FontWeight.bold, color: Colors.blue),
+                            fontWeight: FontWeight.bold, color: primaryColor),
                       )),
                 ),
               ],

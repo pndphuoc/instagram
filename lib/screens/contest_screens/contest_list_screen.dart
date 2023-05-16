@@ -28,6 +28,7 @@ class _ContestListScreenState extends State<ContestListScreen>
     return Scaffold(
       appBar: AppBar(
         bottom: TabBar(
+          indicatorColor: primaryColor,
           controller: _tabController,
           tabs: [
             Text(

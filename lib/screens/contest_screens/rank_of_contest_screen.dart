@@ -223,7 +223,7 @@ class _RankOfContestState extends State<RankOfContest> {
       padding: const EdgeInsets.all(8),
       height: 70,
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20), color: secondaryColor),
+          borderRadius: BorderRadius.circular(20), color: secondaryColor.withOpacity(0.4)),
       child: Row(
         children: [
           Container(

@@ -407,7 +407,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                             child: Text((value.selectedEntities
                                         .indexOf(entities[index]) +
                                     1)
-                                .toString(), style: Theme.of(context).textTheme.labelLarge,)),
+                                .toString(), style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Colors.black54),)),
                       ))
               ],
             ),
