@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/ultis/ultils.dart';
 import 'package:instagram/view_model/authentication_view_model.dart';
 import 'package:instagram/view_model/firestore_view_model.dart';
@@ -219,11 +220,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 alignment: Alignment.center,
                                 padding: const EdgeInsets.symmetric(vertical: 12),
                                 decoration: const BoxDecoration(
-                                    color: Colors.blue,
+                                    color: secondaryColor,
                                     borderRadius:
                                     BorderRadius.all(Radius.circular(4))),
                                 child: Text(
-                                  'Sign up', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white),
+                                  'Sign up', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.black87),
                                 )),
                           );
                         }
@@ -255,7 +256,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               "Log in",
                               style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.blue),
+                                  color: primaryColor),
                             )),
                       ),
                     ],

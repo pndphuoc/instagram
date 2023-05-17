@@ -172,17 +172,17 @@ class _AddAIPostScreenState extends State<AddAIPostScreen> {
 
   Widget _buildGenerateButton(BuildContext context) {
     return Selector<AddAIPostViewModel, bool>(
-      builder: (context, value, child) => SizedBox(
+      builder: (context, value, child) => value
+          ? const SizedBox(
+              height: 40,
+              width: 40,
+              child: CircularProgressIndicator(
+                color: Color.fromRGBO(179, 204, 227, 1.0),
+              ))
+          : SizedBox(
         height: 40,
         width: MediaQuery.of(context).size.width,
-        child: value
-            ? const SizedBox(
-                height: 40,
-                width: 40,
-                child: CircularProgressIndicator(
-                  color: Color.fromRGBO(179, 204, 227, 1.0),
-                ))
-            : ElevatedButton(
+            child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15)),
@@ -197,7 +197,7 @@ class _AddAIPostScreenState extends State<AddAIPostScreen> {
                       .titleLarge
                       ?.copyWith(color: Colors.black54),
                 )),
-      ),
+          ),
       selector: (_, viewModel) => viewModel.isGenerating,
     );
   }
@@ -317,11 +317,11 @@ class _AddAIPostScreenState extends State<AddAIPostScreen> {
       builder: (context, value, child) => value.isNotEmpty
           ? ShowUp(
               delay: 0,
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width,
-                height: 40,
-                child: Selector<AddAIPostViewModel, bool>(selector: (_, viewModel) => viewModel.isUploading,
-                  builder: (context, value, child) => !value ? ElevatedButton(
+              child: Selector<AddAIPostViewModel, bool>(selector: (_, viewModel) => viewModel.isUploading,
+                builder: (context, value, child) => !value ? SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  height: 40,
+                  child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                         backgroundColor: const Color.fromRGBO(246, 200, 200, 1.0),
                         shape: RoundedRectangleBorder(
@@ -347,8 +347,11 @@ class _AddAIPostScreenState extends State<AddAIPostScreen> {
                           .titleMedium
                           ?.copyWith(color: Colors.black54),
                     ),
-                  ) : const CircularProgressIndicator(),
-                ),
+                  ),
+                ) : const SizedBox(
+                    width: 40,
+                    height: 40,
+                    child: CircularProgressIndicator()),
               ),
             )
           : Container(),
