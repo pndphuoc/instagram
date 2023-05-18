@@ -122,7 +122,7 @@ class _FollowingCardState extends State<FollowingCard> {
                             style: Theme
                                 .of(context)
                                 .textTheme
-                                .labelLarge,
+                                .labelLarge?.copyWith(color: Colors.black87),
                           ));
                     },)
                 ],

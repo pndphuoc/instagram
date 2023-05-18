@@ -110,7 +110,7 @@ class _FollowerCardState extends State<FollowerCard> {
                           },
                           child: Text(
                             "Delete",
-                            style: Theme.of(context).textTheme.labelLarge,
+                            style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Colors.black87),
                           ));
                     },
                   )

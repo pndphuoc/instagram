@@ -62,7 +62,7 @@ class _FollowingListTabBarWidgetState extends State<FollowingListTabBarWidget> w
             focusedBorder: searchFieldBorder,
             disabledBorder: searchFieldBorder,
             filled: true,
-            fillColor: secondaryColor),
+            fillColor: Colors.white24),
       ),
     );
   }

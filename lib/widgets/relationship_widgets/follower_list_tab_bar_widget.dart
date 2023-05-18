@@ -60,7 +60,7 @@ class _FollowerListTabBarWidgetState extends State<FollowerListTabBarWidget> wit
             focusedBorder: searchFieldBorder,
             disabledBorder: searchFieldBorder,
             filled: true,
-            fillColor: secondaryColor),
+            fillColor: Colors.white24),
       ),
     );
   }
