@@ -9,4 +9,5 @@ const secondaryColor = Color.fromRGBO(179, 204, 227, 1.0);
 const onSecondaryBackground = Colors.black;
 const onBackground = Colors.white;
 const postCardBackgroundColor = Color.fromARGB(255, 45, 45, 47);
+const secondaryBackgroundColor = Color.fromARGB(255, 45, 45, 47);
 const onBackgroundSecondary = Colors.grey;

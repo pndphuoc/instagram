@@ -182,7 +182,7 @@ class _SentMessageCardState extends State<SentMessageCard> {
           BoxConstraints(maxWidth: MediaQuery.of(context).size.width / 2),
       padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 12),
       decoration: BoxDecoration(
-          color: secondaryColor,
+          color: Colors.white24,
           borderRadius: widget.isLastInGroup && widget.isFirstInGroup
               ? BorderRadius.circular(borderRadius)
               : widget.isFirstInGroup

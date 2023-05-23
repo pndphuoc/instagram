@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/screens/post_screens/post_details_screen.dart';
 import 'package:instagram/widgets/post_widgets/video_player_widget.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../models/post.dart';
 import '../../screens/post_screens/post_list_screen.dart';
@@ -22,6 +23,15 @@ class MiniPostCard extends StatelessWidget {
             width: double.infinity,
             height: double.infinity,
             fadeInDuration: const Duration(milliseconds: 100),
+            placeholder: (context, url) => Shimmer.fromColors(
+              baseColor: Colors.grey.shade900,
+              highlightColor: Colors.grey.shade700,
+              child: Container(
+                width: double.infinity,
+                height: double.infinity,
+                color: Colors.white,
+              ),
+            ),
           )
         else
           Positioned.fill(

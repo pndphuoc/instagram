@@ -19,7 +19,7 @@ class _AISpaceNewsFeedScreenState extends State<AISpaceNewsFeedScreen> with Auto
     super.build(context);
     return ListenableProvider<AISpaceViewModel>(create: (context) => AISpaceViewModel(),
       builder: (context, child) => Selector<AISpaceViewModel, bool>(
-        builder: (context, value, child) => value ? const CircularProgressIndicator() : GridView.builder(
+        builder: (context, value, child) => value ? const Center(child: SizedBox(width: 50, height: 50, child: CircularProgressIndicator())) : GridView.builder(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 3,
             mainAxisSpacing: 1,

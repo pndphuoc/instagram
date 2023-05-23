@@ -242,7 +242,7 @@ class _CommentReadingScreenState extends State<CommentReadingScreen> {
               }
             }),
         Container(
-          color: secondaryColor,
+          color: secondaryBackgroundColor,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,

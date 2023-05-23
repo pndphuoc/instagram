@@ -375,7 +375,7 @@ class _ConversationScreenState extends State<ConversationScreen>
           expand: true,
           builder: (context, scrollController) {
             return Container(
-              color: secondaryColor,
+              color: Colors.grey,
               child: Column(
                 children: [
                   const SizedBox(
