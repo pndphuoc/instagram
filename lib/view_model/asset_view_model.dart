@@ -1,12 +1,19 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:instagram/services/asset_services.dart';
+import 'package:image_crop/image_crop.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:photo_manager/photo_manager.dart';
 
+import '../repository/asset_repository.dart';
+import '../ultis/colors.dart';
+
 class AssetViewModel extends ChangeNotifier {
-  final AssetService _assetService = AssetService();
+  AssetViewModel() {
+    loadAssetPathsAndAssets();
+  }
   List<AssetPathEntity> _paths = [];
   List<AssetEntity> _entities = [];
   List<AssetEntity> _selectedEntities = [];
@@ -14,7 +21,23 @@ class AssetViewModel extends ChangeNotifier {
   late int entitiesCount;
   bool _isMultiSelect = false;
   AssetEntity? _selectedEntity;
-  bool _isAllPermissionGranted = false;
+  File? _selectedFile;
+  List<GlobalKey<CropState>> cropKeys = [];
+
+  File? get selectedFile => _selectedFile;
+
+  set selectedFile(File? value) {
+    _selectedFile = value;
+  }
+
+  File? _file;
+
+  File? get file => _file;
+
+  set file(File? value) {
+    _file = value;
+  }
+
   AssetEntity? firstAsset;
 
   List<AssetPathEntity> get paths => _paths;
@@ -23,7 +46,7 @@ class AssetViewModel extends ChangeNotifier {
 
   List<AssetEntity> get selectedEntities => _selectedEntities;
 
-  AssetPathEntity get setSelectedPath => _selectedPath;
+  AssetPathEntity get selectedPath => _selectedPath;
 
   AssetEntity? get selectedEntity => _selectedEntity;
 
@@ -31,9 +54,7 @@ class AssetViewModel extends ChangeNotifier {
 
   bool get hasMoreToLoad => _hasMoreToLoad;
 
-  bool get isAllPermissionGranted => _isAllPermissionGranted;
-
-  set setSelectedPath(AssetPathEntity path) {
+  set selectedPath(AssetPathEntity path) {
     _selectedPath = path;
     _entities = [];
     _selectedEntity = null;
@@ -56,9 +77,9 @@ class AssetViewModel extends ChangeNotifier {
 
   bool _hasMoreToLoad = false;
 
-  Future<void> loadAssetPathList() async {
+  Future<void> loadAssetPathList({bool onlyImage = false}) async {
     try {
-      _paths = await _assetService.loadAssetPathList();
+      _paths = await AssetRepository.loadAssetPathList(onlyImage: onlyImage);
 
       notifyListeners();
     } catch (e) {
@@ -67,17 +88,8 @@ class AssetViewModel extends ChangeNotifier {
     }
   }
 
-  Future<bool> requestAssets() async {
-    try {
-      _isAllPermissionGranted = await _assetService.requestAssets();
-    } catch (e) {
-        print(e.toString());
-    }
-    return _isAllPermissionGranted;
-  }
-
   Future<void> loadAssetsOfPath({int page = 0, int sizePerPage = 50}) async {
-    _entities.addAll(await _assetService.loadAssetsOfPath(_selectedPath,
+    _entities.addAll(await AssetRepository.loadAssetsOfPath(_selectedPath,
         page: page, sizePerPage: sizePerPage));
     if (page == 0) {
       _selectedEntity = _entities.first;
@@ -87,19 +99,17 @@ class AssetViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> firstLoading() async {
+  Future<bool> loadAssetPathsAndAssets({bool onlyImage = false}) async {
     try {
-      await loadAssetPathList();
+      await loadAssetPathList(onlyImage: onlyImage);
       _selectedPath = _paths.first;
-      print("test assets");
       await loadAssetsOfPath();
 
       _selectedEntity = _entities.first;
-      print(_entities.length);
       notifyListeners();
       return true;
     } catch (err) {
-      return true;
+      return false;
     }
   }
 
@@ -114,16 +124,31 @@ class AssetViewModel extends ChangeNotifier {
             _selectedEntities.isNotEmpty ? _selectedEntities.last : entity;
       } else if (isExistInSelectedEntities && _selectedEntity != entity) {
         _selectedEntity = entity;
-      }
-      else {
+      } else {
         handleMaxSelection(entity);
       }
     } else {
       _selectedEntity = entity;
     }
 
+    print(_selectedEntity!.type.name);
+
     notifyListeners();
   }
+
+/*  void onTapEntityInMessage(AssetEntity entity) {
+    _isMultiSelect = true;
+
+    bool isExistInSelectedEntities = _selectedEntities.contains(entity);
+
+    if (isExistInSelectedEntities) {
+      _selectedEntities.remove(entity);
+    } else {
+      _selectedEntities.add(entity);
+
+      notifyListeners();
+    }
+  }*/
 
   void onLongPress(AssetEntity entity) {
     if (!_isMultiSelect) {
@@ -139,7 +164,6 @@ class AssetViewModel extends ChangeNotifier {
     } else {
       handleMaxSelection(entity);
     }
-
   }
 
   void handleMaxSelection(AssetEntity entity) {
@@ -169,10 +193,57 @@ class AssetViewModel extends ChangeNotifier {
     return false;
   }
 
+  void onUploadButtonTap({File? file}) {
+    if (file != null) {
+      _file = file;
+    } else if (selectedFile == null) {
+      firstAsset =
+          selectedEntities.isEmpty ? selectedEntity : selectedEntities.first;
+    }
+  }
+
   void resetAssetViewModel() {
     _selectedEntities = [];
     _isMultiSelect = false;
-    _selectedEntity = _entities.first;
+    _selectedEntity = null;
     _entities = [];
+  }
+
+  Future<File> cropImage(AssetEntity image) async {
+    try {
+      final file = File(image.relativePath!);
+      final croppedImage = await ImageCropper().cropImage(
+          sourcePath: file.path,
+          aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+          cropStyle: CropStyle.rectangle,
+          compressFormat: ImageCompressFormat.png,
+          compressQuality: 80,
+          uiSettings: [
+            AndroidUiSettings(
+                toolbarTitle: 'Crop and resize',
+                toolbarColor: mobileBackgroundColor,
+                toolbarWidgetColor: Colors.white,
+                initAspectRatio: CropAspectRatioPreset.original,
+                backgroundColor: mobileBackgroundColor,
+                activeControlsWidgetColor: primaryColor,
+                statusBarColor: mobileBackgroundColor,
+                lockAspectRatio: true),
+            IOSUiSettings(
+              title: 'Edit photo',
+            ),
+          ]);
+
+      return File(croppedImage!.path);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<File?> assetEntityToFile(AssetEntity entity) async {
+    try {
+      return await entity.file;
+    } catch (e) {
+      rethrow;
+    }
   }
 }

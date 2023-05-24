@@ -1,9 +1,14 @@
+
 import 'package:flutter/material.dart';
-import 'package:instagram/screens/search_screen.dart';
-import 'package:instagram/screens/news_feed_screen.dart';
-import 'package:instagram/screens/personal_profile_screen.dart';
 
-import '../screens/add_post_screen.dart';
+const String profilePicturesPath = 'profilePhotos';
 
+const String postsPhotosPath = 'posts/photos';
 
-const String profilePicturesPath = 'profilePics';
+const String postVideosPath = 'posts/video';
+
+const String contestPostPath = "contest/%id/";
+
+const double avatarInPostCardSize = 20;
+
+const defaultAvatar = AssetImage('assets/default_avatar.png') as ImageProvider;

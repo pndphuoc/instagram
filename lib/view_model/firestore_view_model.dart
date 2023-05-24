@@ -1,12 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
-import 'package:instagram/services/firestorage_services.dart';
+import 'package:instagram/repository/firebase_storage_repository.dart';
 
 class FirestoreViewModel extends ChangeNotifier {
-  final FireBaseStorageService _firestoreService = FireBaseStorageService();
 
   Future<String> uploadFile(File file, String path, {bool isVideo = false}) async {
-    return await _firestoreService.uploadFile(file, path, isVideo: isVideo);
+    return await FireBaseStorageRepository.uploadFile(file, path, isVideo: isVideo);
   }
 }

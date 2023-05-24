@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:instagram/provider/home_screen_provider.dart';
-import 'package:instagram/route/route_name.dart';
-import 'package:instagram/ultis/colors.dart';
-import 'package:instagram/widgets/bottom_navigator_bar.dart';
+import 'package:instagram/widgets/common_widgets/bottom_navigator_bar.dart';
 import 'package:provider/provider.dart';
 
-import '../view_model/asset_view_model.dart';
 
 class MobileScreenLayout extends StatefulWidget {
   const MobileScreenLayout({Key? key}) : super(key: key);

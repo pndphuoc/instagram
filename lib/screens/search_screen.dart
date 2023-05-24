@@ -2,17 +2,12 @@ import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:instagram/models/search_result.dart';
-import 'package:instagram/provider/home_screen_provider.dart';
-import 'package:instagram/route/route_name.dart';
-import 'package:instagram/screens/profile_screen.dart';
+import 'package:instagram/models/user_summary_information.dart';
+import 'package:instagram/screens/profile_screens/profile_screen.dart';
 import 'package:instagram/ultis/colors.dart';
+import 'package:instagram/ultis/global_variables.dart';
 import 'package:instagram/view_model/elastic_view_model.dart';
-import 'package:instagram/view_model/post_view_model.dart';
 import 'package:provider/provider.dart';
-
-import '../models/post.dart';
-import '../view_model/current_user_view_model.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({Key? key}) : super(key: key);
@@ -61,10 +56,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 if (_debounce?.isActive ?? false) _debounce?.cancel();
 
                 _debounce = Timer(const Duration(milliseconds: 300), () async {
-                  await elastic.searchData('users', {
-                    'match_phrase_prefix': {'username': _searchController.text}
-                  });
-                  setState(() {});
+                  await elastic.searchData(value);
                 });
               },
               controller: _searchController,
@@ -75,7 +67,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
                 counterStyle: Theme.of(context).textTheme.bodyMedium,
                 filled: true,
-                fillColor: secondaryColor,
+                fillColor: Colors.white24,
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide.none),
@@ -88,10 +80,10 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget searchResultCard(BuildContext context, SearchResult result) {
+  Widget searchResultCard(BuildContext context, UserSummaryInformation result) {
     return InkWell(
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileScreen(userId: result.uid),));
+        Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileScreen(userId: result.userId),));
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 20),
@@ -99,14 +91,24 @@ class _SearchScreenState extends State<SearchScreen> {
           children: [
             CircleAvatar(
               radius: 25,
-              backgroundImage: CachedNetworkImageProvider(result.photoUrl),
+              backgroundImage: result.avatarUrl.isNotEmpty ? CachedNetworkImageProvider(result.avatarUrl) : defaultAvatar,
             ),
             const SizedBox(
               width: 15,
             ),
-            Text(
-              result.username,
-              style: Theme.of(context).textTheme.titleMedium,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  result.username,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 5,),
+                Text(
+                  result.displayName,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ],
             ),
             const Spacer(),
             /*InkWell(
