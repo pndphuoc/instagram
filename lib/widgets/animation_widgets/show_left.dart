@@ -1,17 +1,17 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
-class ShowRight extends StatefulWidget {
+class ShowLeft extends StatefulWidget {
   final Widget child;
   final int delay;
 
-  const ShowRight({Key? key, required this.child, this.delay = 0}) : super(key: key);
+  const ShowLeft({Key? key, required this.child, this.delay = 0}) : super(key: key);
 
   @override
-  State<ShowRight> createState() => _ShowRightState();
+  State<ShowLeft> createState() => _ShowLeftState();
 }
 
-class _ShowRightState extends State<ShowRight> with TickerProviderStateMixin {
+class _ShowLeftState extends State<ShowLeft> with TickerProviderStateMixin {
   late AnimationController _animController;
   late Animation<Offset> _animOffset;
 
@@ -24,7 +24,7 @@ class _ShowRightState extends State<ShowRight> with TickerProviderStateMixin {
     final curve =
     CurvedAnimation(curve: Curves.decelerate, parent: _animController);
     _animOffset =
-        Tween<Offset>(begin: const Offset(-0.35, 0.0), end: Offset.zero)
+        Tween<Offset>(begin: const Offset(0.35, 0.0), end: Offset.zero)
             .animate(curve);
 
     if (widget.delay == 0) {

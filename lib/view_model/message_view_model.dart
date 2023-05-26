@@ -50,7 +50,7 @@ class MessageViewModel extends ChangeNotifier {
 
   Stream<bool> get writingMessageStream => _writingMessageController.stream;
 
-  int page = 1;
+  int page = 0;
 
   List<Message> _messages = [];
 

@@ -5,6 +5,7 @@ import 'package:instagram/models/comment.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/comment_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
+import 'package:instagram/widgets/animation_widgets/show_right.dart';
 import 'package:instagram/widgets/post_widgets/comment_card.dart';
 import 'package:instagram/widgets/shimmer_widgets/comment_shimmer.dart';
 import 'package:instagram/widgets/animation_widgets/show_up_widget.dart';
@@ -118,12 +119,15 @@ class _CommentReadingScreenState extends State<CommentReadingScreen> {
                                     if (index >= _commentViewModel.comments.length) {
                                       return const CommentShimmer();
                                     } else if (_commentViewModel.comments[index].uid != '') {
-                                      return CommentCard(
-                                        cmt: _commentViewModel.comments[index],
-                                        commentListId:
-                                            widget.post.commentListId,
-                                        commentViewModel: _commentViewModel,
-                                        postId: widget.post.uid,
+                                      return ShowRight(
+                                        delay: 50 * index,
+                                        child: CommentCard(
+                                          cmt: _commentViewModel.comments[index],
+                                          commentListId:
+                                              widget.post.commentListId,
+                                          commentViewModel: _commentViewModel,
+                                          postId: widget.post.uid,
+                                        ),
                                       );
                                     } else {
                                       return UploadingCommentCard(

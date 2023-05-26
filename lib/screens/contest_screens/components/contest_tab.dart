@@ -2,21 +2,23 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/models/contest.dart';
 import 'package:instagram/view_model/common_contest_view_model.dart';
+import 'package:instagram/widgets/animation_widgets/show_right.dart';
 import 'package:provider/provider.dart';
 
 import '../contest_detail_screen.dart';
 
-class ContestTab extends StatefulWidget {
+class ContestTab extends StatefulWidget  {
   const ContestTab({Key? key, required this.typeOfContest}) : super(key: key);
   final String typeOfContest;
   @override
   State<ContestTab> createState() => _ContestTabState();
 }
 
-class _ContestTabState extends State<ContestTab> {
+class _ContestTabState extends State<ContestTab> with AutomaticKeepAliveClientMixin {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Selector<CommonContestViewModel, List<Contest>>(
       selector: (context, contestViewModel) {
         if (widget.typeOfContest == ContestStatus.upcoming['status']) {
@@ -31,8 +33,11 @@ class _ContestTabState extends State<ContestTab> {
         return ListView.separated(
           separatorBuilder: (context, index) => const SizedBox(height: 10,),
           padding: const EdgeInsets.all(16),
-          itemBuilder: (context, index) => buildCardBannerItem(context,
-              contest: list[index]),
+          itemBuilder: (context, index) => ShowRight(
+            delay: 50 * index,
+            child: buildCardBannerItem(context,
+                contest: list[index]),
+          ),
           itemCount: list.length,
         );
       },
@@ -95,4 +100,8 @@ class _ContestTabState extends State<ContestTab> {
       ],
     );
   }
+
+  @override
+  // TODO: implement wantKeepAlive
+  bool get wantKeepAlive => true;
 }

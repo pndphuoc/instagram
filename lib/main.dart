@@ -130,7 +130,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                               webScreenLayout: WebScreenLayout(),
                               mobileScreenLayout: MobileScreenLayout(),
                             );
-                          } else {
+                          } else if (!snapshot.hasData) {
+                            return const Center(child: CircularProgressIndicator(),);
+                          }
+                          else {
                             AuthenticationViewModel.logout();
                             return Container();
                           }

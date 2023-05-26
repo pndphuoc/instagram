@@ -208,7 +208,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               )
                                   .then((value) {
                                 if (value != 'success') {
-                                  showSnackBar(context, 'value');
+                                  showSnackBar(context, value);
                                 } else {
                                   showSnackBar(context, 'Sign up success');
                                   Navigator.pop(context);

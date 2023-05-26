@@ -77,14 +77,17 @@ class AuthenticationViewModel extends ChangeNotifier {
     if (email.isEmpty || password.isEmpty || username.isEmpty) {
       return "Please enter all fields";
     }
+
+    if (await AuthenticationRepository.isUsernameExists(username)) {
+      return 'Username already exists';
+    }
+
     isLoading = true;
     notifyListeners();
 
     String result = await AuthenticationRepository.signUp(
         email: email,
         password: password);
-
-
 
     if (result == 'success') {
       String? avatarUrl = await _uploadAvatar();
@@ -96,6 +99,7 @@ class AuthenticationViewModel extends ChangeNotifier {
           displayName: displayName,
           avatarUrl: avatarUrl ?? "");
       await NotificationRepository.addFcmToken(FirebaseAuth.instance.currentUser!.uid, token);
+      FirebaseAuth.instance.currentUser!.reload();
     }
 
     isLoading = false;
