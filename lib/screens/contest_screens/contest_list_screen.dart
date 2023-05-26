@@ -4,6 +4,8 @@ import 'package:instagram/screens/contest_screens/components/contest_tab.dart';
 import 'package:instagram/screens/contest_screens/create_contest_screen.dart';
 import 'package:instagram/screens/contest_screens/personal_contest_screens.dart';
 import 'package:instagram/ultis/colors.dart';
+import 'package:instagram/view_model/common_contest_view_model.dart';
+import 'package:provider/provider.dart';
 
 class ContestListScreen extends StatefulWidget {
   final String? ownerId;

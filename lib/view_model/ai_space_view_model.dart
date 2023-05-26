@@ -12,7 +12,7 @@ class AISpaceViewModel extends ChangeNotifier {
   bool _isLoadingPosts = false;
   bool get isLoadingPosts => _isLoadingPosts;
 
-  void getAIPosts() async {
+  Future<void> getAIPosts() async {
     _isLoadingPosts = true;
     notifyListeners();
 
