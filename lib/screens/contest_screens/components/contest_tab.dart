@@ -30,15 +30,22 @@ class _ContestTabState extends State<ContestTab> with AutomaticKeepAliveClientMi
         }
       },
       builder: (context, list, child) {
-        return ListView.separated(
-          separatorBuilder: (context, index) => const SizedBox(height: 10,),
-          padding: const EdgeInsets.all(16),
-          itemBuilder: (context, index) => ShowRight(
-            delay: 50 * index,
-            child: buildCardBannerItem(context,
-                contest: list[index]),
+        return context.read<CommonContestViewModel>().isLoading ?
+        const Center(child: CircularProgressIndicator(),) :
+        RefreshIndicator(
+          onRefresh: () => context.read<CommonContestViewModel>().getContest(isRefresh: true),
+          child: Consumer<CommonContestViewModel>(
+            builder: (context, value, child) => ListView.separated(
+              separatorBuilder: (context, index) => const SizedBox(height: 10,),
+              padding: const EdgeInsets.all(16),
+              itemBuilder: (context, index) => ShowRight(
+                delay: 50 * index,
+                child: buildCardBannerItem(context,
+                    contest: list[index]),
+              ),
+              itemCount: list.length,
+            ),
           ),
-          itemCount: list.length,
         );
       },
     );

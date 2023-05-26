@@ -95,6 +95,7 @@ class CurrentUserViewModel extends ChangeNotifier {
         post.isLiked =
             await LikeRepository.isLiked(post.likedListId, _user!.uid);
         _posts.add(post);
+        _posts.sort((a, b) => b.createAt.compareTo(a.createAt),);
       }
     }
 
