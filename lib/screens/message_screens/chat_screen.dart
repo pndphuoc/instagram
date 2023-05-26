@@ -4,6 +4,7 @@ import 'package:instagram/models/conversation.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/conversation_view_model.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
+import 'package:instagram/widgets/animation_widgets/show_right.dart';
 import 'package:instagram/widgets/common_widgets/avatar_with_status.dart';
 import 'package:instagram/widgets/message_widgets/conversation_card.dart';
 import 'package:instagram/widgets/shimmer_widgets/conversation_card_shimmer.dart';
@@ -78,22 +79,6 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-/*  Widget _buildActiveFriendList(BuildContext context) {
-    return SizedBox(
-      width: MediaQuery.of(context).size.width,
-      height: activeAvatarSize * 2 + 25,
-      child: ListView.separated(
-        padding: const EdgeInsets.only(left: 20),
-        separatorBuilder: (context, index) => const SizedBox(
-          width: 20,
-        ),
-        scrollDirection: Axis.horizontal,
-        itemCount: 10,
-        itemBuilder: (context, index) => _buildActiveUser(context, fakeData),
-      ),
-    );
-  }*/
-
   Widget _buildSearchBar(BuildContext context) {
     return Container(
       padding: const EdgeInsets.only(left: 20, right: 20),
@@ -140,9 +125,12 @@ class _ChatScreenState extends State<ChatScreen> {
                 physics: const NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
                 itemCount: snapshot.data!.length,
-                itemBuilder: (context, index) => ConversationCard(
-                      conversationId: snapshot.data![index],
-                    ));
+                itemBuilder: (context, index) => ShowRight(
+                  delay: 100 * index,
+                  child: ConversationCard(
+                        conversationId: snapshot.data![index],
+                      ),
+                ));
           }
         });
   }

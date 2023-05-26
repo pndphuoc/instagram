@@ -7,6 +7,7 @@ import 'package:instagram/screens/profile_screens/profile_screen.dart';
 import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/ultis/global_variables.dart';
 import 'package:instagram/view_model/elastic_view_model.dart';
+import 'package:instagram/widgets/animation_widgets/show_right.dart';
 import 'package:provider/provider.dart';
 
 class SearchScreen extends StatefulWidget {

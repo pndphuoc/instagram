@@ -7,6 +7,7 @@ import 'package:instagram/ultis/colors.dart';
 import 'package:instagram/view_model/current_user_view_model.dart';
 import 'package:instagram/view_model/message_view_model.dart';
 import 'package:instagram/view_model/user_view_model.dart';
+import 'package:instagram/widgets/animation_widgets/show_right.dart';
 import 'package:instagram/widgets/common_widgets/avatar_with_status.dart';
 import 'package:instagram/widgets/message_widgets/received_message_card.dart';
 import 'package:instagram/widgets/message_widgets/sent_message_card.dart';
@@ -14,6 +15,7 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:provider/provider.dart';
 
 import '../../ultis/ultils.dart';
+import '../../widgets/animation_widgets/show_left.dart';
 import '../../widgets/common_widgets/image_thumbail.dart';
 import '../post_screens/camera_preview_screen.dart';
 
@@ -113,20 +115,26 @@ class _ConversationScreenState extends State<ConversationScreen>
 
                     if (_messageViewModel.messages[index].senderId ==
                         _auth.currentUser!.uid) {
-                      return SentMessageCard(
-                        conversationId: _messageViewModel.conversationId,
-                        message: _messageViewModel.messages[index],
-                        restUserAvatarUrl: widget.restUser.avatarUrl,
-                        isFirstInGroup: isFirstMessage,
-                        isLastInGroup: isLastMessage,
-                        isLastSeenMessage: isLastSeenMessage,
+                      return ShowLeft(
+                        delay: 50 * index,
+                        child: SentMessageCard(
+                          conversationId: _messageViewModel.conversationId,
+                          message: _messageViewModel.messages[index],
+                          restUserAvatarUrl: widget.restUser.avatarUrl,
+                          isFirstInGroup: isFirstMessage,
+                          isLastInGroup: isLastMessage,
+                          isLastSeenMessage: isLastSeenMessage,
+                        ),
                       );
                     } else {
-                      return ReceivedMessageCard(
-                          message: _messageViewModel.messages[index],
-                          isLastInGroup: isLastMessage,
-                          isFirstInGroup: isFirstMessage,
-                          user: widget.restUser);
+                      return ShowRight(
+                        delay: 50 * index,
+                        child: ReceivedMessageCard(
+                            message: _messageViewModel.messages[index],
+                            isLastInGroup: isLastMessage,
+                            isFirstInGroup: isFirstMessage,
+                            user: widget.restUser),
+                      );
                     }
                   },
                 );
@@ -375,7 +383,7 @@ class _ConversationScreenState extends State<ConversationScreen>
           expand: true,
           builder: (context, scrollController) {
             return Container(
-              color: Colors.grey,
+              color: secondaryBackgroundColor,
               child: Column(
                 children: [
                   const SizedBox(
@@ -491,14 +499,14 @@ class _ConversationScreenState extends State<ConversationScreen>
                                       shape: BoxShape.circle,
                                       border: Border.fromBorderSide(BorderSide(
                                           color: Colors.white, width: 1)),
-                                      color: Colors.blue),
+                                      color: primaryColor),
                                   child: Center(
                                       child: Text((_messageViewModel
                                                   .selectedEntities
                                                   .indexOf(_messageViewModel
                                                       .entities[index]) +
                                               1)
-                                          .toString())),
+                                          .toString(), style: Theme.of(context).textTheme.labelMedium?.copyWith(color: Colors.black),)),
                                 ))
                         ],
                       ),

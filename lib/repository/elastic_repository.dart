@@ -5,10 +5,8 @@ import 'package:http/http.dart' as http;
 
 class ElasticRepository {
   static String endpoint =
-      "https://instashare.ent.asia-southeast1.gcp.elastic-cloud.com";
-  static String privateKey = "search-txdcaef6466jeu1nw7pzze18";
-  static String apiKey =
-      "cmRwMWI0Y0JnbE5tZlI3aV9mMEw6MVFZeW5qUTNTRFMzSzdzRE5scmUtdw==";
+      "https://instashare-b93c47.ent.asia-southeast1.gcp.elastic-cloud.com";
+  static String privateKey = "search-bae599cfmwuzhspfy4hbdyuy";
   static String usersIndex = ".ent-search-engine-documents-users";
   static String requestPath = "/api/as/v1/engines/instashare/search.json";
 
@@ -35,26 +33,4 @@ class ElasticRepository {
 
     return queryResults;
   }
-
-/*  static Future<bool> isUsernameExists(String usernameQuery) async {
-    final bytes = utf8.encode('$username:$password');
-    final base64Str = base64.encode(bytes);
-    final response = await http.post(
-      Uri.parse(
-          '$endpoint/api/as/v1/engines/national-parks-demo/search'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'ApiKey $privateKey'
-      },
-      body: jsonEncode({
-        'query': {'match': {
-            'username': usernameQuery
-          }
-        }
-      }),
-    );
-    print(response.body);
-    final json = jsonDecode(response.body);
-    return json['count'] == 1;
-  }*/
 }
