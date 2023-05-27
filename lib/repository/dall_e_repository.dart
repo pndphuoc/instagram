@@ -6,7 +6,7 @@ import '../models/post.dart';
 
 class AISpaceRepository {
   static final CollectionReference _postsRef = FirebaseFirestore.instance.collection('posts');
-  static String apiKey = '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';
+  static String apiKey = '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';
   
   static Future<List<String>> generateImagesFromDallE({required String prompt,required int quantity, required String size}) async {
     String url = 'https://api.openai.com/v1/images/generations';
